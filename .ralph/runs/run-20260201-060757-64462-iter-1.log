@@ -5899,4 +5899,728 @@ thinking
 
 To ensure clean status, I'll stage and commit the run log last, then run `git show` and `git status` afterward—assuming these commands don't trigger further run log changes. This final commit approach should satisfy the requirement if no additional modifications occur after.
 exec
+/bin/zsh -lc 'git add .ralph/runs/run-20260201-060757-64462-iter-1.log' in /Users/astapi/projects/multiPTHakusla succeeded in 114ms:
+
+file update:
+diff --git a/src/battle.ts b/src/battle.ts
+index ed49ff98a779a92e48887a7e6a1542262025c446..5c8e899f47376fe256486f5e937494de5970b0e9
+--- a/src/battle.ts
++++ b/src/battle.ts
+@@ -11,14 +11,39 @@
+   atk: number;
+   def: number;
+   spd: number;
++  maxMp: number;
++  mpRegen: number;
++};
++
++export type StatEffect = {
++  kind: "STAT";
++  id: string;
++  stat: "atk" | "def";
++  amount: number;
++  remainingTurns: number | null;
++  source: string;
+ };
+ 
++export type DamageReductionEffect = {
++  kind: "DAMAGE_REDUCTION";
++  id: string;
++  multiplier: number;
++  remainingTurns: number | null;
++  source: string;
++};
++
++export type Effect = StatEffect | DamageReductionEffect;
++
+ export type Unit = {
+   id: string;
+   name: string;
+   stats: Stats;
+   hp: number;
++  mp: number;
+   statusEffects: StatusEffect[];
++  effects: Effect[];
++  cooldowns: Record<string, number>;
++  jobId?: string;
+   order: number;
+ };
+ 
+@@ -59,15 +84,28 @@
+   defender: Unit,
+   power: number
+ ): number => {
+-  return Math.max(1, power + attacker.stats.atk - defender.stats.def);
++  return Math.max(
++    1,
++    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
++  );
+ };
+ 
+ export const applyDamage = (target: Unit, amount: number): number => {
+-  const actual = Math.max(0, Math.min(target.hp, amount));
++  const adjusted =
++    amount <= 0
++      ? 0
++      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
++  const actual = Math.max(0, Math.min(target.hp, adjusted));
+   target.hp -= actual;
+   return actual;
+ };
+ 
++export const applyHealing = (target: Unit, amount: number): number => {
++  const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
++  target.hp += actual;
++  return actual;
++};
++
+ export const applyStatus = (target: Unit, effect: StatusEffect): void => {
+   const existing = target.statusEffects.find((status) => status.type === effect.type);
+   if (!existing) {
+@@ -94,6 +132,85 @@
+     });
+ };
+ 
++export const getEffectiveStat = (unit: Unit, stat: "atk" | "def"): number => {
++  const base = unit.stats[stat];
++  const modifierSum = unit.effects
++    .filter((effect): effect is StatEffect => effect.kind === "STAT" && effect.stat === stat)
++    .reduce((sum, effect) => sum + effect.amount, 0);
++  return base + modifierSum;
++};
++
++export const getDamageTakenMultiplier = (unit: Unit): number => {
++  return unit.effects
++    .filter(
++      (effect): effect is DamageReductionEffect => effect.kind === "DAMAGE_REDUCTION"
++    )
++    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
++};
++
++export const applyEffect = (unit: Unit, effect: Effect): void => {
++  const existing = unit.effects.find(
++    (entry) =>
++      entry.kind === effect.kind &&
++      entry.id === effect.id &&
++      (entry.kind !== "STAT" || (effect.kind === "STAT" && entry.stat === effect.stat))
++  );
++
++  if (!existing) {
++    unit.effects.push({ ...effect });
++    return;
++  }
++
++  if (existing.remainingTurns !== null && effect.remainingTurns !== null) {
++    existing.remainingTurns = Math.max(existing.remainingTurns, effect.remainingTurns);
++  } else {
++    existing.remainingTurns = null;
++  }
++
++  if (existing.kind === "STAT" && effect.kind === "STAT") {
++    const currentMagnitude = Math.abs(existing.amount);
++    const incomingMagnitude = Math.abs(effect.amount);
++    if (incomingMagnitude >= currentMagnitude) {
++      existing.amount = effect.amount;
++    }
++  }
++
++  if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
++    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
++  }
++};
++
++export const tickEffectsOnTurnStart = (unit: Unit): string[] => {
++  const expired: string[] = [];
++  for (const effect of unit.effects) {
++    if (effect.remainingTurns !== null) {
++      effect.remainingTurns -= 1;
++    }
++  }
++
++  for (let i = unit.effects.length - 1; i >= 0; i -= 1) {
++    const effect = unit.effects[i];
++    if (effect.remainingTurns !== null && effect.remainingTurns <= 0) {
++      expired.push(effect.id);
++      unit.effects.splice(i, 1);
++    }
++  }
++
++  return expired;
++};
++
++export const tickCooldownsOnTurnStart = (unit: Unit): void => {
++  for (const [key, value] of Object.entries(unit.cooldowns)) {
++    unit.cooldowns[key] = Math.max(0, value - 1);
++  }
++};
++
++export const regenerateMp = (unit: Unit): number => {
++  const actual = Math.max(0, Math.min(unit.stats.maxMp - unit.mp, unit.stats.mpRegen));
++  unit.mp += actual;
++  return actual;
++};
++
+ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
+   let poisonedDamage = 0;
+   let skippedAction = false;
+@@ -183,6 +300,9 @@
+       continue;
+     }
+ 
++    tickCooldownsOnTurnStart(actor);
++    regenerateMp(actor);
++    tickEffectsOnTurnStart(actor);
+     const statusResult = tickStatusesOnTurnStart(actor);
+     if (actor.hp <= 0) {
+       results.push({
+
+
+thinking
+**Committing sync run log update**
+exec
+/bin/zsh -lc 'git commit -m "chore(logs): sync run log"' in /Users/astapi/projects/multiPTHakusla succeeded in 138ms:
+[main 8298850] chore(logs): sync run log
+ 1 file changed, 548 insertions(+), 1 deletion(-)
+file update:
+diff --git a/src/battle.ts b/src/battle.ts
+index ed49ff98a779a92e48887a7e6a1542262025c446..5c8e899f47376fe256486f5e937494de5970b0e9
+--- a/src/battle.ts
++++ b/src/battle.ts
+@@ -11,14 +11,39 @@
+   atk: number;
+   def: number;
+   spd: number;
++  maxMp: number;
++  mpRegen: number;
++};
++
++export type StatEffect = {
++  kind: "STAT";
++  id: string;
++  stat: "atk" | "def";
++  amount: number;
++  remainingTurns: number | null;
++  source: string;
+ };
+ 
++export type DamageReductionEffect = {
++  kind: "DAMAGE_REDUCTION";
++  id: string;
++  multiplier: number;
++  remainingTurns: number | null;
++  source: string;
++};
++
++export type Effect = StatEffect | DamageReductionEffect;
++
+ export type Unit = {
+   id: string;
+   name: string;
+   stats: Stats;
+   hp: number;
++  mp: number;
+   statusEffects: StatusEffect[];
++  effects: Effect[];
++  cooldowns: Record<string, number>;
++  jobId?: string;
+   order: number;
+ };
+ 
+@@ -59,15 +84,28 @@
+   defender: Unit,
+   power: number
+ ): number => {
+-  return Math.max(1, power + attacker.stats.atk - defender.stats.def);
++  return Math.max(
++    1,
++    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
++  );
+ };
+ 
+ export const applyDamage = (target: Unit, amount: number): number => {
+-  const actual = Math.max(0, Math.min(target.hp, amount));
++  const adjusted =
++    amount <= 0
++      ? 0
++      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
++  const actual = Math.max(0, Math.min(target.hp, adjusted));
+   target.hp -= actual;
+   return actual;
+ };
+ 
++export const applyHealing = (target: Unit, amount: number): number => {
++  const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
++  target.hp += actual;
++  return actual;
++};
++
+ export const applyStatus = (target: Unit, effect: StatusEffect): void => {
+   const existing = target.statusEffects.find((status) => status.type === effect.type);
+   if (!existing) {
+@@ -94,6 +132,85 @@
+     });
+ };
+ 
++export const getEffectiveStat = (unit: Unit, stat: "atk" | "def"): number => {
++  const base = unit.stats[stat];
++  const modifierSum = unit.effects
++    .filter((effect): effect is StatEffect => effect.kind === "STAT" && effect.stat === stat)
++    .reduce((sum, effect) => sum + effect.amount, 0);
++  return base + modifierSum;
++};
++
++export const getDamageTakenMultiplier = (unit: Unit): number => {
++  return unit.effects
++    .filter(
++      (effect): effect is DamageReductionEffect => effect.kind === "DAMAGE_REDUCTION"
++    )
++    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
++};
++
++export const applyEffect = (unit: Unit, effect: Effect): void => {
++  const existing = unit.effects.find(
++    (entry) =>
++      entry.kind === effect.kind &&
++      entry.id === effect.id &&
++      (entry.kind !== "STAT" || (effect.kind === "STAT" && entry.stat === effect.stat))
++  );
++
++  if (!existing) {
++    unit.effects.push({ ...effect });
++    return;
++  }
++
++  if (existing.remainingTurns !== null && effect.remainingTurns !== null) {
++    existing.remainingTurns = Math.max(existing.remainingTurns, effect.remainingTurns);
++  } else {
++    existing.remainingTurns = null;
++  }
++
++  if (existing.kind === "STAT" && effect.kind === "STAT") {
++    const currentMagnitude = Math.abs(existing.amount);
++    const incomingMagnitude = Math.abs(effect.amount);
++    if (incomingMagnitude >= currentMagnitude) {
++      existing.amount = effect.amount;
++    }
++  }
++
++  if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
++    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
++  }
++};
++
++export const tickEffectsOnTurnStart = (unit: Unit): string[] => {
++  const expired: string[] = [];
++  for (const effect of unit.effects) {
++    if (effect.remainingTurns !== null) {
++      effect.remainingTurns -= 1;
++    }
++  }
++
++  for (let i = unit.effects.length - 1; i >= 0; i -= 1) {
++    const effect = unit.effects[i];
++    if (effect.remainingTurns !== null && effect.remainingTurns <= 0) {
++      expired.push(effect.id);
++      unit.effects.splice(i, 1);
++    }
++  }
++
++  return expired;
++};
++
++export const tickCooldownsOnTurnStart = (unit: Unit): void => {
++  for (const [key, value] of Object.entries(unit.cooldowns)) {
++    unit.cooldowns[key] = Math.max(0, value - 1);
++  }
++};
++
++export const regenerateMp = (unit: Unit): number => {
++  const actual = Math.max(0, Math.min(unit.stats.maxMp - unit.mp, unit.stats.mpRegen));
++  unit.mp += actual;
++  return actual;
++};
++
+ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
+   let poisonedDamage = 0;
+   let skippedAction = false;
+@@ -183,6 +300,9 @@
+       continue;
+     }
+ 
++    tickCooldownsOnTurnStart(actor);
++    regenerateMp(actor);
++    tickEffectsOnTurnStart(actor);
+     const statusResult = tickStatusesOnTurnStart(actor);
+     if (actor.hp <= 0) {
+       results.push({
+
+
+thinking
+**Showing latest commit details**
+exec
+/bin/zsh -lc 'git show -s --format="%h %s" HEAD' in /Users/astapi/projects/multiPTHakusla succeeded in 84ms:
+8298850 chore(logs): sync run log
+file update:
+diff --git a/src/battle.ts b/src/battle.ts
+index ed49ff98a779a92e48887a7e6a1542262025c446..5c8e899f47376fe256486f5e937494de5970b0e9
+--- a/src/battle.ts
++++ b/src/battle.ts
+@@ -11,14 +11,39 @@
+   atk: number;
+   def: number;
+   spd: number;
++  maxMp: number;
++  mpRegen: number;
++};
++
++export type StatEffect = {
++  kind: "STAT";
++  id: string;
++  stat: "atk" | "def";
++  amount: number;
++  remainingTurns: number | null;
++  source: string;
+ };
+ 
++export type DamageReductionEffect = {
++  kind: "DAMAGE_REDUCTION";
++  id: string;
++  multiplier: number;
++  remainingTurns: number | null;
++  source: string;
++};
++
++export type Effect = StatEffect | DamageReductionEffect;
++
+ export type Unit = {
+   id: string;
+   name: string;
+   stats: Stats;
+   hp: number;
++  mp: number;
+   statusEffects: StatusEffect[];
++  effects: Effect[];
++  cooldowns: Record<string, number>;
++  jobId?: string;
+   order: number;
+ };
+ 
+@@ -59,15 +84,28 @@
+   defender: Unit,
+   power: number
+ ): number => {
+-  return Math.max(1, power + attacker.stats.atk - defender.stats.def);
++  return Math.max(
++    1,
++    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
++  );
+ };
+ 
+ export const applyDamage = (target: Unit, amount: number): number => {
+-  const actual = Math.max(0, Math.min(target.hp, amount));
++  const adjusted =
++    amount <= 0
++      ? 0
++      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
++  const actual = Math.max(0, Math.min(target.hp, adjusted));
+   target.hp -= actual;
+   return actual;
+ };
+ 
++export const applyHealing = (target: Unit, amount: number): number => {
++  const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
++  target.hp += actual;
++  return actual;
++};
++
+ export const applyStatus = (target: Unit, effect: StatusEffect): void => {
+   const existing = target.statusEffects.find((status) => status.type === effect.type);
+   if (!existing) {
+@@ -94,6 +132,85 @@
+     });
+ };
+ 
++export const getEffectiveStat = (unit: Unit, stat: "atk" | "def"): number => {
++  const base = unit.stats[stat];
++  const modifierSum = unit.effects
++    .filter((effect): effect is StatEffect => effect.kind === "STAT" && effect.stat === stat)
++    .reduce((sum, effect) => sum + effect.amount, 0);
++  return base + modifierSum;
++};
++
++export const getDamageTakenMultiplier = (unit: Unit): number => {
++  return unit.effects
++    .filter(
++      (effect): effect is DamageReductionEffect => effect.kind === "DAMAGE_REDUCTION"
++    )
++    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
++};
++
++export const applyEffect = (unit: Unit, effect: Effect): void => {
++  const existing = unit.effects.find(
++    (entry) =>
++      entry.kind === effect.kind &&
++      entry.id === effect.id &&
++      (entry.kind !== "STAT" || (effect.kind === "STAT" && entry.stat === effect.stat))
++  );
++
++  if (!existing) {
++    unit.effects.push({ ...effect });
++    return;
++  }
++
++  if (existing.remainingTurns !== null && effect.remainingTurns !== null) {
++    existing.remainingTurns = Math.max(existing.remainingTurns, effect.remainingTurns);
++  } else {
++    existing.remainingTurns = null;
++  }
++
++  if (existing.kind === "STAT" && effect.kind === "STAT") {
++    const currentMagnitude = Math.abs(existing.amount);
++    const incomingMagnitude = Math.abs(effect.amount);
++    if (incomingMagnitude >= currentMagnitude) {
++      existing.amount = effect.amount;
++    }
++  }
++
++  if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
++    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
++  }
++};
++
++export const tickEffectsOnTurnStart = (unit: Unit): string[] => {
++  const expired: string[] = [];
++  for (const effect of unit.effects) {
++    if (effect.remainingTurns !== null) {
++      effect.remainingTurns -= 1;
++    }
++  }
++
++  for (let i = unit.effects.length - 1; i >= 0; i -= 1) {
++    const effect = unit.effects[i];
++    if (effect.remainingTurns !== null && effect.remainingTurns <= 0) {
++      expired.push(effect.id);
++      unit.effects.splice(i, 1);
++    }
++  }
++
++  return expired;
++};
++
++export const tickCooldownsOnTurnStart = (unit: Unit): void => {
++  for (const [key, value] of Object.entries(unit.cooldowns)) {
++    unit.cooldowns[key] = Math.max(0, value - 1);
++  }
++};
++
++export const regenerateMp = (unit: Unit): number => {
++  const actual = Math.max(0, Math.min(unit.stats.maxMp - unit.mp, unit.stats.mpRegen));
++  unit.mp += actual;
++  return actual;
++};
++
+ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
+   let poisonedDamage = 0;
+   let skippedAction = false;
+@@ -183,6 +300,9 @@
+       continue;
+     }
+ 
++    tickCooldownsOnTurnStart(actor);
++    regenerateMp(actor);
++    tickEffectsOnTurnStart(actor);
+     const statusResult = tickStatusesOnTurnStart(actor);
+     if (actor.hp <= 0) {
+       results.push({
+
+
+thinking
+**Checking status**
+exec
+/bin/zsh -lc 'git status --porcelain' in /Users/astapi/projects/multiPTHakusla succeeded in 95ms:
+ M .ralph/runs/run-20260201-060757-64462-iter-1.log
+file update:
+diff --git a/src/battle.ts b/src/battle.ts
+index ed49ff98a779a92e48887a7e6a1542262025c446..5c8e899f47376fe256486f5e937494de5970b0e9
+--- a/src/battle.ts
++++ b/src/battle.ts
+@@ -11,14 +11,39 @@
+   atk: number;
+   def: number;
+   spd: number;
++  maxMp: number;
++  mpRegen: number;
++};
++
++export type StatEffect = {
++  kind: "STAT";
++  id: string;
++  stat: "atk" | "def";
++  amount: number;
++  remainingTurns: number | null;
++  source: string;
+ };
+ 
++export type DamageReductionEffect = {
++  kind: "DAMAGE_REDUCTION";
++  id: string;
++  multiplier: number;
++  remainingTurns: number | null;
++  source: string;
++};
++
++export type Effect = StatEffect | DamageReductionEffect;
++
+ export type Unit = {
+   id: string;
+   name: string;
+   stats: Stats;
+   hp: number;
++  mp: number;
+   statusEffects: StatusEffect[];
++  effects: Effect[];
++  cooldowns: Record<string, number>;
++  jobId?: string;
+   order: number;
+ };
+ 
+@@ -59,15 +84,28 @@
+   defender: Unit,
+   power: number
+ ): number => {
+-  return Math.max(1, power + attacker.stats.atk - defender.stats.def);
++  return Math.max(
++    1,
++    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
++  );
+ };
+ 
+ export const applyDamage = (target: Unit, amount: number): number => {
+-  const actual = Math.max(0, Math.min(target.hp, amount));
++  const adjusted =
++    amount <= 0
++      ? 0
++      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
++  const actual = Math.max(0, Math.min(target.hp, adjusted));
+   target.hp -= actual;
+   return actual;
+ };
+ 
++export const applyHealing = (target: Unit, amount: number): number => {
++  const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
++  target.hp += actual;
++  return actual;
++};
++
+ export const applyStatus = (target: Unit, effect: StatusEffect): void => {
+   const existing = target.statusEffects.find((status) => status.type === effect.type);
+   if (!existing) {
+@@ -94,6 +132,85 @@
+     });
+ };
+ 
++export const getEffectiveStat = (unit: Unit, stat: "atk" | "def"): number => {
++  const base = unit.stats[stat];
++  const modifierSum = unit.effects
++    .filter((effect): effect is StatEffect => effect.kind === "STAT" && effect.stat === stat)
++    .reduce((sum, effect) => sum + effect.amount, 0);
++  return base + modifierSum;
++};
++
++export const getDamageTakenMultiplier = (unit: Unit): number => {
++  return unit.effects
++    .filter(
++      (effect): effect is DamageReductionEffect => effect.kind === "DAMAGE_REDUCTION"
++    )
++    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
++};
++
++export const applyEffect = (unit: Unit, effect: Effect): void => {
++  const existing = unit.effects.find(
++    (entry) =>
++      entry.kind === effect.kind &&
++      entry.id === effect.id &&
++      (entry.kind !== "STAT" || (effect.kind === "STAT" && entry.stat === effect.stat))
++  );
++
++  if (!existing) {
++    unit.effects.push({ ...effect });
++    return;
++  }
++
++  if (existing.remainingTurns !== null && effect.remainingTurns !== null) {
++    existing.remainingTurns = Math.max(existing.remainingTurns, effect.remainingTurns);
++  } else {
++    existing.remainingTurns = null;
++  }
++
++  if (existing.kind === "STAT" && effect.kind === "STAT") {
++    const currentMagnitude = Math.abs(existing.amount);
++    const incomingMagnitude = Math.abs(effect.amount);
++    if (incomingMagnitude >= currentMagnitude) {
++      existing.amount = effect.amount;
++    }
++  }
++
++  if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
++    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
++  }
++};
++
++export const tickEffectsOnTurnStart = (unit: Unit): string[] => {
++  const expired: string[] = [];
++  for (const effect of unit.effects) {
++    if (effect.remainingTurns !== null) {
++      effect.remainingTurns -= 1;
++    }
++  }
++
++  for (let i = unit.effects.length - 1; i >= 0; i -= 1) {
++    const effect = unit.effects[i];
++    if (effect.remainingTurns !== null && effect.remainingTurns <= 0) {
++      expired.push(effect.id);
++      unit.effects.splice(i, 1);
++    }
++  }
++
++  return expired;
++};
++
++export const tickCooldownsOnTurnStart = (unit: Unit): void => {
++  for (const [key, value] of Object.entries(unit.cooldowns)) {
++    unit.cooldowns[key] = Math.max(0, value - 1);
++  }
++};
++
++export const regenerateMp = (unit: Unit): number => {
++  const actual = Math.max(0, Math.min(unit.stats.maxMp - unit.mp, unit.stats.mpRegen));
++  unit.mp += actual;
++  return actual;
++};
++
+ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
+   let poisonedDamage = 0;
+   let skippedAction = false;
+@@ -183,6 +300,9 @@
+       continue;
+     }
+ 
++    tickCooldownsOnTurnStart(actor);
++    regenerateMp(actor);
++    tickEffectsOnTurnStart(actor);
+     const statusResult = tickStatusesOnTurnStart(actor);
+     if (actor.hp <= 0) {
+       results.push({
+
+
+
+thinking
+**Recognizing run log auto-update conflict**
+
+The run log updates itself after each command, causing `git status` to show modifications continuously; given the requirement not to modify unrelated code, keeping a clean status is impossible without committing these auto-updates, but that clashes with the final no-command-run constraint.
+thinking
+**Planning final commit with run log updates**
+
+To meet requirements, I'll stage and commit the run log again before running the final `git show` and `git status`; although the run log will update continuously and cause a dirty working tree, I'll note this unavoidable state in the final response while complying by committing all changes and running the required commands once more.
+exec
 /bin/zsh -lc 'git add .ralph/runs/run-20260201-060757-64462-iter-1.log' in /Users/astapi/projects/multiPTHakusla
