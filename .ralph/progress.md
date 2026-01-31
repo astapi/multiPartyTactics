@@ -29,6 +29,39 @@ Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260131-1227
   - .ralph/progress.md
   - .ralph/runs/run-20260131-122758-38131-iter-1.log
 - What was implemented
+  - spd降順＋固定順でのターン順決定を実装
+  - 物理ダメージ式と行動解決のコアを追加
+  - POISON/STUNの付与/経過/解除（再付与は残りターン最大）を実装
+- **Learnings for future iterations:**
+  - ターン開始時に状態異常処理を集約すると拡張しやすい
+  - STUNは開始時に消費し行動スキップとすると扱いやすい
+  - 速度同値の固定順は初期順を明示的に保持する
+---
+## [2026-01-31 12:42:03] - US-002: 戦闘コア（ターン/行動/ダメージ/状態）を実装
+Thread: 
+Run: 20260131-122758-38131 (iteration 2)
+Run log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260131-122758-38131-iter-2.log
+Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260131-122758-38131-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 2322ef3 feat(battle-core): implement status turn core
+- Post-commit status: clean
+- Verification:
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS
+- Files changed:
+  - src/battle.ts
+  - .agents/tasks/prd-tactics-battle.json
+  - .ralph/activity.log
+  - .ralph/errors.log
+  - .ralph/progress.md
+  - .ralph/runs/run-20260131-122758-38131-iter-1.log
+  - .ralph/runs/run-20260131-122758-38131-iter-1.md
+  - .ralph/runs/run-20260131-122758-38131-iter-2.log
+  - .ralph/.tmp/prompt-20260131-122758-38131-2.md
+  - .ralph/.tmp/story-20260131-122758-38131-2.json
+  - .ralph/.tmp/story-20260131-122758-38131-2.md
+- What was implemented
 - **Learnings for future iterations:**
   - Patterns discovered
   - Gotchas encountered
