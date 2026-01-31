@@ -88,7 +88,7 @@
     {
       "id": "US-001",
       "title": "TypeScript CLI \u306e\u521d\u671f\u30bb\u30c3\u30c8\u30a2\u30c3\u30d7",
-      "status": "in_progress",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want a TypeScript-based CLI project scaffold so I can run the simulator with npm scripts.",
       "acceptanceCriteria": [
@@ -99,13 +99,13 @@
         "\u4f9d\u5b58\u8ffd\u52a0\u306f\u660e\u793a\u7684\u306b npm install tsx typescript @types/node \u306a\u3069\u3092\u8a18\u8f09"
       ],
       "startedAt": "2026-01-31T03:27:59.288649+00:00",
-      "completedAt": null,
-      "updatedAt": "2026-01-31T03:27:59.289103+00:00"
+      "completedAt": "2026-01-31T03:36:14.810712+00:00",
+      "updatedAt": "2026-01-31T03:36:14.810484+00:00"
     },
     {
       "id": "US-002",
       "title": "\u6226\u95d8\u30b3\u30a2\uff08\u30bf\u30fc\u30f3/\u884c\u52d5/\u30c0\u30e1\u30fc\u30b8/\u72b6\u614b\uff09\u3092\u5b9f\u88c5",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "US-001"
       ],
@@ -116,7 +116,10 @@
         "POISON \u3068 STUN \u306e\u4ed8\u4e0e/\u89e3\u9664/\u7d4c\u904e\u304c\u51e6\u7406\u3055\u308c\u308b",
         "Example: POISON(3turn) \u3067\u6bce\u30bf\u30fc\u30f3\u56fa\u5b9a\u30c0\u30e1\u30fc\u30b8\u304c\u767a\u751f\u3059\u308b",
         "Negative case: \u65e2\u306bSTUN\u4e2d\u306e\u30e6\u30cb\u30c3\u30c8\u306bSTUN\u304c\u518d\u4ed8\u4e0e\u3055\u308c\u3066\u3082\u3001\u4e0a\u66f8\u304d\u30eb\u30fc\u30eb\u306b\u5f93\u3063\u3066\u77db\u76fe\u3057\u306a\u3044"
-      ]
+      ],
+      "startedAt": "2026-01-31T03:36:17.243912+00:00",
+      "completedAt": null,
+      "updatedAt": "2026-01-31T03:36:17.244275+00:00"
     },
     {
       "id": "US-003",
