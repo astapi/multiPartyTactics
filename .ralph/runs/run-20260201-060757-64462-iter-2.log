@@ -2722,4 +2722,142 @@ thinking
 
 I'm verifying .gitignore doesn't exclude the new .ralph file and staging all changes before committing with a detailed message about adding fixed scenarios.
 exec
+/bin/zsh -lc 'git add -A' in /Users/astapi/projects/multiPTHakusla succeeded in 136ms:
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Preparing commit message format**
+exec
+/bin/zsh -lc 'git commit -m "feat(scenario): run fixed A/B/C in CLI
+
+Implement deterministic scenario definitions and tactics.
+Add CLI runner that executes A, B, C in order.
+Include logs for poison cleanse and rule fallthrough.
+
+Reference: US-004"' in /Users/astapi/projects/multiPTHakusla succeeded in 132ms:
+[main 42b6039] feat(scenario): run fixed A/B/C in CLI
+ 11 files changed, 4437 insertions(+), 10 deletions(-)
+ create mode 100644 .ralph/.tmp/prompt-20260201-060757-64462-2.md
+ create mode 100644 .ralph/.tmp/story-20260201-060757-64462-2.json
+ create mode 100644 .ralph/.tmp/story-20260201-060757-64462-2.md
+ create mode 100644 .ralph/runs/run-20260201-060757-64462-iter-1.md
+ create mode 100644 .ralph/runs/run-20260201-060757-64462-iter-2.log
+ create mode 100644 src/scenarios.ts
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Checking clean status**
+exec
+/bin/zsh -lc 'git status --porcelain' in /Users/astapi/projects/multiPTHakusla succeeded in 106ms:
+ M .ralph/runs/run-20260201-060757-64462-iter-2.log
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Committing updated run log in new commit**
+
+The run log changed after the initial commit, likely due to side effects from the commit itself, so I'll stage all changes and create a second commit to include this update without amending.
+exec
 /bin/zsh -lc 'git add -A' in /Users/astapi/projects/multiPTHakusla
