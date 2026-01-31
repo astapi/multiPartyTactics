@@ -3682,4 +3682,185 @@ thinking
 
 Choosing to stage and commit the run log updates caused by the last git status, then stop without running further git show or status to keep the tree clean. I'll note in the final report that repeated git status commands re-dirty the tree, so this approach balances requirements despite imperfect compliance.
 exec
-/bin/zsh -lc 'git add /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log' in /Users/astapi/projects/multiPTHakusla
+/bin/zsh -lc 'git add /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log' in /Users/astapi/projects/multiPTHakusla succeeded in 117ms:
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+exec
+/bin/zsh -lc 'git commit -m "chore(ralph): sync run log after status"' in /Users/astapi/projects/multiPTHakusla succeeded in 267ms:
+[main 27764c9] chore(ralph): sync run log after status
+ 1 file changed, 174 insertions(+)
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Providing final summary in Japanese**
+
+考え方：仕様のシナリオ定義とタクティクス評価を最小実装しました。最終コミットは27764c9で、作業中に42b6039のコミットハッシュも記録しています。git statusは最終時点で確認できず、状態のクリーンは断言できません。npm run startでA/B/Cのシナリオを順次実行し、固定シードで決定的な乱数を使用。シナリオBではPOISON後にCleanseが実行され、シナリオCではpoisonがない場合Cleanseルールが失敗して次のルールへ進みログに記録されています。変更ファイルも含めてnpm run buildとnpm testも実行しテストは全て成功しました。
+thinking
+**Finalizing response with verification and reviews**
+
+・最終コミットは27764c9です。git status 実行で .ralph/runs/... が自動更新されるため、最終コミット後はステータス確認を行うと再度変更が出ます。  
+・主な変更は新規ファイル src/scenarios.ts の追加と src/index.ts の更新です。  
+・npm run startでA/B/Cシナリオを順次実行し、固定シードの決定的動作を確認。cleanse判定やルールの遷移がログに出ています。npm run buildとnpm testも成功しました。  
+・セキュリティ、パフォーマンス、回帰面のレビューでは外部入力なしでO(n)ループのみ、他モジュールへの影響はありません。UI変更がないためブラウザテストは実施していません。  
+・進捗ログも更新済みです。  
+
+考え方: 仕様のシナリオ定義とタクティクス評価を最小構成で実装し、seed固定でログにCleanse判定が出るようにしました。  
+
+<promise>COMPLETE</promise>
+codex
+考え方: 仕様に沿った固定シナリオとタクティクス評価を最小構成で実装し、seed固定とログでCleanseの成立/不成立が確認できるようにしました。
+
+対応内容
+- CLI実行でA→B→Cを順に回すシナリオ実行器を追加し、seed固定の乱数で再現性を確保しました。`src/scenarios.ts`
+- 既存エントリをシナリオ実行に切り替えました。`src/index.ts`
+- シナリオBでPOISON後にCleanseが割り込むログ、シナリオCで毒無し時にCleanse不成立→次ルールへ進むログが出ることを確認しました（npm run start）。
+
+検証
+- `npm run start` -> PASS
+- `npm run build` -> PASS
+- `npm test` -> PASS
+
+レビュー（要点）
+- Security: 追加はローカルCLI処理のみで外部入出力の危険な変更なし。
+- Performance: 1ターン内の評価はユニット数×ルール数の線形で軽微。
+- Regression: 既存の戦闘/スキル実装には影響を与えない構成。
+
+注意
+- `git status` 実行で `.ralph/runs/run-20260201-060757-64462-iter-2.log` が自動更新され、ステータス確認のたびに差分が出ます。最終コミットは `27764c9` です。
+
+次に必要なら
+1) ルール評価ログをUS-005の詳細フォーマットに合わせて拡充  
+2) シナリオA/B/Cの期待値をテスト化（US-006）
+
+<promise>COMPLETE</promise>
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+tokens used
+213,374
+考え方: 仕様に沿った固定シナリオとタクティクス評価を最小構成で実装し、seed固定とログでCleanseの成立/不成立が確認できるようにしました。
+
+対応内容
+- CLI実行でA→B→Cを順に回すシナリオ実行器を追加し、seed固定の乱数で再現性を確保しました。`src/scenarios.ts`
+- 既存エントリをシナリオ実行に切り替えました。`src/index.ts`
+- シナリオBでPOISON後にCleanseが割り込むログ、シナリオCで毒無し時にCleanse不成立→次ルールへ進むログが出ることを確認しました（npm run start）。
+
+検証
+- `npm run start` -> PASS
+- `npm run build` -> PASS
+- `npm test` -> PASS
+
+レビュー（要点）
+- Security: 追加はローカルCLI処理のみで外部入出力の危険な変更なし。
+- Performance: 1ターン内の評価はユニット数×ルール数の線形で軽微。
+- Regression: 既存の戦闘/スキル実装には影響を与えない構成。
+
+注意
+- `git status` 実行で `.ralph/runs/run-20260201-060757-64462-iter-2.log` が自動更新され、ステータス確認のたびに差分が出ます。最終コミットは `27764c9` です。
+
+次に必要なら
+1) ルール評価ログをUS-005の詳細フォーマットに合わせて拡充  
+2) シナリオA/B/Cの期待値をテスト化（US-006）
+
+<promise>COMPLETE</promise>

@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-01 06:34:13 | run=20260201-060757-64462 | iter=2 | mode=build | story=US-004 | duration=869s | status=success
 - 2026-02-01 06:19:41 | run=20260201-060757-64462 | iter=1 | mode=build | story=US-003 | duration=703s | status=success
 - 2026-01-31 12:44:17 | run=20260131-122758-38131 | iter=2 | mode=build | story=US-002 | duration=480s | status=success
 - 2026-01-31 12:36:14 | run=20260131-122758-38131 | iter=1 | mode=build | story=US-001 | duration=496s | status=success
@@ -32,3 +33,8 @@
 [2026-02-01 06:27:27] US-004 シナリオ実行ロジックと定義を追加
 [2026-02-01 06:28:13] US-004 検証コマンド完了
 [2026-02-01 06:31:55] US-004 進捗ログ更新
+[2026-02-01 06:34:13] ITERATION 2 end (duration=869s)
+[2026-02-01 06:34:17] ITERATION 3 start (mode=build story=US-005)
+[2026-02-01 06:35:07] Start US-005 work
+[2026-02-01 06:37:55] Implemented turn logging and summary report output
+[2026-02-01 06:38:16] Verification complete: npm run build, npm run start, npm test

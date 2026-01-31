@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-01-31T21:38:05.931Z",
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "Scenario A",
+      "winner": "draw",
+      "turns": 6
+    },
+    {
+      "id": "B",
+      "name": "Scenario B",
+      "winner": "draw",
+      "turns": 6
+    },
+    {
+      "id": "C",
+      "name": "Scenario C",
+      "winner": "draw",
+      "turns": 6
+    }
+  ]
+}

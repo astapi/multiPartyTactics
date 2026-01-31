@@ -7,11 +7,14 @@ import {
   tickEffectsOnTurnStart,
   tickStatusesOnTurnStart,
 } from "./battle";
+import fs from "node:fs";
+import path from "node:path";
 import { selectVenomTyrantAction } from "./boss-ai";
 import {
   JobId,
   JOB_DEFINITIONS,
   Skill,
+  SkillUseResult,
   VENOM_TYRANT,
   executeSkill,
   getHpPercent,
@@ -47,6 +50,41 @@ type RuleEvaluation = {
   usable: boolean;
   conditionMet: boolean;
   target: Unit | null;
+};
+
+type RuleEvaluationLog = {
+  ruleId: string;
+  usable: boolean;
+  conditionMet: boolean;
+  targetName: string | null;
+};
+
+type ActionResolution = {
+  ruleEvaluation: RuleEvaluationLog | null;
+  actionName: string;
+  actionTarget: string | null;
+  result: SkillUseResult | null;
+};
+
+type TurnLogEntry = {
+  scenarioName: string;
+  turn: number;
+  actorName: string;
+  ruleEvaluation: RuleEvaluationLog | null;
+  actionName: string;
+  actionTarget: string | null;
+  damage: number;
+  healing: number;
+  poisonDamage: number;
+  statusApplied: StatusType[];
+  statusRemoved: StatusType[];
+};
+
+type ScenarioSummary = {
+  id: string;
+  name: string;
+  winner: "party" | "boss" | "draw";
+  turns: number;
 };
 
 const createSeededRng = (seed: number): (() => number) => {
@@ -377,48 +415,39 @@ const evaluateRule = (
   return { rule, usable, conditionMet, target };
 };
 
-const formatRuleLog = (
-  scenario: Scenario,
-  turn: number,
-  actor: Unit,
-  evaluation: RuleEvaluation
-): string => {
-  const targetName = evaluation.target ? evaluation.target.name : "none";
+const formatTurnLog = (entry: TurnLogEntry): string => {
+  const rule = entry.ruleEvaluation ?? {
+    ruleId: "none",
+    usable: false,
+    conditionMet: false,
+    targetName: null,
+  };
+  const statusApplied = entry.statusApplied.join(",");
+  const statusRemoved = entry.statusRemoved.join(",");
   return [
-    `[${scenario.name}]`,
-    `turn ${turn}`,
-    actor.name,
-    `rule=${evaluation.rule.id}`,
-    `usable=${evaluation.usable}`,
-    `condition=${evaluation.conditionMet}`,
-    `target=${targetName}`,
+    `[${entry.scenarioName}]`,
+    `turn ${entry.turn}`,
+    `actor=${entry.actorName}`,
+    `rule=${rule.ruleId}`,
+    `usable=${rule.usable}`,
+    `condition=${rule.conditionMet}`,
+    `ruleTarget=${rule.targetName ?? "none"}`,
+    `action=${entry.actionName}`,
+    `actionTarget=${entry.actionTarget ?? "none"}`,
+    `damage=${entry.damage}`,
+    `heal=${entry.healing}`,
+    `poisonDamage=${entry.poisonDamage}`,
+    `statusApplied=[${statusApplied}]`,
+    `statusRemoved=[${statusRemoved}]`,
   ].join(" ");
 };
 
-const logSkillResult = (
-  scenario: Scenario,
-  turn: number,
-  actor: Unit,
-  target: Unit,
-  skill: Skill,
-  result: ReturnType<typeof executeSkill>
-): void => {
-  const statusApplied = result.appliedStatuses.map((status) => status.type).join(",");
-  const cleansed = result.cleansedStatuses.join(",");
-  console.log(
-    [
-      `[${scenario.name}]`,
-      `turn ${turn}`,
-      actor.name,
-      `skill=${skill.name}`,
-      `target=${target.name}`,
-      `damage=${result.damage}`,
-      `heal=${result.healing}`,
-      `applied=[${statusApplied}]`,
-      `cleansed=[${cleansed}]`,
-    ].join(" ")
-  );
-};
+const toRuleEvaluationLog = (evaluation: RuleEvaluation): RuleEvaluationLog => ({
+  ruleId: evaluation.rule.id,
+  usable: evaluation.usable,
+  conditionMet: evaluation.conditionMet,
+  targetName: evaluation.target ? evaluation.target.name : null,
+});
 
 const executePartyTurn = (
   scenario: Scenario,
@@ -428,11 +457,10 @@ const executePartyTurn = (
   turn: number,
   rng: () => number,
   skillMap: Map<string, Skill>
-): void => {
+): ActionResolution => {
   const rules = scenario.tactics[actor.id] ?? [];
   for (const ruleEntry of rules) {
     const evaluation = evaluateRule(actor, ruleEntry, { turn, actor, allies, enemies }, skillMap);
-    console.log(formatRuleLog(scenario, turn, actor, evaluation));
     if (!evaluation.usable || !evaluation.conditionMet || !evaluation.target) {
       continue;
     }
@@ -443,11 +471,20 @@ const executePartyTurn = (
     }
 
     const result = executeSkill(actor, evaluation.target, skill, rng);
-    logSkillResult(scenario, turn, actor, evaluation.target, skill, result);
-    return;
+    return {
+      ruleEvaluation: toRuleEvaluationLog(evaluation),
+      actionName: skill.name,
+      actionTarget: evaluation.target.name,
+      result,
+    };
   }
 
-  console.log(`[${scenario.name}] turn ${turn} ${actor.name} action=WAIT`);
+  return {
+    ruleEvaluation: null,
+    actionName: "WAIT",
+    actionTarget: null,
+    result: null,
+  };
 };
 
 const executeBossTurn = (
@@ -457,27 +494,39 @@ const executeBossTurn = (
   turn: number,
   rng: () => number,
   skillMap: Map<string, Skill>
-): void => {
+): ActionResolution => {
   const decision = selectVenomTyrantAction(boss, allies, turn);
   const skill = skillMap.get(decision.skill.id);
   if (!skill) {
     throw new Error(`Missing skill: ${decision.skill.id}`);
   }
   const result = executeSkill(boss, decision.target, skill, rng);
-  logSkillResult(scenario, turn, boss, decision.target, skill, result);
+  return {
+    ruleEvaluation: {
+      ruleId: "boss_ai",
+      usable: true,
+      conditionMet: true,
+      targetName: decision.target.name,
+    },
+    actionName: skill.name,
+    actionTarget: decision.target.name,
+    result,
+  };
 };
 
 const isPartyDefeated = (party: Unit[]): boolean =>
   party.every((unit) => unit.hp <= 0);
 
-const runScenario = (scenario: Scenario, maxTurns: number): void => {
+const runScenario = (scenario: Scenario, maxTurns: number): ScenarioSummary => {
   const rng = createSeededRng(scenario.seed);
   const skillMap = buildSkillMap(getAllSkills());
   const units: Unit[] = [...scenario.party, scenario.boss];
+  let turnsExecuted = 0;
 
   console.log(`[${scenario.name}] start seed=${scenario.seed}`);
 
   for (let turn = 1; turn <= maxTurns; turn += 1) {
+    turnsExecuted = turn;
     const order = getTurnOrder(units);
     for (const entry of order) {
       const actor = entry.unit;
@@ -489,26 +538,79 @@ const runScenario = (scenario: Scenario, maxTurns: number): void => {
       regenerateMp(actor);
       tickEffectsOnTurnStart(actor);
       const statusResult = tickStatusesOnTurnStart(actor);
-      if (statusResult.poisonedDamage > 0) {
-        console.log(
-          `[${scenario.name}] turn ${turn} ${actor.name} poisonDamage=${statusResult.poisonedDamage}`
-        );
-      }
 
       if (actor.hp <= 0) {
+        console.log(
+          formatTurnLog({
+            scenarioName: scenario.name,
+            turn,
+            actorName: actor.name,
+            ruleEvaluation: null,
+            actionName: "SKIP_DEAD",
+            actionTarget: null,
+            damage: 0,
+            healing: 0,
+            poisonDamage: statusResult.poisonedDamage,
+            statusApplied: [],
+            statusRemoved: statusResult.expired,
+          })
+        );
         continue;
       }
 
       if (statusResult.skippedAction) {
-        console.log(`[${scenario.name}] turn ${turn} ${actor.name} skipped=STUN`);
+        console.log(
+          formatTurnLog({
+            scenarioName: scenario.name,
+            turn,
+            actorName: actor.name,
+            ruleEvaluation: null,
+            actionName: "SKIP_STUN",
+            actionTarget: null,
+            damage: 0,
+            healing: 0,
+            poisonDamage: statusResult.poisonedDamage,
+            statusApplied: [],
+            statusRemoved: statusResult.expired,
+          })
+        );
         continue;
       }
 
-      if (actor.id === scenario.boss.id) {
-        executeBossTurn(scenario, actor, scenario.party, turn, rng, skillMap);
-      } else {
-        executePartyTurn(scenario, actor, scenario.party, [scenario.boss], turn, rng, skillMap);
-      }
+      const resolution =
+        actor.id === scenario.boss.id
+          ? executeBossTurn(scenario, actor, scenario.party, turn, rng, skillMap)
+          : executePartyTurn(
+              scenario,
+              actor,
+              scenario.party,
+              [scenario.boss],
+              turn,
+              rng,
+              skillMap
+            );
+      const statusApplied = resolution.result
+        ? resolution.result.appliedStatuses.map((status) => status.type)
+        : [];
+      const statusRemoved = [
+        ...statusResult.expired,
+        ...(resolution.result ? resolution.result.cleansedStatuses : []),
+      ];
+      console.log(
+        formatTurnLog({
+          scenarioName: scenario.name,
+          turn,
+          actorName: actor.name,
+          ruleEvaluation: resolution.ruleEvaluation,
+          actionName: resolution.actionName,
+          actionTarget: resolution.actionTarget,
+          damage: resolution.result ? resolution.result.damage : 0,
+          healing: resolution.result ? resolution.result.healing : 0,
+          poisonDamage: statusResult.poisonedDamage,
+          statusApplied,
+          statusRemoved,
+        })
+      );
 
       if (scenario.boss.hp <= 0 || isPartyDefeated(scenario.party)) {
         break;
@@ -525,11 +627,33 @@ const runScenario = (scenario: Scenario, maxTurns: number): void => {
       (unit) => unit.hp > 0
     ).length}`
   );
+
+  const winner = isPartyDefeated(scenario.party)
+    ? "boss"
+    : scenario.boss.hp <= 0
+      ? "party"
+      : "draw";
+  return {
+    id: scenario.id,
+    name: scenario.name,
+    winner,
+    turns: turnsExecuted,
+  };
 };
 
 export const runAllScenarios = (): void => {
   const scenarios = makeScenarios();
+  const summaries: ScenarioSummary[] = [];
   for (const scenario of scenarios) {
-    runScenario(scenario, 6);
+    summaries.push(runScenario(scenario, 6));
   }
+
+  const reportsDir = path.resolve(process.cwd(), "reports");
+  fs.mkdirSync(reportsDir, { recursive: true });
+  const reportPath = path.join(reportsDir, "summary.json");
+  const summaryPayload = {
+    generatedAt: new Date().toISOString(),
+    scenarios: summaries,
+  };
+  fs.writeFileSync(reportPath, JSON.stringify(summaryPayload, null, 2), "utf8");
 };
