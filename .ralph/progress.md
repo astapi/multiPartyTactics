@@ -115,3 +115,36 @@ Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-0607
   - Gotchas encountered
   - Useful context
 ---
+## [2026-02-01 06:30] - US-004: シナリオA/B/Cを固定定義しCLI実行で連続実行
+Thread: 
+Run: 20260201-060757-64462 (iteration 2)
+Run log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log
+Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 42b6039 feat(scenario): run fixed A/B/C in CLI
+- Post-commit status: dirty (.ralph/runs/run-20260201-060757-64462-iter-2.log)
+- Verification:
+  - Command: npm run start -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS
+- Files changed:
+  - .agents/tasks/prd-tactics-battle.json
+  - .ralph/activity.log
+  - .ralph/errors.log
+  - .ralph/runs/run-20260201-060757-64462-iter-1.log
+  - .ralph/runs/run-20260201-060757-64462-iter-1.md
+  - .ralph/runs/run-20260201-060757-64462-iter-2.log
+  - .ralph/.tmp/prompt-20260201-060757-64462-2.md
+  - .ralph/.tmp/story-20260201-060757-64462-2.json
+  - .ralph/.tmp/story-20260201-060757-64462-2.md
+  - src/index.ts
+  - src/scenarios.ts
+- What was implemented
+  - シナリオA/B/Cの固定定義とタクティクス評価を追加
+  - 乱数seed固定のCLI連続実行とCleanse挙動ログを追加
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Gotchas encountered
+  - Useful context
+---

@@ -2860,4 +2860,349 @@ thinking
 
 The run log changed after the initial commit, likely due to side effects from the commit itself, so I'll stage all changes and create a second commit to include this update without amending.
 exec
+/bin/zsh -lc 'git add -A' in /Users/astapi/projects/multiPTHakusla succeeded in 73ms:
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Committing with chore scope**
+exec
+/bin/zsh -lc 'git commit -m "chore(ralph): update run log"' in /Users/astapi/projects/multiPTHakusla succeeded in 136ms:
+[main 799a9dd] chore(ralph): update run log
+ 1 file changed, 138 insertions(+)
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Checking current status**
+exec
+/bin/zsh -lc 'git status --porcelain' in /Users/astapi/projects/multiPTHakusla succeeded in 133ms:
+ M .ralph/runs/run-20260201-060757-64462-iter-2.log
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Analyzing fluctuating log changes**
+
+The run log likely updates automatically with each shell command, causing files to change after commit. To ensure a clean final commit, further shell commands must be minimized or carefully managed after committing.
+thinking
+**Planning to verify run log changes**
+
+I'm planning to inspect the run log diff and timestamps to determine if running git commands after commit triggers run log updates, which could cause unwanted file changes and potential infinite commits.
+exec
+/bin/zsh -lc 'git diff --stat /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log' in /Users/astapi/projects/multiPTHakusla succeeded in 104ms:
+ .ralph/runs/run-20260201-060757-64462-iter-2.log | 133 ++++++++++++++++++++++-
+ 1 file changed, 132 insertions(+), 1 deletion(-)
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Analyzing command side effects on repo cleanliness**
+
+The run log file updates with every command, causing a persistent unclean working tree; this creates a loop where running git status after commit dirties the repo again. Next, I'll consider committing only after all commands and running git status carefully to verify cleanliness without triggering further changes.
+thinking
+**Confirming need for multiple commits due to ongoing log updates**
+
+The run log and progress log updates happen continuously and after commits, requiring multiple commits to include all changes per instructions. The plan is to commit code changes first, then append and commit progress log updates, accepting extra commits to keep the working tree clean as mandated.
+exec
+/bin/zsh -lc 'date "+%Y-%m-%d %H:%M"' in /Users/astapi/projects/multiPTHakusla succeeded in 77ms:
+2026-02-01 06:30
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Evaluating commit hash problem**
+
+The progress log must reference the latest commit hash, but including it in the commit creates a circular dependency. Updating progress after a commit would require another commit, changing the hash and causing stale references.
+thinking
+**Deciding to reference code commit hash in progress log**
+
+The progress log will reference the main code commit hash before progress/log commits to avoid circular updates. The log update and subsequent commits are tracked separately, with tests and file changes noted in the entry.
+exec
+/bin/zsh -lc "cat <<'EOF' >> /Users/astapi/projects/multiPTHakusla/.ralph/progress.md
+## [2026-02-01 06:30] - US-004: シナリオA/B/Cを固定定義しCLI実行で連続実行
+Thread: 
+Run: 20260201-060757-64462 (iteration 2)
+Run log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log
+Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 42b6039 feat(scenario): run fixed A/B/C in CLI
+- Post-commit status: dirty (.ralph/runs/run-20260201-060757-64462-iter-2.log)
+- Verification:
+  - Command: npm run start -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS
+- Files changed:
+  - .agents/tasks/prd-tactics-battle.json
+  - .ralph/activity.log
+  - .ralph/errors.log
+  - .ralph/runs/run-20260201-060757-64462-iter-1.log
+  - .ralph/runs/run-20260201-060757-64462-iter-1.md
+  - .ralph/runs/run-20260201-060757-64462-iter-2.log
+  - .ralph/.tmp/prompt-20260201-060757-64462-2.md
+  - .ralph/.tmp/story-20260201-060757-64462-2.json
+  - .ralph/.tmp/story-20260201-060757-64462-2.md
+  - src/index.ts
+  - src/scenarios.ts
+- What was implemented
+  - シナリオA/B/Cの固定定義とタクティクス評価を追加
+  - 乱数seed固定のCLI連続実行とCleanse挙動ログを追加
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Gotchas encountered
+  - Useful context
+---
+EOF
+" in /Users/astapi/projects/multiPTHakusla succeeded in 80ms:
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Adding logging after progress update**
+exec
+/bin/zsh -lc 'ralph log "US-004 進捗ログ更新"' in /Users/astapi/projects/multiPTHakusla succeeded in 306ms:
+Using bundled templates: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Committing progress and logs**
+exec
 /bin/zsh -lc 'git add -A' in /Users/astapi/projects/multiPTHakusla
