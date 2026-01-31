@@ -1,5 +1,3 @@
-const scenarios = ["Scenario A", "Scenario B", "Scenario C"];
+import { runAllScenarios } from "./scenarios";
 
-for (const scenario of scenarios) {
-  console.log(`${scenario} start`);
-}
+runAllScenarios();

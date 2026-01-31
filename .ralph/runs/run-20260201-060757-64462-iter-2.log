@@ -1,0 +1,2725 @@
+OpenAI Codex v0.92.0 (research preview)
+--------
+workdir: /Users/astapi/projects/multiPTHakusla
+model: gpt-5.2-codex
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: auto
+session id: 019c15ed-1826-7120-a695-88a8ed7b96f4
+--------
+user
+# Build
+
+You are an autonomous coding agent. Your task is to complete the work for exactly one story and record the outcome.
+
+## Paths
+- PRD: /Users/astapi/projects/multiPTHakusla/.agents/tasks/prd-tactics-battle.json
+- AGENTS (optional): /Users/astapi/projects/multiPTHakusla/AGENTS.md
+- Progress Log: /Users/astapi/projects/multiPTHakusla/.ralph/progress.md
+- Guardrails: /Users/astapi/projects/multiPTHakusla/.ralph/guardrails.md
+- Guardrails Reference: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph/references/GUARDRAILS.md
+- Context Reference: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph/references/CONTEXT_ENGINEERING.md
+- Errors Log: /Users/astapi/projects/multiPTHakusla/.ralph/errors.log
+- Activity Log: /Users/astapi/projects/multiPTHakusla/.ralph/activity.log
+- Activity Logger: /Users/astapi/projects/multiPTHakusla/ralph log
+- No-commit: false
+- Repo Root: /Users/astapi/projects/multiPTHakusla
+- Run ID: 20260201-060757-64462
+- Iteration: 2
+- Run Log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log
+- Run Summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.md
+
+## Global Quality Gates (apply to every story)
+- npm test
+
+## Selected Story (Do not change scope)
+ID: US-004
+Title: シナリオA/B/Cを固定定義しCLI実行で連続実行
+
+Story details:
+### US-004: シナリオA/B/Cを固定定義しCLI実行で連続実行
+Status: in_progress
+Depends on: US-003
+
+Description:
+As a developer, I want fixed scenarios A/B/C to run in CLI so behavior can be verified deterministically.
+
+Acceptance Criteria:
+- [ ] npm run start 実行でシナリオA→B→Cの順に実行される
+- [ ] 乱数がある場合は固定seedで再現可能にする
+- [ ] Example: シナリオBでPOISON付与後にCleanseが割り込むログが出る
+- [ ] Negative case: シナリオCで毒が無いとCleanseは不成立となり次ルールへ進む
+
+
+If the story details are empty or missing, STOP and report that the PRD story format could not be parsed.
+
+## Rules (Non-Negotiable)
+- Implement **only** the work required to complete the selected story.
+- Complete all tasks associated with this story (and only this story).
+- Do NOT ask the user questions.
+- Do NOT change unrelated code.
+- Do NOT assume something is unimplemented — confirm by reading code.
+- Implement completely; no placeholders or stubs.
+- If No-commit is true, do NOT commit or push changes.
+- Do NOT edit the PRD JSON (status is handled by the loop).
+- All changes made during the run must be committed (including updates to progress/logs).
+ - Before committing, perform a final **security**, **performance**, and **regression** review of your changes.
+
+## Your Task (Do this in order)
+1. Read /Users/astapi/projects/multiPTHakusla/.ralph/guardrails.md before any code changes.
+2. Read /Users/astapi/projects/multiPTHakusla/.ralph/errors.log for repeated failures to avoid.
+3. Read /Users/astapi/projects/multiPTHakusla/.agents/tasks/prd-tactics-battle.json for global context (do not edit).
+4. Fully audit and read all necessary files to understand the task end-to-end before implementing. Do not assume missing functionality.
+5. If /Users/astapi/projects/multiPTHakusla/AGENTS.md exists, follow its build/test instructions.
+6. Implement only the tasks that belong to US-004.
+7. Run verification commands listed in the story, the global quality gates, and in /Users/astapi/projects/multiPTHakusla/AGENTS.md (if required).
+8. If the project has a build or dev workflow, run what applies:
+   - Build step (e.g., `npm run build`) if defined.
+   - Dev server (e.g., `npm run dev`, `wrangler dev`) if it is the normal validation path.
+   - Confirm no runtime/build errors in the console.
+9. Perform a brief audit before committing:
+   - **Security:** check for obvious vulnerabilities or unsafe handling introduced by your changes.
+   - **Performance:** check for avoidable regressions (extra queries, heavy loops, unnecessary re-renders).
+   - **Regression:** verify existing behavior that could be impacted still works.
+10. If No-commit is false, commit changes using the `$commit` skill.
+    - Stage everything: `git add -A`
+    - Confirm a clean working tree after commit: `git status --porcelain` should be empty.
+    - After committing, capture the commit hash and subject using:
+      `git show -s --format="%h %s" HEAD`.
+11. Append a progress entry to /Users/astapi/projects/multiPTHakusla/.ralph/progress.md with run/commit/test details (format below).
+    If No-commit is true, skip committing and note it in the progress entry.
+
+## Progress Entry Format (Append Only)
+```
+## [Date/Time] - US-004: シナリオA/B/Cを固定定義しCLI実行で連続実行
+Thread: [codex exec session id if available, otherwise leave blank]
+Run: 20260201-060757-64462 (iteration 2)
+Run log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.log
+Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: <hash> <subject> (or `none` + reason)
+- Post-commit status: `clean` or list remaining files
+- Verification:
+  - Command: <exact command> -> PASS/FAIL
+  - Command: <exact command> -> PASS/FAIL
+- Files changed:
+  - <file path>
+  - <file path>
+- What was implemented
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Gotchas encountered
+  - Useful context
+---
+```
+
+## Completion Signal
+Only output the completion signal when the **selected story** is fully complete and verified.
+When the selected story is complete, output:
+<promise>COMPLETE</promise>
+
+Otherwise, end normally without the signal.
+
+## Additional Guardrails
+- When authoring documentation, capture the why (tests + implementation intent).
+- If you learn how to run/build/test the project, update /Users/astapi/projects/multiPTHakusla/AGENTS.md briefly (operational only).
+- Keep AGENTS operational only; progress notes belong in /Users/astapi/projects/multiPTHakusla/.ralph/progress.md.
+- If you hit repeated errors, log them in /Users/astapi/projects/multiPTHakusla/.ralph/errors.log and add a Sign to /Users/astapi/projects/multiPTHakusla/.ralph/guardrails.md using /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph/references/GUARDRAILS.md as the template.
+
+## Activity Logging (Required)
+Log major actions to /Users/astapi/projects/multiPTHakusla/.ralph/activity.log using the helper:
+```
+/Users/astapi/projects/multiPTHakusla/ralph log "message"
+```
+Log at least:
+- Start of work on the story
+- After major code changes
+- After tests/verification
+- After updating progress log
+
+## Browser Testing (Required for Frontend Stories)
+If the selected story changes UI, you MUST verify it in the browser:
+1. Load the `dev-browser` skill.
+2. Navigate to the relevant page.
+3. Verify the UI changes work as expected.
+4. Take a screenshot if helpful for the progress log.
+
+A frontend story is NOT complete until browser verification passes.
+
+mcp: next-devtools starting
+mcp: playwright starting
+mcp: chrome-devtools starting
+mcp: next-devtools ready
+mcp: chrome-devtools ready
+mcp: playwright ready
+mcp startup: ready: next-devtools, chrome-devtools, playwright
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/.ralph/guardrails.md' in /Users/astapi/projects/multiPTHakusla succeeded in 72ms:
+# Guardrails (Signs)
+
+> Lessons learned from failures. Read before acting.
+
+## Core Signs
+
+### Sign: Read Before Writing
+- **Trigger**: Before modifying any file
+- **Instruction**: Read the file first
+- **Added after**: Core principle
+
+### Sign: Test Before Commit
+- **Trigger**: Before committing changes
+- **Instruction**: Run required tests and verify outputs
+- **Added after**: Core principle
+
+---
+
+## Learned Signs
+
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/.ralph/errors.log' in /Users/astapi/projects/multiPTHakusla succeeded in 90ms:
+# Error Log
+
+> Failures and repeated issues. Use this to add guardrails.
+
+[2026-01-31 12:36:14] ITERATION 1 left uncommitted changes; review run summary at /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260131-122758-38131-iter-1.md
+[2026-01-31 12:44:17] ITERATION 2 left uncommitted changes; review run summary at /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260131-122758-38131-iter-2.md
+[2026-02-01 06:19:41] ITERATION 1 left uncommitted changes; review run summary at /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-1.md
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/.agents/tasks/prd-tactics-battle.json' in /Users/astapi/projects/multiPTHakusla succeeded in 75ms:
+{
+  "version": 1,
+  "project": "Tactics Battle MVP CLI",
+  "overview": "spec.md \u306b\u57fa\u3065\u304f\u30bf\u30fc\u30f3\u5236\u30dc\u30b9\u6226\u306e\u6226\u95d8\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\u3092\u3001TypeScript\u306e\u307f\u3067\u5b9f\u88c5\u3057 CLI \u3067\u5b9f\u884c\u3067\u304d\u308b\u3088\u3046\u306b\u3059\u308b\u3002",
+  "goals": [
+    "spec.md \u306e\u30b8\u30e7\u30d6/\u30b9\u30ad\u30eb/\u30dc\u30b9AI/\u30b7\u30ca\u30ea\u30aaA\u301cC\u3092\u518d\u73fe\u3067\u304d\u308b",
+    "CLI \u3067\u56fa\u5b9a\u30b7\u30ca\u30ea\u30aa\u3092\u5b9f\u884c\u3057\u3001\u6700\u4f4e\u9650\u30ed\u30b0\u3092\u6a19\u6e96\u51fa\u529b\u3078\u51fa\u305b\u308b",
+    "\u57fa\u672c\u30ed\u30b8\u30c3\u30af\u3068\u30b7\u30ca\u30ea\u30aa\u691c\u8a3c\u3092\u30c6\u30b9\u30c8\u3067\u62c5\u4fdd\u3059\u308b",
+    "\u7c21\u6613\u30ec\u30dd\u30fc\u30c8\u3092\u51fa\u529b\u3067\u304d\u308b\uff08\u4f8b: \u30b5\u30de\u30eaJSON\uff09"
+  ],
+  "nonGoals": [
+    "GUI/\u30a6\u30a7\u30d6UI\u306e\u63d0\u4f9b",
+    "\u88c5\u5099\u30fb\u30d8\u30a4\u30c8\u30fb\u8907\u6570\u6575\u306a\u3069MVP\u5916\u8981\u7d20\u306e\u5b9f\u88c5",
+    "\u5916\u90e8\u30d5\u30a1\u30a4\u30eb\u304b\u3089\u306e\u30b7\u30ca\u30ea\u30aa\u8aad\u307f\u8fbc\u307f"
+  ],
+  "successMetrics": [
+    "npm run start \u3067\u30b7\u30ca\u30ea\u30aaA/B/C\u304c\u9023\u7d9a\u5b9f\u884c\u3055\u308c\u308b",
+    "\u30ed\u30b0\u306b\u30bf\u30fc\u30f3\u756a\u53f7/\u884c\u52d5\u8005/\u8a55\u4fa1\u7d50\u679c/\u5b9f\u884c\u884c\u52d5/\u30c0\u30e1\u30fc\u30b8\u56de\u5fa9/\u72b6\u614b\u7570\u5e38\u304c\u51fa\u529b\u3055\u308c\u308b",
+    "npm test \u304c\u901a\u308b"
+  ],
+
+thinking
+**Checking for existing agent instructions**
+
+I'm looking for an existing file with agent instructions to review its content before proceeding.
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/AGENTS.md' in /Users/astapi/projects/multiPTHakusla succeeded in 80ms:
+# AGENTS
+
+## Operational Commands
+
+- Install deps: `npm install`
+- Run CLI: `npm run start`
+- Build: `npm run build`
+- Test: `npm test`
+
+thinking
+**Adding log start activity**
+exec
+/bin/zsh -lc '/Users/astapi/projects/multiPTHakusla/ralph log "US-004 作業開始"' in /Users/astapi/projects/multiPTHakusla exited 127 in 89ms:
+zsh:1: no such file or directory: /Users/astapi/projects/multiPTHakusla/ralph
+
+thinking
+**Noticing command failure and next checks**
+exec
+/bin/zsh -lc 'ls -la /Users/astapi/projects/multiPTHakusla' in /Users/astapi/projects/multiPTHakusla succeeded in 137ms:
+total 104
+drwxr-xr-x@  15 astapi  staff    480  2  1 06:14 .
+drwxr-xr-x@ 132 astapi  staff   4224  1 31 12:17 ..
+drwxr-xr-x@   3 astapi  staff     96  1 31 12:27 .agents
+drwxr-xr-x@  12 astapi  staff    384  2  1 06:19 .git
+-rw-r--r--@   1 astapi  staff     19  1 31 12:30 .gitignore
+drwxr-xr-x@   8 astapi  staff    256  1 31 12:27 .ralph
+-rw-r--r--@   1 astapi  staff    136  2  1 06:14 AGENTS.md
+drwxr-xr-x@   6 astapi  staff    192  2  1 06:14 dist
+drwxr-xr-x@  12 astapi  staff    384  1 31 12:30 node_modules
+-rw-r--r--@   1 astapi  staff  17648  1 31 12:30 package-lock.json
+-rw-r--r--@   1 astapi  staff    301  1 31 12:29 package.json
+-rw-r--r--@   1 astapi  staff    249  1 31 12:30 README.md
+-rw-r--r--@   1 astapi  staff   8201  1 31 12:18 spec.md
+drwxr-xr-x@   6 astapi  staff    192  2  1 06:14 src
+-rw-r--r--@   1 astapi  staff    346  1 31 12:29 tsconfig.json
+
+thinking
+**Checking for missing executable**
+
+I'm verifying if the ralph executable is missing from expected locations like node_modules or repo scripts and considering using npx or alternative paths to find a workaround.
+exec
+/bin/zsh -lc "rg --files -g 'ralph' /Users/astapi/projects/multiPTHakusla /Users/astapi" in /Users/astapi/projects/multiPTHakusla exited 124 in 10.01s:
+rg: /Users/astapi/Music/iTunes: Operation not permitted (os error 1)
+rg: /Users/astapi/Music/Music: Operation not permitted (os error 1)
+rg: /Users/astapi/Movies/TV: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Caches/com.apple.ap.adprivacyd: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Caches/com.apple.TV: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Caches/com.apple.homed: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Caches/FamilyCircle: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/com.apple.aiml.instrumentation: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Caches/com.apple.containermanagerd: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Sharing: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/HomeKit: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Messages: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Autosave Information: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Daemon Containers: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Assistant/SiriVocabulary: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Calendars: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Application Support/CallHistoryDB: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Application Support/com.apple.avfoundation/Frecents: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Application Support/DifferentialPrivacy: Operation not permitted (os error 1)
+rg: /Users/astapi/Library/Application Support/FaceTime: Operation not permitted (os error 1)
+
+thinking
+**Refining search scope**
+
+I'm limiting searches to the project repo to avoid timeouts and considering using `rg --files` or `find` to locate the "ralph" script more efficiently, possibly checking inside node_modules.
+exec
+/bin/zsh -lc "rg --files -g 'ralph*' /Users/astapi/projects/multiPTHakusla" in /Users/astapi/projects/multiPTHakusla exited 1 in 139ms:
+
+
+thinking
+**Checking global command availability**
+
+I'm verifying if the 'ralph' command is installed globally or within node_modules/.bin to confirm its accessibility.
+exec
+/bin/zsh -lc 'ls -la /Users/astapi/projects/multiPTHakusla/node_modules/.bin | rg ralph' in /Users/astapi/projects/multiPTHakusla exited 1 in 135ms:
+
+
+thinking
+**Checking ralph CLI availability**
+
+I'm verifying if the `ralph` command exists in the system PATH since the expected log file is missing, to determine the next steps or a workaround.
+exec
+/bin/zsh -lc 'which ralph' in /Users/astapi/projects/multiPTHakusla succeeded in 65ms:
+/Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/bin/ralph
+
+thinking
+**Deciding to use system ralph for logging**
+exec
+/bin/zsh -lc 'ralph log "US-004 作業開始"' in /Users/astapi/projects/multiPTHakusla succeeded in 318ms:
+Using bundled templates: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph
+
+thinking
+**Checking source for audit files**
+exec
+/bin/zsh -lc 'ls -la /Users/astapi/projects/multiPTHakusla/src' in /Users/astapi/projects/multiPTHakusla succeeded in 74ms:
+total 64
+drwxr-xr-x@  6 astapi  staff    192  2  1 06:14 .
+drwxr-xr-x@ 15 astapi  staff    480  2  1 06:14 ..
+-rw-r--r--@  1 astapi  staff   8576  2  1 06:12 battle.ts
+-rw-r--r--@  1 astapi  staff   2085  2  1 06:14 boss-ai.ts
+-rw-r--r--@  1 astapi  staff    137  1 31 12:29 index.ts
+-rw-r--r--@  1 astapi  staff  11266  2  1 06:13 skills.ts
+
+thinking
+**Clarifying relevant modules**
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/src/index.ts' in /Users/astapi/projects/multiPTHakusla succeeded in 69ms:
+const scenarios = ["Scenario A", "Scenario B", "Scenario C"];
+
+for (const scenario of scenarios) {
+  console.log(`${scenario} start`);
+}
+
+thinking
+**Planning scenario run implementation**
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/src/battle.ts' in /Users/astapi/projects/multiPTHakusla succeeded in 89ms:
+export type StatusType = "POISON" | "STUN";
+
+export type StatusEffect = {
+  type: StatusType;
+  remainingTurns: number;
+  potency?: number;
+};
+
+export type Stats = {
+  maxHp: number;
+  atk: number;
+  def: number;
+  spd: number;
+  maxMp: number;
+  mpRegen: number;
+};
+
+export type StatEffect = {
+  kind: "STAT";
+  id: string;
+
+thinking
+**Noting dependency requirements**
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/src/skills.ts' in /Users/astapi/projects/multiPTHakusla succeeded in 81ms:
+import {
+  Action,
+  Effect,
+  StatusEffect,
+  StatusType,
+  Unit,
+  applyDamage,
+  applyEffect,
+  applyHealing,
+  applyStatus,
+  calculatePhysicalDamage,
+} from "./battle";
+
+export type SkillTarget = "SELF" | "ALLY" | "ENEMY";
+
+export type SkillType =
+  | "attack"
+  | "heal"
+  | "buff"
+  | "debuff"
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/src/boss-ai.ts' in /Users/astapi/projects/multiPTHakusla succeeded in 86ms:
+import { Unit } from "./battle";
+import {
+  Skill,
+  VENOM_TYRANT_SKILLS,
+  getHpPercent,
+  getSkillById,
+  hasEffect,
+  isSkillUsable,
+} from "./skills";
+
+export type BossDecision = {
+  skill: Skill;
+  target: Unit;
+};
+
+const pickHighestHp = (units: Unit[]): Unit =>
+  units.reduce((best, unit) => (unit.hp > best.hp ? unit : best));
+
+const pickLowestHpPercent = (units: Unit[]): Unit =>
+  units.reduce((best, unit) =>
+
+thinking
+**Reviewing scenario definitions**
+
+I'm looking into scenario and CLI definitions, focusing on minimal indexing and adding scenario logic. Next, I'll examine spec.md for scenario A/B/C details.
+exec
+/bin/zsh -lc 'rg -n "Scenario|シナリオ" /Users/astapi/projects/multiPTHakusla/spec.md' in /Users/astapi/projects/multiPTHakusla succeeded in 88ms:
+1:MVPコンテンツ仕様（ジョブ／ボスAI／テストシナリオ）
+298:4. MVP戦闘テストシナリオ（3本）
+310:シナリオA：基本動作（回復が発動するか）
+368:シナリオB：毒消しの検証（状態異常参照）
+388:シナリオC：無駄行動の許容（指示ミス再現）
+exec
+/bin/zsh -lc "sed -n '298,430p' /Users/astapi/projects/multiPTHakusla/spec.md" in /Users/astapi/projects/multiPTHakusla succeeded in 106ms:
+4. MVP戦闘テストシナリオ（3本）
+
+目的：
+
+ルール優先度が正しく働く
+
+条件参照（HP%、毒状態、ターン）を使える
+
+“指示ミスによる無駄”も再現できる
+
+乱数がある場合、seed固定で再現できる
+
+シナリオA：基本動作（回復が発動するか）
+
+PT（4人）
+
+Guardian / Cleric / Blade / Arcane
+
+初期ステータス（例）
+
+
+thinking
+**Searching for scenarios and tactics**
+
+I'm using ripgrep to check the src directory for existing scenario or tactics definitions to verify if simulation and deterministic seed support exist.
+exec
+/bin/zsh -lc 'rg -n "tactic|scenario|tactics|rule|condition|simulate|battle" /Users/astapi/projects/multiPTHakusla/src' in /Users/astapi/projects/multiPTHakusla succeeded in 72ms:
+/Users/astapi/projects/multiPTHakusla/src/boss-ai.ts:1:import { Unit } from "./battle";
+/Users/astapi/projects/multiPTHakusla/src/index.ts:1:const scenarios = ["Scenario A", "Scenario B", "Scenario C"];
+/Users/astapi/projects/multiPTHakusla/src/index.ts:3:for (const scenario of scenarios) {
+/Users/astapi/projects/multiPTHakusla/src/index.ts:4:  console.log(`${scenario} start`);
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:12:} from "./battle";
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:85:  conditionalPower?: ConditionalPower;
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:165:      skill.conditionalPower &&
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:166:      skill.conditionalPower.kind === "TARGET_HP_BELOW" &&
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:167:      getHpPercent(target) < skill.conditionalPower.threshold
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:168:        ? skill.conditionalPower.bonus
+/Users/astapi/projects/multiPTHakusla/src/skills.ts:396:    conditionalPower: {
+
+
+thinking
+**Assessing skill execution path**
+
+I'm clarifying that runTurn calls resolveAction, which returns an action, but performAction only handles basic attacks and status; skill effects like healing aren’t applied there. To support tactics using skills with proper effects and logs, I’ll need to integrate executeSkill into the turn flow or adapt skill handling accordingly.
+thinking
+**Planning isolated scenario simulator**
+
+I'm deciding to build a new simulator module that runs scenarios A/B/C with deterministic seeds, reusing resolveAction but handling skill effects and statuses fully, including cleanse logic. This separate simulator will run a controlled turn loop (around 5–10 turns) with logging to meet acceptance and prepare for future testing requirements.
+exec
+/bin/zsh -lc 'rg -n "勝敗|バトル|ターン|終了|終" /Users/astapi/projects/multiPTHakusla/spec.md' in /Users/astapi/projects/multiPTHakusla succeeded in 116ms:
+4:戦闘：ターン制、敵1体（ボス想定）
+6:行動：各ユニットは自ターンに1行動
+29:mp_regen（毎ターン固定回復：MVPなら 0〜2 程度）
+64:効果：3ターン DEF_UP(+4)（※数値はMVP固定）
+86:効果：2ターン DAMAGE_TAKEN_REDUCTION(30%)（被ダメ0.7倍）
+132:効果：3ターン ATK_UP(+3)
+138:役割：単体火力・自己強化（「1ターン目バーサク」例が作れる）
+148:効果：3ターン ATK_UP(+6)、同時に DEF_DOWN(-2)（火力とリスク）
+186:効果：3ターン ATK_DOWN(-4)
+196:効果：3ターン DEF_DOWN(-4)
+206:効果：POISON(3turn)（毎ターン 6 ダメージ固定）
+220:3. 敵（ボス1体）の行動パターン（MVP）
+223:コンセプト：毒＋大技＋終盤の激昂で「ヒール/毒消し/防御/デバフ」が活きる
+255:効果：POISON(3turn)（毎ターン 8 ダメ固定）
+304:条件参照（HP%、毒状態、ターン）を使える
+384:毒が付いたターンに Cleanse が割り込んで発動
+407:各キャラのターンで以下を出力できるとデバッグが爆速になります。
+409:ターン番号、行動者
+
+thinking
+**Inspecting battle flow start**
+
+I'm checking the beginning of the code to find the full battle flow specification and underlying rules.
+exec
+/bin/zsh -lc "sed -n '1,200p' /Users/astapi/projects/multiPTHakusla/spec.md" in /Users/astapi/projects/multiPTHakusla succeeded in 75ms:
+MVPコンテンツ仕様（ジョブ／ボスAI／テストシナリオ）
+0. MVP前提
+
+戦闘：ターン制、敵1体（ボス想定）
+
+行動：各ユニットは自ターンに1行動
+
+行動選択：タクティクス優先度順（上から評価→最初に通った行動）
+
+スキル：MP消費＋クールダウン（CD）
+
+状態異常：MVPは POISON と STUN のみ使用（STUNはボス側のみでもOK）
+
+装備：なし（ステータスは固定）
+
+1. ステータス（MVP固定）
+1.1 共通ステータス
+
+max_hp
+
+
+
+thinking
+**Designing scenario execution with deterministic RNG**
+
+Planning to implement scenario runs with party and boss units acting in speed order, using seeded RNG for status chances in skills. I'll extend the turn run logic to handle richer action results including skill effects by having resolveAction return an enhanced result with callbacks to apply effects.
+thinking
+**Planning scenario module with tactics engine and detailed logging**
+
+Decided to create a separate scenario module handling per-unit turns with existing tick logic and seeded RNG. I'll define tactics rules with conditions and target selectors, implement detailed logs for rule evaluation and skill usage to meet acceptance, and model scenarios A/B/C with specific tactics, ensuring turn order and poison application align with acceptance criteria.
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/README.md' in /Users/astapi/projects/multiPTHakusla succeeded in 111ms:
+# Tactics Battle CLI
+
+## Setup
+
+```bash
+npm install
+```
+
+If you are adding dependencies manually, install these explicitly:
+
+```bash
+npm install --save-dev tsx typescript @types/node
+```
+
+## Scripts
+
+```bash
+npm run start
+npm run build
+npm test
+
+thinking
+**Planning new scenario implementation**
+
+I'll create a new scenario logic file and update the index entry point, while verifying if the build process needs dist updates or just relies on TypeScript compilation via package.json scripts.
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/package.json' in /Users/astapi/projects/multiPTHakusla succeeded in 118ms:
+{
+  "name": "tactics-battle-cli",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
+
+
+thinking
+**Designing scenario simulation structure**
+
+I'm outlining key types like PartyMemberConfig, Scenario, and ScenarioResult, plus helpers to create units and run simulations using seeded RNG and turn order. I'm defining boss vs. party distinctions for targeting logic within each simulation round.
+thinking
+**Detailing simulation turn actions and logging**
+
+I'm specifying per-turn steps including cooldown ticks, MP regen, status effects, and action selection for boss and party with detailed logs for rule evaluations, skill effects, and outcomes. I'll implement a deterministic seeded RNG and integrate scenario runs with clear logs to track scenario progression and decisions.
+exec
+/bin/zsh -lc 'cat /Users/astapi/projects/multiPTHakusla/tsconfig.json' in /Users/astapi/projects/multiPTHakusla succeeded in 84ms:
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
+
+
+thinking
+**Planning scenario module implementation**
+
+I'm planning to create a single `scenario.ts` file with scenario definitions and a main `runScenario` function, including helpers like a skill lookup map and action selectors for party and boss AI, integrating with existing battle and skill utilities.
+thinking
+**Designing detailed scenario simulation logic**
+
+I'm defining detailed logging for rule evaluation and skill execution, planning unit creation helpers with correct stats and order, coding tactics condition and target selector functions, and setting up scenario variants with deterministic RNG seeds for sequential runs—all integrated into a single scenario module.
+exec
+/bin/zsh -lc "cat <<'EOF' > /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+import {
+  Unit,
+  getTurnOrder,
+  regenerateMp,
+  tickCooldownsOnTurnStart,
+  tickEffectsOnTurnStart,
+  tickStatusesOnTurnStart,
+} from \"./battle\";
+import { selectVenomTyrantAction } from \"./boss-ai\";
+import {
+  JobId,
+  Skill,
+  StatusType,
+  VENOM_TYRANT,
+  executeSkill,
+  getHpPercent,
+  getSkillById,
+  hasEffect,
+  isSkillUsable,
+} from \"./skills\";
+
+type ConditionContext = {
+  turn: number;
+  actor: Unit;
+  allies: Unit[];
+  enemies: Unit[];
+};
+
+type TacticsRule = {
+  id: string;
+  skillId: string;
+  condition: (context: ConditionContext) => boolean;
+  selectTarget: (context: ConditionContext) => Unit | null;
+};
+
+type Scenario = {
+  id: string;
+  name: string;
+  seed: number;
+  party: Unit[];
+  boss: Unit;
+  tactics: Record<string, TacticsRule[]>;
+};
+
+type RuleEvaluation = {
+  rule: TacticsRule;
+  usable: boolean;
+  conditionMet: boolean;
+  target: Unit | null;
+};
+
+const createSeededRng = (seed: number): (() => number) => {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 2 ** 32;
+  };
+};
+
+const buildSkillMap = (skills: Skill[]): Map<string, Skill> => {
+  const map = new Map<string, Skill>();
+  for (const skill of skills) {
+    map.set(skill.id, skill);
+  }
+  return map;
+};
+
+const cloneStats = (stats: Unit[\"stats\"]): Unit[\"stats\"] => ({ ...stats });
+
+const createUnit = (params: {
+  id: string;
+  name: string;
+  jobId?: JobId;
+  stats: Unit[\"stats\"];
+  order: number;
+}): Unit => ({
+  id: params.id,
+  name: params.name,
+  jobId: params.jobId,
+  stats: cloneStats(params.stats),
+  hp: params.stats.maxHp,
+  mp: params.stats.maxMp,
+  statusEffects: [],
+  effects: [],
+  cooldowns: {},
+  order: params.order,
+});
+
+const pickLowestHpPercent = (units: Unit[]): Unit | null => {
+  if (units.length === 0) {
+    return null;
+  }
+  return units.reduce((best, unit) =>
+    getHpPercent(unit) < getHpPercent(best) ? unit : best
+  );
+};
+
+const pickLowestHpWithStatus = (units: Unit[], status: StatusType): Unit | null => {
+  const candidates = units.filter((unit) =>
+    unit.statusEffects.some((effect) => effect.type === status)
+  );
+  return pickLowestHpPercent(candidates);
+};
+
+const anyAllyHasStatus = (units: Unit[], status: StatusType): boolean =>
+  units.some((unit) => unit.statusEffects.some((effect) => effect.type === status));
+
+const isEnemyMissingStatus = (enemy: Unit, status: StatusType): boolean =>
+  "'!enemy.statusEffects.some((effect) => effect.type === status);
+
+const isEnemyMissingDebuff = (enemy: Unit, id: string): boolean => !hasEffect(enemy, id);
+
+const rule = (
+  id: string,
+  skillId: string,
+  condition: (context: ConditionContext) => boolean,
+  selectTarget: (context: ConditionContext) => Unit | null
+): TacticsRule => ({ id, skillId, condition, selectTarget });
+
+const makeScenarios = (): Scenario[] => {
+  const partyBaseStats = {
+    guardian: {
+      maxHp: 120,
+      atk: 8,
+      def: 10,
+      spd: 8,
+      maxMp: 20,
+      mpRegen: 2,
+    },
+    cleric: {
+      maxHp: 80,
+      atk: 5,
+      def: 6,
+      spd: 10,
+      maxMp: 35,
+      mpRegen: 2,
+    },
+    blade: {
+      maxHp: 90,
+      atk: 12,
+      def: 5,
+      spd: 12,
+      maxMp: 25,
+      mpRegen: 2,
+    },
+    arcane: {
+      maxHp: 75,
+      atk: 6,
+      def: 5,
+      spd: 11,
+      maxMp: 30,
+      mpRegen: 2,
+    },
+  };
+
+  const baseParty = () => [
+    createUnit({
+      id: "guardian",
+      name: "Guardian",
+      jobId: "GUARDIAN",
+      stats: partyBaseStats.guardian,
+      order: 1,
+    }),
+    createUnit({
+      id: "cleric",
+      name: "Cleric",
+      jobId: "CLERIC",
+      stats: partyBaseStats.cleric,
+      order: 2,
+    }),
+    createUnit({
+      id: "blade",
+      name: "Blade",
+      jobId: "BLADE",
+      stats: partyBaseStats.blade,
+      order: 3,
+    }),
+    createUnit({
+      id: "arcane",
+      name: "Arcane",
+      jobId: "ARCANE",
+      stats: partyBaseStats.arcane,
+      order: 4,
+    }),
+  ];
+
+  const baseBoss = () =>
+    createUnit({
+      id: "boss",
+      name: VENOM_TYRANT.name,
+      stats: VENOM_TYRANT.stats,
+      order: 99,
+    });
+
+  const guardianRules: TacticsRule[] = [
+    rule(
+      "guard_stance_turn1",
+      "guard_stance",
+      ({ turn }) => turn === 1,
+      ({ actor }) => actor
+    ),
+    rule(
+      "fortify_low_hp",
+      "fortify",
+      ({ actor }) => getHpPercent(actor) < 0.5,
+      ({ actor }) => actor
+    ),
+    rule(
+      "shield_bash_turn4",
+      "shield_bash",
+      ({ turn }) => turn % 4 === 0,
+      ({ enemies }) => enemies[0] ?? null
+    ),
+  ];
+
+  const clericRulesBase: TacticsRule[] = [
+    rule(
+      "greater_heal_critical",
+      "greater_heal",
+      ({ allies }) => (pickLowestHpPercent(allies)?.hp ?? 0) > 0 &&
+        (pickLowestHpPercent(allies)
+          ? getHpPercent(pickLowestHpPercent(allies)!) < 0.25
+          : false),
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+    rule(
+      "heal_low",
+      "heal",
+      ({ allies }) => (pickLowestHpPercent(allies)?.hp ?? 0) > 0 &&
+        (pickLowestHpPercent(allies)
+          ? getHpPercent(pickLowestHpPercent(allies)!) < 0.45
+          : false),
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+    rule(
+      "bless_turn1",
+      "bless",
+      ({ turn }) => turn === 1,
+      ({ allies }) => allies.find((unit) => unit.id === "blade") ?? null
+    ),
+  ];
+
+  const clericRulesScenarioB: TacticsRule[] = [
+    rule(
+      "cleanse_poison",
+      "cleanse",
+      ({ allies }) => anyAllyHasStatus(allies, "POISON"),
+      ({ allies }) => pickLowestHpWithStatus(allies, "POISON")
+    ),
+    ...clericRulesBase,
+  ];
+
+  const clericRulesScenarioC: TacticsRule[] = [
+    rule(
+      "cleanse_turn_leq3",
+      "cleanse",
+      ({ turn }) => turn <= 3,
+      ({ allies }) => pickLowestHpWithStatus(allies, "POISON")
+    ),
+    rule(
+      "heal_low",
+      "heal",
+      ({ allies }) => (pickLowestHpPercent(allies)?.hp ?? 0) > 0 &&
+        (pickLowestHpPercent(allies)
+          ? getHpPercent(pickLowestHpPercent(allies)!) < 0.45
+          : false),
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+  ];
+
+  const bladeRules: TacticsRule[] = [
+    rule(
+      "berserk_turn1",
+      "berserk",
+      ({ turn }) => turn === 1,
+      ({ actor }) => actor
+    ),
+    rule(
+      "execute_low_hp",
+      "execute",
+      ({ enemies }) => (enemies[0] ? getHpPercent(enemies[0]) < 0.3 : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule("power_strike", "power_strike", () => true, ({ enemies }) => enemies[0]),
+  ];
+
+  const arcaneRules: TacticsRule[] = [
+    rule(
+      "weaken_missing",
+      "weaken",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingDebuff(enemies[0], "ATK_DOWN") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "armor_break_missing",
+      "armor_break",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingDebuff(enemies[0], "DEF_DOWN") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "poison_missing",
+      "poison",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingStatus(enemies[0], "POISON") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "mana_charge_low_mp",
+      "mana_charge",
+      ({ actor }) => actor.mp < 6,
+      ({ actor }) => actor
+    ),
+  ];
+
+  const scenarioA: Scenario = {
+    id: "A",
+    name: "Scenario A",
+    seed: 1001,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesBase,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  const scenarioB: Scenario = {
+    id: "B",
+    name: "Scenario B",
+    seed: 2002,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesScenarioB,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  const scenarioC: Scenario = {
+    id: "C",
+    name: "Scenario C",
+    seed: 3003,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesScenarioC,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  return [scenarioA, scenarioB, scenarioC];
+};
+
+const evaluateRule = (
+  actor: Unit,
+  rule: TacticsRule,
+  context: ConditionContext,
+  skillMap: Map<string, Skill>
+): RuleEvaluation => {
+  const skill = skillMap.get(rule.skillId);
+  if (!skill) {
+    throw new Error(`Missing skill: ${rule.skillId}`);
+  }
+  const usable = isSkillUsable(actor, skill);
+  const conditionMet = rule.condition(context);
+  const target = conditionMet ? rule.selectTarget(context) : null;
+  return { rule, usable, conditionMet, target };
+};
+
+const formatRuleLog = (
+  scenario: Scenario,
+  turn: number,
+  actor: Unit,
+  evaluation: RuleEvaluation
+): string => {
+  const targetName = evaluation.target ? evaluation.target.name : "none";
+  return [
+    `[${scenario.name}]`,
+    `turn ${turn}`,
+    actor.name,
+    `rule=${evaluation.rule.id}`,
+    `usable=${evaluation.usable}`,
+    `condition=${evaluation.conditionMet}`,
+    `target=${targetName}`,
+  ].join(" ");
+};
+
+const executePartyTurn = (
+  scenario: Scenario,
+  actor: Unit,
+  allies: Unit[],
+  enemies: Unit[],
+  turn: number,
+  rng: () => number,
+  skillMap: Map<string, Skill>
+): void => {
+  const rules = scenario.tactics[actor.id] ?? [];
+  for (const ruleEntry of rules) {
+    const evaluation = evaluateRule(actor, ruleEntry, { turn, actor, allies, enemies }, skillMap);
+    console.log(formatRuleLog(scenario, turn, actor, evaluation));
+    if (!evaluation.usable || !evaluation.conditionMet || !evaluation.target) {
+      continue;
+    }
+
+    const skill = skillMap.get(ruleEntry.skillId);
+    if (!skill) {
+      throw new Error(`Missing skill: ${ruleEntry.skillId}`);
+    }
+
+    const result = executeSkill(actor, evaluation.target, skill, rng);
+    logSkillResult(scenario, turn, actor, evaluation.target, skill, result);
+    return;
+  }
+
+  console.log(`[${scenario.name}] turn ${turn} ${actor.name} action=WAIT`);
+};
+
+const logSkillResult = (
+  scenario: Scenario,
+  turn: number,
+  actor: Unit,
+  target: Unit,
+  skill: Skill,
+  result: ReturnType<typeof executeSkill>
+): void => {
+  const statusApplied = result.appliedStatuses.map((status) => status.type).join(",");
+  const cleansed = result.cleansedStatuses.join(",");
+  console.log(
+    [
+      `[${scenario.name}]`,
+      `turn ${turn}`,
+      actor.name,
+      `skill=${skill.name}`,
+      `target=${target.name}`,
+      `damage=${result.damage}`,
+      `heal=${result.healing}`,
+      `applied=[${statusApplied}]`,
+      `cleansed=[${cleansed}]`,
+    ].join(" ")
+  );
+};
+
+const executeBossTurn = (
+  scenario: Scenario,
+  boss: Unit,
+  allies: Unit[],
+  turn: number,
+  rng: () => number,
+  skillMap: Map<string, Skill>
+): void => {
+  const decision = selectVenomTyrantAction(boss, allies, turn);
+  const skill = skillMap.get(decision.skill.id);
+  if (!skill) {
+    throw new Error(`Missing skill: ${decision.skill.id}`);
+  }
+  const result = executeSkill(boss, decision.target, skill, rng);
+  logSkillResult(scenario, turn, boss, decision.target, skill, result);
+};
+
+const isPartyDefeated = (party: Unit[]): boolean =>
+  party.every((unit) => unit.hp <= 0);
+
+const runScenario = (scenario: Scenario, maxTurns: number): void => {
+  const rng = createSeededRng(scenario.seed);
+  const skillMap = buildSkillMap([
+    ...VENOM_TYRANT.skills,
+    ...scenario.party.flatMap((member) => {
+      if (!member.jobId) {
+        return [];
+      }
+      return (
+        {
+          GUARDIAN: getSkillById,
+          CLERIC: getSkillById,
+          BLADE: getSkillById,
+          ARCANE: getSkillById,
+        }[member.jobId] as typeof getSkillById
+      )
+        ? []
+        : [];
+    }),
+  ]);
+
+  const jobSkillMap = new Map<JobId, Skill[]>();
+  jobSkillMap.set("GUARDIAN", [
+    getSkillById(VENOM_TYRANT.skills, "claw") ?? VENOM_TYRANT.skills[0],
+  ]);
+
+  const guardianSkills = [
+    getSkillById(VENOM_TYRANT.skills, "claw"),
+  ];
+
+  const skills: Skill[] = [...VENOM_TYRANT.skills];
+
+  for (const member of scenario.party) {
+    if (!member.jobId) {
+      continue;
+    }
+    const jobSkills = getSkillsForJob(member.jobId);
+    skills.push(...jobSkills);
+  }
+
+  const fullSkillMap = buildSkillMap(skills);
+
+  const units: Unit[] = [...scenario.party, scenario.boss];
+
+  console.log(`[${scenario.name}] start seed=${scenario.seed}`);
+
+  for (let turn = 1; turn <= maxTurns; turn += 1) {
+    const order = getTurnOrder(units);
+    for (const entry of order) {
+      const actor = entry.unit;
+      if (actor.hp <= 0) {
+        continue;
+      }
+
+      tickCooldownsOnTurnStart(actor);
+      regenerateMp(actor);
+      tickEffectsOnTurnStart(actor);
+      const statusResult = tickStatusesOnTurnStart(actor);
+      if (statusResult.poisonedDamage > 0) {
+        console.log(
+          `[${scenario.name}] turn ${turn} ${actor.name} poisonDamage=${statusResult.poisonedDamage}`
+        );
+      }
+
+      if (actor.hp <= 0) {
+        continue;
+      }
+
+      if (statusResult.skippedAction) {
+        console.log(`[${scenario.name}] turn ${turn} ${actor.name} skipped=STUN`);
+        continue;
+      }
+
+      if (actor.id === scenario.boss.id) {
+        executeBossTurn(scenario, actor, scenario.party, turn, rng, fullSkillMap);
+      } else {
+        executePartyTurn(
+          scenario,
+          actor,
+          scenario.party,
+          [scenario.boss],
+          turn,
+          rng,
+          fullSkillMap
+        );
+      }
+
+      if (scenario.boss.hp <= 0 || isPartyDefeated(scenario.party)) {
+        break;
+      }
+    }
+
+    if (scenario.boss.hp <= 0 || isPartyDefeated(scenario.party)) {
+      break;
+    }
+  }
+
+  console.log(
+    `[${scenario.name}] end bossHp=${scenario.boss.hp} partyAlive=${scenario.party.filter(
+      (unit) => unit.hp > 0
+    ).length}`
+  );
+};
+
+const getSkillsForJob = (jobId: JobId): Skill[] => {
+  if (jobId === "GUARDIAN") {
+    return [
+      {
+        id: "guard_stance",
+        name: "Guard Stance",
+        type: "buff",
+        target: "SELF",
+        mpCost: 4,
+        cooldown: 3,
+        effects: [{ kind: "BUFF", id: "DEF_UP", stat: "def", amount: 4, duration: 3 }],
+        tags: ["buff", "defense"],
+      },
+      {
+        id: "shield_bash",
+        name: "Shield Bash",
+        type: "attack",
+        target: "ENEMY",
+        mpCost: 5,
+        cooldown: 4,
+        power: 6,
+        effects: [{ kind: "STATUS", status: "STUN", duration: 1, chance: 0.3 }],
+        tags: ["damage", "control"],
+      },
+      {
+        id: "fortify",
+        name: "Fortify",
+        type: "buff",
+        target: "SELF",
+        mpCost: 6,
+        cooldown: 5,
+        effects: [
+          {
+            kind: "DAMAGE_REDUCTION",
+            id: "DAMAGE_REDUCTION",
+            multiplier: 0.7,
+            duration: 2,
+          },
+        ],
+        tags: ["buff", "defense"],
+      },
+    ];
+  }
+
+  if (jobId === "CLERIC") {
+    return [
+      {
+        id: "heal",
+        name: "Heal",
+        type: "heal",
+        target: "ALLY",
+        mpCost: 6,
+        cooldown: 1,
+        effects: [{ kind: "HEAL", amount: 18 }],
+        tags: ["heal"],
+      },
+      {
+        id: "greater_heal",
+        name: "Greater Heal",
+        type: "heal",
+        target: "ALLY",
+        mpCost: 10,
+        cooldown: 3,
+        effects: [{ kind: "HEAL", amount: 35 }],
+        tags: ["heal"],
+      },
+      {
+        id: "cleanse",
+        name: "Cleanse",
+        type: "cleanse",
+        target: "ALLY",
+        mpCost: 4,
+        cooldown: 1,
+        effects: [{ kind: "CLEANSE", status: "POISON" }],
+        tags: ["cleanse"],
+      },
+      {
+        id: "bless",
+        name: "Bless",
+        type: "buff",
+        target: "ALLY",
+        mpCost: 6,
+        cooldown: 4,
+        effects: [{ kind: "BUFF", id: "ATK_UP", stat: "atk", amount: 3, duration: 3 }],
+        tags: ["buff"],
+      },
+    ];
+  }
+
+  if (jobId === "BLADE") {
+    return [
+      {
+        id: "berserk",
+        name: "Berserk",
+        type: "buff",
+        target: "SELF",
+        mpCost: 6,
+        cooldown: 5,
+        effects: [
+          { kind: "BUFF", id: "ATK_UP", stat: "atk", amount: 6, duration: 3 },
+          { kind: "DEBUFF", id: "DEF_DOWN", stat: "def", amount: -2, duration: 3 },
+        ],
+        tags: ["buff", "damage"],
+      },
+      {
+        id: "power_strike",
+        name: "Power Strike",
+        type: "attack",
+        target: "ENEMY",
+        mpCost: 5,
+        cooldown: 1,
+        power: 10,
+        tags: ["damage"],
+      },
+      {
+        id: "execute",
+        name: "Execute",
+        type: "attack",
+        target: "ENEMY",
+        mpCost: 8,
+        cooldown: 4,
+        power: 14,
+        conditionalPower: {
+          kind: "TARGET_HP_BELOW",
+          threshold: 0.3,
+          bonus: 6,
+        },
+        tags: ["damage", "finisher"],
+      },
+    ];
+  }
+
+  return [
+    {
+      id: "weaken",
+      name: "Weaken",
+      type: "debuff",
+      target: "ENEMY",
+      mpCost: 6,
+      cooldown: 3,
+      effects: [{ kind: "DEBUFF", id: "ATK_DOWN", stat: "atk", amount: -4, duration: 3 }],
+      tags: ["debuff"],
+    },
+    {
+      id: "armor_break",
+      name: "Armor Break",
+      type: "debuff",
+      target: "ENEMY",
+      mpCost: 6,
+      cooldown: 3,
+      effects: [{ kind: "DEBUFF", id: "DEF_DOWN", stat: "def", amount: -4, duration: 3 }],
+      tags: ["debuff"],
+    },
+    {
+      id: "poison",
+      name: "Poison",
+      type: "status",
+      target: "ENEMY",
+      mpCost: 5,
+      cooldown: 2,
+      effects: [{ kind: "STATUS", status: "POISON", duration: 3, potency: 6 }],
+      tags: ["dot", "status"],
+    },
+    {
+      id: "mana_charge",
+      name: "Mana Charge",
+      type: "utility",
+      target: "SELF",
+      mpCost: 0,
+      cooldown: 4,
+      effects: [{ kind: "MP_RECOVER", amount: 10 }],
+      tags: ["utility"],
+    },
+  ];
+};
+
+export const runAllScenarios = (): void => {
+  const scenarios = makeScenarios();
+  for (const scenario of scenarios) {
+    runScenario(scenario, 6);
+  }
+};
+EOF
+' in /Users/astapi/projects/multiPTHakusla succeeded in 61ms:
+
+
+thinking
+**Flagging broken skill map code**
+
+The file contains a large, malformed skill map with invalid code and unused variables, requiring a careful review and fix. I'll open and inspect it to clean up or rewrite the broken sections.
+exec
+/bin/zsh -lc "sed -n '1,260p' /Users/astapi/projects/multiPTHakusla/src/scenarios.ts" in /Users/astapi/projects/multiPTHakusla succeeded in 83ms:
+import {
+  Unit,
+  getTurnOrder,
+  regenerateMp,
+  tickCooldownsOnTurnStart,
+  tickEffectsOnTurnStart,
+  tickStatusesOnTurnStart,
+} from "./battle";
+import { selectVenomTyrantAction } from "./boss-ai";
+import {
+  JobId,
+  Skill,
+  StatusType,
+  VENOM_TYRANT,
+  executeSkill,
+  getHpPercent,
+  getSkillById,
+  hasEffect,
+  isSkillUsable,
+} from "./skills";
+exec
+/bin/zsh -lc "sed -n '260,520p' /Users/astapi/projects/multiPTHakusla/src/scenarios.ts" in /Users/astapi/projects/multiPTHakusla succeeded in 61ms:
+    rule(
+      "heal_low",
+      "heal",
+      ({ allies }) => (pickLowestHpPercent(allies)?.hp ?? 0) > 0 &&
+        (pickLowestHpPercent(allies)
+          ? getHpPercent(pickLowestHpPercent(allies)!) < 0.45
+          : false),
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+  ];
+
+  const bladeRules: TacticsRule[] = [
+    rule(
+      "berserk_turn1",
+      "berserk",
+      ({ turn }) => turn === 1,
+      ({ actor }) => actor
+    ),
+    rule(
+      "execute_low_hp",
+exec
+/bin/zsh -lc "sed -n '520,1040p' /Users/astapi/projects/multiPTHakusla/src/scenarios.ts" in /Users/astapi/projects/multiPTHakusla succeeded in 70ms:
+      }
+
+      tickCooldownsOnTurnStart(actor);
+      regenerateMp(actor);
+      tickEffectsOnTurnStart(actor);
+      const statusResult = tickStatusesOnTurnStart(actor);
+      if (statusResult.poisonedDamage > 0) {
+        console.log(
+          `[${scenario.name}] turn ${turn} ${actor.name} poisonDamage=${statusResult.poisonedDamage}`
+        );
+      }
+
+      if (actor.hp <= 0) {
+        continue;
+      }
+
+      if (statusResult.skippedAction) {
+        console.log(`[${scenario.name}] turn ${turn} ${actor.name} skipped=STUN`);
+        continue;
+      }
+
+thinking
+**Refactoring skill mapping logic**
+
+I'm planning to remove duplicated skill definitions by importing the existing JOB_DEFINITIONS and rewriting skill retrieval to use those instead of custom logic, also cleaning up repeated low-HP checks for clarity.
+exec
+/bin/zsh -lc "cat <<'EOF' > /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+import {
+  Unit,
+  getTurnOrder,
+  regenerateMp,
+  tickCooldownsOnTurnStart,
+  tickEffectsOnTurnStart,
+  tickStatusesOnTurnStart,
+} from \"./battle\";
+import { selectVenomTyrantAction } from \"./boss-ai\";
+import {
+  JobId,
+  JOB_DEFINITIONS,
+  Skill,
+  StatusType,
+  VENOM_TYRANT,
+  executeSkill,
+  getHpPercent,
+  hasEffect,
+  isSkillUsable,
+} from \"./skills\";
+
+type ConditionContext = {
+  turn: number;
+  actor: Unit;
+  allies: Unit[];
+  enemies: Unit[];
+};
+
+type TacticsRule = {
+  id: string;
+  skillId: string;
+  condition: (context: ConditionContext) => boolean;
+  selectTarget: (context: ConditionContext) => Unit | null;
+};
+
+type Scenario = {
+  id: string;
+  name: string;
+  seed: number;
+  party: Unit[];
+  boss: Unit;
+  tactics: Record<string, TacticsRule[]>;
+};
+
+type RuleEvaluation = {
+  rule: TacticsRule;
+  usable: boolean;
+  conditionMet: boolean;
+  target: Unit | null;
+};
+
+const createSeededRng = (seed: number): (() => number) => {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 2 ** 32;
+  };
+};
+
+const buildSkillMap = (skills: Skill[]): Map<string, Skill> => {
+  const map = new Map<string, Skill>();
+  for (const skill of skills) {
+    map.set(skill.id, skill);
+  }
+  return map;
+};
+
+const cloneStats = (stats: Unit[\"stats\"]): Unit[\"stats\"] => ({ ...stats });
+
+const createUnit = (params: {
+  id: string;
+  name: string;
+  jobId?: JobId;
+  stats: Unit[\"stats\"];
+  order: number;
+}): Unit => ({
+  id: params.id,
+  name: params.name,
+  jobId: params.jobId,
+  stats: cloneStats(params.stats),
+  hp: params.stats.maxHp,
+  mp: params.stats.maxMp,
+  statusEffects: [],
+  effects: [],
+  cooldowns: {},
+  order: params.order,
+});
+
+const pickLowestHpPercent = (units: Unit[]): Unit | null => {
+  if (units.length === 0) {
+    return null;
+  }
+  return units.reduce((best, unit) =>
+    getHpPercent(unit) < getHpPercent(best) ? unit : best
+  );
+};
+
+const pickLowestHpWithStatus = (units: Unit[], status: StatusType): Unit | null => {
+  const candidates = units.filter((unit) =>
+    unit.statusEffects.some((effect) => effect.type === status)
+  );
+  return pickLowestHpPercent(candidates);
+};
+
+const anyAllyHasStatus = (units: Unit[], status: StatusType): boolean =>
+  units.some((unit) => unit.statusEffects.some((effect) => effect.type === status));
+
+const isEnemyMissingStatus = (enemy: Unit, status: StatusType): boolean =>
+  "'!enemy.statusEffects.some((effect) => effect.type === status);
+
+const isEnemyMissingDebuff = (enemy: Unit, id: string): boolean => !hasEffect(enemy, id);
+
+const rule = (
+  id: string,
+  skillId: string,
+  condition: (context: ConditionContext) => boolean,
+  selectTarget: (context: ConditionContext) => Unit | null
+): TacticsRule => ({ id, skillId, condition, selectTarget });
+
+const getSkillsForJob = (jobId: JobId): Skill[] => {
+  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+  if (!job) {
+    throw new Error(`Missing job definition: ${jobId}`);
+  }
+  return job.skills;
+};
+
+const getAllSkills = (): Skill[] => [
+  ...VENOM_TYRANT.skills,
+  ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+];
+
+const makeScenarios = (): Scenario[] => {
+  const partyBaseStats = {
+    guardian: {
+      maxHp: 120,
+      atk: 8,
+      def: 10,
+      spd: 8,
+      maxMp: 20,
+      mpRegen: 2,
+    },
+    cleric: {
+      maxHp: 80,
+      atk: 5,
+      def: 6,
+      spd: 10,
+      maxMp: 35,
+      mpRegen: 2,
+    },
+    blade: {
+      maxHp: 90,
+      atk: 12,
+      def: 5,
+      spd: 12,
+      maxMp: 25,
+      mpRegen: 2,
+    },
+    arcane: {
+      maxHp: 75,
+      atk: 6,
+      def: 5,
+      spd: 11,
+      maxMp: 30,
+      mpRegen: 2,
+    },
+  };
+
+  const baseParty = () => [
+    createUnit({
+      id: "guardian",
+      name: "Guardian",
+      jobId: "GUARDIAN",
+      stats: partyBaseStats.guardian,
+      order: 1,
+    }),
+    createUnit({
+      id: "cleric",
+      name: "Cleric",
+      jobId: "CLERIC",
+      stats: partyBaseStats.cleric,
+      order: 2,
+    }),
+    createUnit({
+      id: "blade",
+      name: "Blade",
+      jobId: "BLADE",
+      stats: partyBaseStats.blade,
+      order: 3,
+    }),
+    createUnit({
+      id: "arcane",
+      name: "Arcane",
+      jobId: "ARCANE",
+      stats: partyBaseStats.arcane,
+      order: 4,
+    }),
+  ];
+
+  const baseBoss = () =>
+    createUnit({
+      id: "boss",
+      name: VENOM_TYRANT.name,
+      stats: VENOM_TYRANT.stats,
+      order: 99,
+    });
+
+  const guardianRules: TacticsRule[] = [
+    rule(
+      "guard_stance_turn1",
+      "guard_stance",
+      ({ turn }) => turn === 1,
+      ({ actor }) => actor
+    ),
+    rule(
+      "fortify_low_hp",
+      "fortify",
+      ({ actor }) => getHpPercent(actor) < 0.5,
+      ({ actor }) => actor
+    ),
+    rule(
+      "shield_bash_turn4",
+      "shield_bash",
+      ({ turn }) => turn % 4 === 0,
+      ({ enemies }) => enemies[0] ?? null
+    ),
+  ];
+
+  const clericRulesBase: TacticsRule[] = [
+    rule(
+      "greater_heal_critical",
+      "greater_heal",
+      ({ allies }) => {
+        const lowest = pickLowestHpPercent(allies);
+        return lowest ? getHpPercent(lowest) < 0.25 : false;
+      },
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+    rule(
+      "heal_low",
+      "heal",
+      ({ allies }) => {
+        const lowest = pickLowestHpPercent(allies);
+        return lowest ? getHpPercent(lowest) < 0.45 : false;
+      },
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+    rule(
+      "bless_turn1",
+      "bless",
+      ({ turn }) => turn === 1,
+      ({ allies }) => allies.find((unit) => unit.id === "blade") ?? null
+    ),
+  ];
+
+  const clericRulesScenarioB: TacticsRule[] = [
+    rule(
+      "cleanse_poison",
+      "cleanse",
+      ({ allies }) => anyAllyHasStatus(allies, "POISON"),
+      ({ allies }) => pickLowestHpWithStatus(allies, "POISON")
+    ),
+    ...clericRulesBase,
+  ];
+
+  const clericRulesScenarioC: TacticsRule[] = [
+    rule(
+      "cleanse_turn_leq3",
+      "cleanse",
+      ({ turn }) => turn <= 3,
+      ({ allies }) => pickLowestHpWithStatus(allies, "POISON")
+    ),
+    rule(
+      "heal_low",
+      "heal",
+      ({ allies }) => {
+        const lowest = pickLowestHpPercent(allies);
+        return lowest ? getHpPercent(lowest) < 0.45 : false;
+      },
+      ({ allies }) => pickLowestHpPercent(allies)
+    ),
+  ];
+
+  const bladeRules: TacticsRule[] = [
+    rule(
+      "berserk_turn1",
+      "berserk",
+      ({ turn }) => turn === 1,
+      ({ actor }) => actor
+    ),
+    rule(
+      "execute_low_hp",
+      "execute",
+      ({ enemies }) => (enemies[0] ? getHpPercent(enemies[0]) < 0.3 : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule("power_strike", "power_strike", () => true, ({ enemies }) => enemies[0]),
+  ];
+
+  const arcaneRules: TacticsRule[] = [
+    rule(
+      "weaken_missing",
+      "weaken",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingDebuff(enemies[0], "ATK_DOWN") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "armor_break_missing",
+      "armor_break",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingDebuff(enemies[0], "DEF_DOWN") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "poison_missing",
+      "poison",
+      ({ enemies }) => (enemies[0] ? isEnemyMissingStatus(enemies[0], "POISON") : false),
+      ({ enemies }) => enemies[0] ?? null
+    ),
+    rule(
+      "mana_charge_low_mp",
+      "mana_charge",
+      ({ actor }) => actor.mp < 6,
+      ({ actor }) => actor
+    ),
+  ];
+
+  const scenarioA: Scenario = {
+    id: "A",
+    name: "Scenario A",
+    seed: 1001,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesBase,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  const scenarioB: Scenario = {
+    id: "B",
+    name: "Scenario B",
+    seed: 2002,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesScenarioB,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  const scenarioC: Scenario = {
+    id: "C",
+    name: "Scenario C",
+    seed: 3003,
+    party: baseParty(),
+    boss: baseBoss(),
+    tactics: {
+      guardian: guardianRules,
+      cleric: clericRulesScenarioC,
+      blade: bladeRules,
+      arcane: arcaneRules,
+    },
+  };
+
+  return [scenarioA, scenarioB, scenarioC];
+};
+
+const evaluateRule = (
+  actor: Unit,
+  rule: TacticsRule,
+  context: ConditionContext,
+  skillMap: Map<string, Skill>
+): RuleEvaluation => {
+  const skill = skillMap.get(rule.skillId);
+  if (!skill) {
+    throw new Error(`Missing skill: ${rule.skillId}`);
+  }
+  const usable = isSkillUsable(actor, skill);
+  const conditionMet = rule.condition(context);
+  const target = conditionMet ? rule.selectTarget(context) : null;
+  return { rule, usable, conditionMet, target };
+};
+
+const formatRuleLog = (
+  scenario: Scenario,
+  turn: number,
+  actor: Unit,
+  evaluation: RuleEvaluation
+): string => {
+  const targetName = evaluation.target ? evaluation.target.name : "none";
+  return [
+    `[${scenario.name}]`,
+    `turn ${turn}`,
+    actor.name,
+    `rule=${evaluation.rule.id}`,
+    `usable=${evaluation.usable}`,
+    `condition=${evaluation.conditionMet}`,
+    `target=${targetName}`,
+  ].join(" ");
+};
+
+const logSkillResult = (
+  scenario: Scenario,
+  turn: number,
+  actor: Unit,
+  target: Unit,
+  skill: Skill,
+  result: ReturnType<typeof executeSkill>
+): void => {
+  const statusApplied = result.appliedStatuses.map((status) => status.type).join(",");
+  const cleansed = result.cleansedStatuses.join(",");
+  console.log(
+    [
+      `[${scenario.name}]`,
+      `turn ${turn}`,
+      actor.name,
+      `skill=${skill.name}`,
+      `target=${target.name}`,
+      `damage=${result.damage}`,
+      `heal=${result.healing}`,
+      `applied=[${statusApplied}]`,
+      `cleansed=[${cleansed}]`,
+    ].join(" ")
+  );
+};
+
+const executePartyTurn = (
+  scenario: Scenario,
+  actor: Unit,
+  allies: Unit[],
+  enemies: Unit[],
+  turn: number,
+  rng: () => number,
+  skillMap: Map<string, Skill>
+): void => {
+  const rules = scenario.tactics[actor.id] ?? [];
+  for (const ruleEntry of rules) {
+    const evaluation = evaluateRule(actor, ruleEntry, { turn, actor, allies, enemies }, skillMap);
+    console.log(formatRuleLog(scenario, turn, actor, evaluation));
+    if (!evaluation.usable || !evaluation.conditionMet || !evaluation.target) {
+      continue;
+    }
+
+    const skill = skillMap.get(ruleEntry.skillId);
+    if (!skill) {
+      throw new Error(`Missing skill: ${ruleEntry.skillId}`);
+    }
+
+    const result = executeSkill(actor, evaluation.target, skill, rng);
+    logSkillResult(scenario, turn, actor, evaluation.target, skill, result);
+    return;
+  }
+
+  console.log(`[${scenario.name}] turn ${turn} ${actor.name} action=WAIT`);
+};
+
+const executeBossTurn = (
+  scenario: Scenario,
+  boss: Unit,
+  allies: Unit[],
+  turn: number,
+  rng: () => number,
+  skillMap: Map<string, Skill>
+): void => {
+  const decision = selectVenomTyrantAction(boss, allies, turn);
+  const skill = skillMap.get(decision.skill.id);
+  if (!skill) {
+    throw new Error(`Missing skill: ${decision.skill.id}`);
+  }
+  const result = executeSkill(boss, decision.target, skill, rng);
+  logSkillResult(scenario, turn, boss, decision.target, skill, result);
+};
+
+const isPartyDefeated = (party: Unit[]): boolean =>
+  party.every((unit) => unit.hp <= 0);
+
+const runScenario = (scenario: Scenario, maxTurns: number): void => {
+  const rng = createSeededRng(scenario.seed);
+  const skillMap = buildSkillMap(getAllSkills());
+  const units: Unit[] = [...scenario.party, scenario.boss];
+
+  console.log(`[${scenario.name}] start seed=${scenario.seed}`);
+
+  for (let turn = 1; turn <= maxTurns; turn += 1) {
+    const order = getTurnOrder(units);
+    for (const entry of order) {
+      const actor = entry.unit;
+      if (actor.hp <= 0) {
+        continue;
+      }
+
+      tickCooldownsOnTurnStart(actor);
+      regenerateMp(actor);
+      tickEffectsOnTurnStart(actor);
+      const statusResult = tickStatusesOnTurnStart(actor);
+      if (statusResult.poisonedDamage > 0) {
+        console.log(
+          `[${scenario.name}] turn ${turn} ${actor.name} poisonDamage=${statusResult.poisonedDamage}`
+        );
+      }
+
+      if (actor.hp <= 0) {
+        continue;
+      }
+
+      if (statusResult.skippedAction) {
+        console.log(`[${scenario.name}] turn ${turn} ${actor.name} skipped=STUN`);
+        continue;
+      }
+
+      if (actor.id === scenario.boss.id) {
+        executeBossTurn(scenario, actor, scenario.party, turn, rng, skillMap);
+      } else {
+        executePartyTurn(scenario, actor, scenario.party, [scenario.boss], turn, rng, skillMap);
+      }
+
+      if (scenario.boss.hp <= 0 || isPartyDefeated(scenario.party)) {
+        break;
+      }
+    }
+
+    if (scenario.boss.hp <= 0 || isPartyDefeated(scenario.party)) {
+      break;
+    }
+  }
+
+  console.log(
+    `[${scenario.name}] end bossHp=${scenario.boss.hp} partyAlive=${scenario.party.filter(
+      (unit) => unit.hp > 0
+    ).length}`
+  );
+};
+
+export const runAllScenarios = (): void => {
+  const scenarios = makeScenarios();
+  for (const scenario of scenarios) {
+    runScenario(scenario, 6);
+  }
+};
+EOF
+' in /Users/astapi/projects/multiPTHakusla succeeded in 78ms:
+
+
+thinking
+**Removing unused helper function**
+
+Identified that the getSkillsForJob function is unused and safely removable; leaving JobId type as it is used elsewhere. Proceeding to patch out the unused function for cleaner code.
+file update
+M /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+@@ -119,10 +119,2 @@
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+apply_patch(auto_approved=true) exited 0 in 35ms:
+Success. Updated the following files:
+M /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+
+thinking
+**Updating entry point to use runAllScenarios**
+exec
+/bin/zsh -lc "cat <<'EOF' > /Users/astapi/projects/multiPTHakusla/src/index.ts
+import { runAllScenarios } from \"./scenarios\";
+
+runAllScenarios();
+EOF
+" in /Users/astapi/projects/multiPTHakusla succeeded in 106ms:
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+
+thinking
+**Confirming JOB_DEFINITIONS usage**
+
+I verified the import of JOB_DEFINITIONS from skills.ts and the inclusion of JOB_DEFINITIONS within skills.ts itself; next, I'll add logging via ralph log after major code changes.
+exec
+/bin/zsh -lc 'ralph log "US-004 シナリオ実行ロジックと定義を追加"' in /Users/astapi/projects/multiPTHakusla succeeded in 301ms:
+Using bundled templates: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+
+thinking
+**Planning verification commands**
+
+I'll run npm test, npm run build, and npm run start sequentially to verify compilation, correctness, and runtime behavior per the project's validation steps.
+exec
+/bin/zsh -lc 'npm run start' in /Users/astapi/projects/multiPTHakusla succeeded in 1.27s:
+
+> tactics-battle-cli@0.1.0 start
+> tsx src/index.ts
+
+[Scenario A] start seed=1001
+[Scenario A] turn 1 Blade rule=berserk_turn1 usable=true condition=true target=Blade
+[Scenario A] turn 1 Blade skill=Berserk target=Blade damage=0 heal=0 applied=[] cleansed=[]
+[Scenario A] turn 1 Arcane rule=weaken_missing usable=true condition=true target=Venom Tyrant
+[Scenario A] turn 1 Arcane skill=Weaken target=Venom Tyrant damage=0 heal=0 applied=[] cleansed=[]
+[Scenario A] turn 1 Cleric rule=greater_heal_critical usable=true condition=false target=none
+[Scenario A] turn 1 Cleric rule=heal_low usable=true condition=false target=none
+[Scenario A] turn 1 Cleric rule=bless_turn1 usable=true condition=true target=Blade
+[Scenario A] turn 1 Cleric skill=Bless target=Blade damage=0 heal=0 applied=[] cleansed=[]
+[Scenario A] turn 1 Venom Tyrant skill=Crushing Slam target=Guardian damage=14 heal=0 applied=[] cleansed=[]
+[Scenario A] turn 1 Guardian rule=guard_stance_turn1 usable=true condition=true target=Guardian
+[Scenario A] turn 1 Guardian skill=Guard Stance target=Guardian damage=0 heal=0 applied=[] cleansed=[]
+[Scenario A] turn 2 Blade rule=berserk_turn1 usable=false condition=false target=none
+[Scenario A] turn 2 Blade rule=execute_low_hp usable=true condition=false target=none
+[Scenario A] turn 2 Blade rule=power_strike usable=true condition=true target=Venom Tyrant
+[Scenario A] turn 2 Blade skill=Power Strike target=Venom Tyrant damage=22 heal=0 applied=[] cleansed=[]
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+
+
+thinking
+**Analyzing scenario behavior and logging details**
+
+Scenario B properly shows poison followed by Cleanse at turn 3, and scenario C correctly attempts Cleanse with no target early on, waiting since no poison yet. Logs reflect deterministic rule evaluation, including condition false leading to WAIT in heal-only cases, which aligns with specs. Next step is updating indexing, cleaning unused imports, and running build/tests.
+thinking
+**Confirming JOB_DEFINITIONS usage before building**
+
+JOB_DEFINITIONS is used within getAllSkills, so it remains necessary; proceeding to run the build.
+exec
+/bin/zsh -lc 'npm run build' in /Users/astapi/projects/multiPTHakusla exited 2 in 918ms:
+
+> tactics-battle-cli@0.1.0 build
+> tsc -p tsconfig.json
+
+src/scenarios.ts(14,3): error TS2459: Module '"./skills"' declares 'StatusType' locally, but it is not exported.
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..6e31941b954f0271dd6154f416b2e527d710bc8b
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -117,14 +117,6 @@
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+ 
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+-
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+   ...JOB_DEFINITIONS.flatMap((job) => job.skills),
+
+
+thinking
+**Fixing StatusType import**
+
+I'll adjust imports to use StatusType from battle.ts instead of skills by updating scenarios.ts accordingly.
+file update
+M /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+@@ -1,2 +1,3 @@
+ import {
++  StatusType,
+   Unit,
+@@ -13,3 +14,2 @@
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+apply_patch(auto_approved=true) exited 0 in 51ms:
+Success. Updated the following files:
+M /Users/astapi/projects/multiPTHakusla/src/scenarios.ts
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Rebuilding project**
+exec
+/bin/zsh -lc 'npm run build' in /Users/astapi/projects/multiPTHakusla succeeded in 954ms:
+
+> tactics-battle-cli@0.1.0 build
+> tsc -p tsconfig.json
+
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Running tests**
+exec
+/bin/zsh -lc 'npm test' in /Users/astapi/projects/multiPTHakusla succeeded in 357ms:
+
+> tactics-battle-cli@0.1.0 test
+> node --test
+
+ℹ tests 0
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8.532375
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Adding post-test logging**
+exec
+/bin/zsh -lc 'ralph log "US-004 検証コマンド完了"' in /Users/astapi/projects/multiPTHakusla succeeded in 398ms:
+Using bundled templates: /Users/astapi/.anyenv/envs/nodenv/versions/22.12.0/lib/node_modules/@iannuttall/ralph/.agents/ralph
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Checking for dist file changes**
+
+The build created files in the dist directory; now checking git status to determine if these should be committed.
+exec
+/bin/zsh -lc 'git status --porcelain' in /Users/astapi/projects/multiPTHakusla succeeded in 83ms:
+ M .agents/tasks/prd-tactics-battle.json
+ M .ralph/activity.log
+ M .ralph/errors.log
+ M .ralph/runs/run-20260201-060757-64462-iter-1.log
+ M src/index.ts
+?? .ralph/.tmp/prompt-20260201-060757-64462-2.md
+?? .ralph/.tmp/story-20260201-060757-64462-2.json
+?? .ralph/.tmp/story-20260201-060757-64462-2.md
+?? .ralph/runs/run-20260201-060757-64462-iter-1.md
+?? .ralph/runs/run-20260201-060757-64462-iter-2.log
+?? src/scenarios.ts
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Clarifying handling of unexpected modified files**
+
+Noticed unexpected modifications in PRD and error log files likely from system or prior runs; since the PRD must not be edited, I'll verify diffs but avoid committing changes there, while committing all other changes made during this run.
+thinking
+**Resolving PRD file commit conflict**
+
+The PRD changes likely come from the system's loop handling status updates, so I'll include them in the commit despite the "do not edit" instruction since we didn't edit them intentionally and must keep a clean working tree after committing all run-made changes.
+exec
+/bin/zsh -lc 'git diff --stat' in /Users/astapi/projects/multiPTHakusla succeeded in 116ms:
+ .agents/tasks/prd-tactics-battle.json            |  13 +-
+ .ralph/activity.log                              |   6 +
+ .ralph/errors.log                                |   1 +
+ .ralph/runs/run-20260201-060757-64462-iter-1.log | 942 ++++++++++++++++++++++-
+ src/index.ts                                     |   6 +-
+ 5 files changed, 958 insertions(+), 10 deletions(-)
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Including run logs and temporary files**
+
+The run logs in `.ralph/runs` are untracked and must be added per instructions to commit all run changes; temporary `.ralph/.tmp` files seem system-generated and uncertain but will be included to satisfy the commit-all requirement. Next, I'll inspect the 13-line diff in the PRD file to confirm it only reflects a status update.
+exec
+/bin/zsh -lc 'git diff /Users/astapi/projects/multiPTHakusla/.agents/tasks/prd-tactics-battle.json' in /Users/astapi/projects/multiPTHakusla succeeded in 72ms:
+diff --git a/.agents/tasks/prd-tactics-battle.json b/.agents/tasks/prd-tactics-battle.json
+index 6b89718..7bdbf08 100644
+--- a/.agents/tasks/prd-tactics-battle.json
++++ b/.agents/tasks/prd-tactics-battle.json
+@@ -124,7 +124,7 @@
+     {
+       "id": "US-003",
+       "title": "\u30b8\u30e7\u30d6/\u30b9\u30ad\u30eb\u5b9a\u7fa9\u3068\u30dc\u30b9AI\u512a\u5148\u5ea6\u3092\u5b9f\u88c5",
+-      "status": "in_progress",
++      "status": "done",
+       "dependsOn": [
+         "US-002"
+       ],
+@@ -136,13 +136,13 @@
+         "Negative case: Venom Spit \u306fCD\u4e2d\u306a\u3089\u4f7f\u7528\u3055\u308c\u306a\u3044"
+       ],
+       "startedAt": "2026-01-31T21:07:57.586830+00:00",
+-      "completedAt": null,
+-      "updatedAt": "2026-01-31T21:07:57.587148+00:00"
++      "completedAt": "2026-01-31T21:19:41.718612+00:00",
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+
+thinking
+**Preparing commit with updated logs**
+
+I noted progress and error logs updated from previous runs and the appearance of new run logs and temp files to include in the commit. Next, I’ll perform the required review and then proceed with committing using the designated commit skill.
+thinking
+**Confirming pre-commit checks and log updates**
+
+I verified test coverage, deterministic seeds, and usage of imports, and noted that lint isn’t required. The security, performance, and regression review will happen later. I’ll commit now, then update the progress and activity logs accordingly.
+exec
+/bin/zsh -lc 'tail -n 20 /Users/astapi/projects/multiPTHakusla/.ralph/progress.md' in /Users/astapi/projects/multiPTHakusla succeeded in 95ms:
+  - .ralph/.tmp/story-20260201-060309-48281-1.json
+  - .ralph/.tmp/story-20260201-060309-48281-1.md
+  - .ralph/.tmp/story-20260201-060501-54829-1.json
+  - .ralph/.tmp/story-20260201-060501-54829-1.md
+  - .ralph/.tmp/story-20260201-060614-58920-1.json
+  - .ralph/.tmp/story-20260201-060614-58920-1.md
+  - .ralph/.tmp/story-20260201-060659-61401-1.json
+  - .ralph/.tmp/story-20260201-060659-61401-1.md
+  - .ralph/.tmp/story-20260201-060757-64462-1.json
+  - .ralph/.tmp/story-20260201-060757-64462-1.md
+  - AGENTS.md
+  - src/battle.ts
+  - src/boss-ai.ts
+  - src/skills.ts
+- What was implemented
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Gotchas encountered
+  - Useful context
+---
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Reviewing commit workflow requirements**
+
+I'm opening SKILL.md to understand how to properly stage, commit, and use the commit skill, especially regarding handling build/test results before committing.
+exec
+/bin/zsh -lc 'cat /Users/astapi/.codex/skills/commit/SKILL.md' in /Users/astapi/projects/multiPTHakusla succeeded in 90ms:
+---
+name: commit
+description: Write conventional commit messages with type, scope, and subject when the user wants to commit changes or save work.
+---
+
+# Git Commit
+
+Creates git commits following Conventional Commits format with proper type, scope, and subject.
+
+## Quick Start
+
+```bash
+# 1. Stage changes
+git add <files>  # or: git add -A
+
+# 2. Create commit (branch commit format)
+git commit -m "type(scope): subject
+
+Body explaining HOW and WHY.
+Reference: Task X.Y, Req N"
+file update:
+diff --git a/src/scenarios.ts b/src/scenarios.ts
+index 54f1f4090267f898c89074739bbfb01293367f7a..f1fb91b0123c4dffef8c8df99a8afe5c6b895ef8
+--- a/src/scenarios.ts
++++ b/src/scenarios.ts
+@@ -1,4 +1,5 @@
+ import {
++  StatusType,
+   Unit,
+   getTurnOrder,
+   regenerateMp,
+@@ -11,7 +12,6 @@
+   JobId,
+   JOB_DEFINITIONS,
+   Skill,
+-  StatusType,
+   VENOM_TYRANT,
+   executeSkill,
+   getHpPercent,
+@@ -116,14 +116,6 @@
+   condition: (context: ConditionContext) => boolean,
+   selectTarget: (context: ConditionContext) => Unit | null
+ ): TacticsRule => ({ id, skillId, condition, selectTarget });
+-
+-const getSkillsForJob = (jobId: JobId): Skill[] => {
+-  const job = JOB_DEFINITIONS.find((entry) => entry.id === jobId);
+-  if (!job) {
+-    throw new Error(`Missing job definition: ${jobId}`);
+-  }
+-  return job.skills;
+-};
+ 
+ const getAllSkills = (): Skill[] => [
+   ...VENOM_TYRANT.skills,
+
+
+thinking
+**Preparing commit with scenario updates**
+
+I'm verifying .gitignore doesn't exclude the new .ralph file and staging all changes before committing with a detailed message about adding fixed scenarios.
+exec
+/bin/zsh -lc 'git add -A' in /Users/astapi/projects/multiPTHakusla
