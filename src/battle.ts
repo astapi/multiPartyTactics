@@ -11,14 +11,39 @@ export type Stats = {
   atk: number;
   def: number;
   spd: number;
+  maxMp: number;
+  mpRegen: number;
 };
+
+export type StatEffect = {
+  kind: "STAT";
+  id: string;
+  stat: "atk" | "def";
+  amount: number;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type DamageReductionEffect = {
+  kind: "DAMAGE_REDUCTION";
+  id: string;
+  multiplier: number;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type Effect = StatEffect | DamageReductionEffect;
 
 export type Unit = {
   id: string;
   name: string;
   stats: Stats;
   hp: number;
+  mp: number;
   statusEffects: StatusEffect[];
+  effects: Effect[];
+  cooldowns: Record<string, number>;
+  jobId?: string;
   order: number;
 };
 
@@ -59,12 +84,25 @@ export const calculatePhysicalDamage = (
   defender: Unit,
   power: number
 ): number => {
-  return Math.max(1, power + attacker.stats.atk - defender.stats.def);
+  return Math.max(
+    1,
+    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
+  );
 };
 
 export const applyDamage = (target: Unit, amount: number): number => {
-  const actual = Math.max(0, Math.min(target.hp, amount));
+  const adjusted =
+    amount <= 0
+      ? 0
+      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
+  const actual = Math.max(0, Math.min(target.hp, adjusted));
   target.hp -= actual;
+  return actual;
+};
+
+export const applyHealing = (target: Unit, amount: number): number => {
+  const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
+  target.hp += actual;
   return actual;
 };
 
@@ -92,6 +130,85 @@ export const getTurnOrder = (units: Unit[]): TurnOrderEntry[] => {
       }
       return a.order - b.order;
     });
+};
+
+export const getEffectiveStat = (unit: Unit, stat: "atk" | "def"): number => {
+  const base = unit.stats[stat];
+  const modifierSum = unit.effects
+    .filter((effect): effect is StatEffect => effect.kind === "STAT" && effect.stat === stat)
+    .reduce((sum, effect) => sum + effect.amount, 0);
+  return base + modifierSum;
+};
+
+export const getDamageTakenMultiplier = (unit: Unit): number => {
+  return unit.effects
+    .filter(
+      (effect): effect is DamageReductionEffect => effect.kind === "DAMAGE_REDUCTION"
+    )
+    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
+};
+
+export const applyEffect = (unit: Unit, effect: Effect): void => {
+  const existing = unit.effects.find(
+    (entry) =>
+      entry.kind === effect.kind &&
+      entry.id === effect.id &&
+      (entry.kind !== "STAT" || (effect.kind === "STAT" && entry.stat === effect.stat))
+  );
+
+  if (!existing) {
+    unit.effects.push({ ...effect });
+    return;
+  }
+
+  if (existing.remainingTurns !== null && effect.remainingTurns !== null) {
+    existing.remainingTurns = Math.max(existing.remainingTurns, effect.remainingTurns);
+  } else {
+    existing.remainingTurns = null;
+  }
+
+  if (existing.kind === "STAT" && effect.kind === "STAT") {
+    const currentMagnitude = Math.abs(existing.amount);
+    const incomingMagnitude = Math.abs(effect.amount);
+    if (incomingMagnitude >= currentMagnitude) {
+      existing.amount = effect.amount;
+    }
+  }
+
+  if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
+    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
+  }
+};
+
+export const tickEffectsOnTurnStart = (unit: Unit): string[] => {
+  const expired: string[] = [];
+  for (const effect of unit.effects) {
+    if (effect.remainingTurns !== null) {
+      effect.remainingTurns -= 1;
+    }
+  }
+
+  for (let i = unit.effects.length - 1; i >= 0; i -= 1) {
+    const effect = unit.effects[i];
+    if (effect.remainingTurns !== null && effect.remainingTurns <= 0) {
+      expired.push(effect.id);
+      unit.effects.splice(i, 1);
+    }
+  }
+
+  return expired;
+};
+
+export const tickCooldownsOnTurnStart = (unit: Unit): void => {
+  for (const [key, value] of Object.entries(unit.cooldowns)) {
+    unit.cooldowns[key] = Math.max(0, value - 1);
+  }
+};
+
+export const regenerateMp = (unit: Unit): number => {
+  const actual = Math.max(0, Math.min(unit.stats.maxMp - unit.mp, unit.stats.mpRegen));
+  unit.mp += actual;
+  return actual;
 };
 
 export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
@@ -183,6 +300,9 @@ export const runTurn = (
       continue;
     }
 
+    tickCooldownsOnTurnStart(actor);
+    regenerateMp(actor);
+    tickEffectsOnTurnStart(actor);
     const statusResult = tickStatusesOnTurnStart(actor);
     if (actor.hp <= 0) {
       results.push({

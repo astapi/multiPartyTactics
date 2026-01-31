@@ -105,7 +105,7 @@
     {
       "id": "US-002",
       "title": "\u6226\u95d8\u30b3\u30a2\uff08\u30bf\u30fc\u30f3/\u884c\u52d5/\u30c0\u30e1\u30fc\u30b8/\u72b6\u614b\uff09\u3092\u5b9f\u88c5",
-      "status": "in_progress",
+      "status": "done",
       "dependsOn": [
         "US-001"
       ],
@@ -118,13 +118,13 @@
         "Negative case: \u65e2\u306bSTUN\u4e2d\u306e\u30e6\u30cb\u30c3\u30c8\u306bSTUN\u304c\u518d\u4ed8\u4e0e\u3055\u308c\u3066\u3082\u3001\u4e0a\u66f8\u304d\u30eb\u30fc\u30eb\u306b\u5f93\u3063\u3066\u77db\u76fe\u3057\u306a\u3044"
       ],
       "startedAt": "2026-01-31T03:36:17.243912+00:00",
-      "completedAt": null,
-      "updatedAt": "2026-01-31T03:36:17.244275+00:00"
+      "completedAt": "2026-01-31T03:44:17.747185+00:00",
+      "updatedAt": "2026-01-31T03:44:17.746927+00:00"
     },
     {
       "id": "US-003",
       "title": "\u30b8\u30e7\u30d6/\u30b9\u30ad\u30eb\u5b9a\u7fa9\u3068\u30dc\u30b9AI\u512a\u5148\u5ea6\u3092\u5b9f\u88c5",
-      "status": "open",
+      "status": "in_progress",
       "dependsOn": [
         "US-002"
       ],
@@ -134,7 +134,10 @@
         "\u30dc\u30b9\uff08\u30f4\u30a7\u30ce\u30e0\u30fb\u30bf\u30a4\u30e9\u30f3\u30c8\uff09\u306e\u30b9\u30ad\u30eb\u3068\u512a\u5148\u5ea6AI\u3092\u5b9f\u88c5",
         "Example: \u30dc\u30b9HP% <= 40% \u3067 Enrage \u30921\u56de\u3060\u3051\u767a\u52d5\u3059\u308b",
         "Negative case: Venom Spit \u306fCD\u4e2d\u306a\u3089\u4f7f\u7528\u3055\u308c\u306a\u3044"
-      ]
+      ],
+      "startedAt": "2026-01-31T21:07:57.586830+00:00",
+      "completedAt": null,
+      "updatedAt": "2026-01-31T21:07:57.587148+00:00"
     },
     {
       "id": "US-004",

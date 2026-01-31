@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-01-31 12:44:17 | run=20260131-122758-38131 | iter=2 | mode=build | story=US-002 | duration=480s | status=success
 - 2026-01-31 12:36:14 | run=20260131-122758-38131 | iter=1 | mode=build | story=US-001 | duration=496s | status=success
 
 ## Events
@@ -16,3 +17,10 @@
 [2026-01-31 12:38:35] Implemented battle core module (turn order, damage, status)
 [2026-01-31 12:39:27] Completed build and tests (npm run build, npm test)
 [2026-01-31 12:43:01] Updated progress log for US-002
+[2026-01-31 12:44:17] ITERATION 2 end (duration=480s)
+[2026-01-31 12:44:21] ITERATION 3 start (mode=build story=US-003)
+[2026-02-01 06:05:03] ITERATION 1 start (mode=build story=US-003)
+[2026-02-01 06:07:58] ITERATION 1 start (mode=build story=US-003)
+[2026-02-01 06:08:37] US-003 作業開始
+[2026-02-01 06:14:21] US-003 ジョブ/スキル定義とボスAIの実装を追加
+[2026-02-01 06:14:45] US-003 ビルド/テスト完了
