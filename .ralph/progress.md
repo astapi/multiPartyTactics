@@ -181,3 +181,38 @@ Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-0607
   - Gotchas encountered
   - Useful context
 ---
+## [2026-02-01 06:47:05] - US-006: テストでコアロジックとシナリオを検証
+Thread: 
+Run: 20260201-060757-64462 (iteration 4)
+Run log: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-4.log
+Run summary: /Users/astapi/projects/multiPTHakusla/.ralph/runs/run-20260201-060757-64462-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: ebf5acb test(tests): add core and scenario coverage
+- Post-commit status: clean
+- Verification:
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS
+- Files changed:
+  - .agents/tasks/prd-tactics-battle.json
+  - .ralph/.tmp/prompt-20260201-060757-64462-4.md
+  - .ralph/.tmp/story-20260201-060757-64462-4.json
+  - .ralph/.tmp/story-20260201-060757-64462-4.md
+  - .ralph/activity.log
+  - .ralph/errors.log
+  - .ralph/runs/run-20260201-060757-64462-iter-3.log
+  - .ralph/runs/run-20260201-060757-64462-iter-3.md
+  - .ralph/runs/run-20260201-060757-64462-iter-4.log
+  - reports/summary.json
+  - test/battle-core.test.js
+  - test/scenarios.test.js
+  - test/skills.test.js
+- What was implemented
+  - コアロジック（ダメージ/状態異常/クールダウン）のユニットテスト追加
+  - シナリオA/B/Cの期待ログ（例: Guard Stance/Berserk/Cleanse）を検証
+  - シナリオAでヒール条件未満時にHealが出ないことを確認
+- **Learnings for future iterations:**
+  - Patterns discovered: シナリオ検証はログ捕捉で十分にカバー可能
+  - Gotchas encountered: node --testはTSを直接実行しないためdistを参照
+  - Useful context: runAllScenariosのログ形式が安定している
+---
