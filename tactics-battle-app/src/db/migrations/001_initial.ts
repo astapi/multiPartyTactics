@@ -1,7 +1,7 @@
 export const MIGRATION_001 = `
 CREATE TABLE IF NOT EXISTS characters (
   id TEXT PRIMARY KEY,
-  slot_index INTEGER NOT NULL,
+  slot_index INTEGER,
   name TEXT NOT NULL,
   job_id TEXT NOT NULL,
   level INTEGER DEFAULT 1,

@@ -1,7 +1,9 @@
 import { Unit } from "@/game/battle";
 import { CharacterRecord } from "@/types/models";
 
-export const toUnit = (character: CharacterRecord): Unit => ({
+type PartyMemberRecord = CharacterRecord & { slotIndex: number };
+
+export const toUnit = (character: PartyMemberRecord): Unit => ({
   id: character.id,
   name: character.name,
   jobId: character.jobId,

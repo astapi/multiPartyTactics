@@ -42,8 +42,7 @@ export default function BattleScreen() {
   useEffect(() => {
     const load = async () => {
       reset();
-      const chars = await charactersRepository.list();
-      const selected = chars.sort((a, b) => a.slotIndex - b.slotIndex).slice(0, 6);
+      const selected = await charactersRepository.listPartyMembers();
       const units = selected.map(toUnit);
       const map: Record<string, TacticsRuleRecord[]> = {};
       for (const unit of units) {

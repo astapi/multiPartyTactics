@@ -12,15 +12,15 @@ import { JOB_DEFINITIONS } from "@/game/skills";
 import { TacticsRuleRecord } from "@/types/models";
 
 export default function TacticsScreen() {
-  const { characterId } = useLocalSearchParams<{ characterId: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { characters } = useCharacters();
-  const { rules, saveRules } = useTactics(characterId);
+  const { rules, saveRules } = useTactics(id);
   const [editing, setEditing] = useState<TacticsRuleRecord | undefined>(undefined);
   const [modalVisible, setModalVisible] = useState(false);
 
   const character = useMemo(
-    () => characters.find((c) => c.id === characterId),
-    [characters, characterId]
+    () => characters.find((c) => c.id === id),
+    [characters, id]
   );
   const skills = useMemo(() => {
     const job = JOB_DEFINITIONS.find((jobDef) => jobDef.id === character?.jobId);

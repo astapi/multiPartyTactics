@@ -1,132 +1,91 @@
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
-import { CharacterSlot } from "@/components/party/CharacterSlot";
-import { JobSelectModal } from "@/components/party/JobSelectModal";
-import { BASE_STATS_BY_JOB } from "@/constants/baseStats";
-import { useCharacters } from "@/hooks/useCharacters";
-import { JobId } from "@/types/models";
-import { generateId } from "@/utils/id";
-
-type EditingSlot = {
-  slotIndex: number;
-  id?: string;
-  initialName: string;
-  initialJobId: JobId;
-};
-
-const emptyEditing: EditingSlot = {
-  slotIndex: 0,
-  initialName: "",
-  initialJobId: "GUARDIAN",
-};
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Card } from "@/components/common/Card";
+import { CharacterSelectModal } from "@/components/party/CharacterSelectModal";
+import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { CharacterRecord } from "@/types/models";
 
 export default function PartyScreen() {
-  const router = useRouter();
-  const { characters, saveCharacter, removeCharacter } = useCharacters();
-  const [editing, setEditing] = useState<EditingSlot | null>(null);
-  const [name, setName] = useState("");
-  const [jobId, setJobId] = useState<JobId>("GUARDIAN");
-  const [jobModalVisible, setJobModalVisible] = useState(false);
+  const [characters, setCharacters] = useState<CharacterRecord[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
-  const slotMap = useMemo(() => {
-    const map = new Map<number, (typeof characters)[number]>();
-    for (const c of characters) map.set(c.slotIndex, c);
-    return map;
-  }, [characters]);
+  const load = useCallback(async () => {
+    const list = await charactersRepository.list();
+    setCharacters(list);
+  }, []);
 
-  const openEditor = (slotIndex: number) => {
-    const found = slotMap.get(slotIndex);
-    const next: EditingSlot = found
-      ? { slotIndex, id: found.id, initialName: found.name, initialJobId: found.jobId }
-      : { ...emptyEditing, slotIndex };
-    setEditing(next);
-    setName(next.initialName || `Unit ${slotIndex + 1}`);
-    setJobId(next.initialJobId);
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
+
+  const slotMap = new Map<number, CharacterRecord>();
+  for (const c of characters) {
+    if (c.slotIndex !== null) {
+      slotMap.set(c.slotIndex, c);
+    }
+  }
+
+  const onSelectCharacter = async (character: CharacterRecord) => {
+    if (selectedSlot === null) return;
+    await charactersRepository.assignToSlot(character.id, selectedSlot);
+    await load();
+    setSelectedSlot(null);
   };
 
-  const onSave = async () => {
-    if (!editing) return;
-    const base = BASE_STATS_BY_JOB[jobId];
-    const id = editing.id ?? generateId("char");
-    await saveCharacter({
-      id,
-      slotIndex: editing.slotIndex,
-      name: name.trim() || `Unit ${editing.slotIndex + 1}`,
-      jobId,
-      level: 1,
-      baseMaxHp: base.maxHp,
-      baseAtk: base.atk,
-      baseDef: base.def,
-      baseSpd: base.spd,
-      baseMaxMp: base.maxMp,
-      baseMpRegen: base.mpRegen,
-      currentHp: base.maxHp,
-      currentMp: base.maxMp,
-    });
-    setEditing(null);
+  const onClearSlot = async () => {
+    if (selectedSlot === null) return;
+    const current = slotMap.get(selectedSlot);
+    if (current) {
+      await charactersRepository.removeFromSlot(current.id);
+      await load();
+    }
+    setSelectedSlot(null);
   };
+
+  const partyMembers = Array.from({ length: 6 }).map((_, index) => slotMap.get(index));
+  const memberCount = partyMembers.filter(Boolean).length;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>PT編成 (6 Slots)</Text>
+      <Text style={styles.title}>PT編成</Text>
+      <Text style={styles.subtitle}>編成中: {memberCount}/6</Text>
+
       <View style={styles.slotList}>
-        {Array.from({ length: 6 }).map((_, index) => {
-          const character = slotMap.get(index);
-          return (
-            <CharacterSlot
-              key={index}
-              slotIndex={index}
-              character={character}
-              onEdit={() => openEditor(index)}
-              onDelete={async () => {
-                if (!character) return;
-                await removeCharacter(character.id);
-              }}
-              onTactics={() => {
-                if (!character) return;
-                router.push(`/party/${character.id}/tactics`);
-              }}
-            />
-          );
-        })}
+        {partyMembers.map((character, index) => (
+          <Pressable
+            key={index}
+            style={styles.slotPressable}
+            onPress={() => setSelectedSlot(index)}
+          >
+            <Card style={styles.slotCard}>
+              <Text style={styles.slotLabel}>スロット {index + 1}</Text>
+              {character ? (
+                <>
+                  <Text style={styles.characterName}>{character.name}</Text>
+                  <Text style={styles.characterJob}>{character.jobId}</Text>
+                  <View style={styles.statsRow}>
+                    <Text style={styles.statText}>HP: {character.baseMaxHp}</Text>
+                    <Text style={styles.statText}>ATK: {character.baseAtk}</Text>
+                  </View>
+                </>
+              ) : (
+                <Text style={styles.emptyText}>タップしてキャラクターを配置</Text>
+              )}
+            </Card>
+          </Pressable>
+        ))}
       </View>
 
-      {editing && (
-        <View style={styles.editorCard}>
-          <Text style={styles.editorTitle}>キャラ編集</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Name"
-            placeholderTextColor="#71717a"
-            style={styles.input}
-          />
-          <Pressable
-            style={styles.jobSelector}
-            onPress={() => setJobModalVisible(true)}
-          >
-            <Text style={styles.jobSelectorText}>Job: {jobId}</Text>
-          </Pressable>
-          <View style={styles.editorButtons}>
-            <Pressable style={[styles.editorButton, styles.saveButton]} onPress={() => void onSave()}>
-              <Text style={styles.editorButtonText}>保存</Text>
-            </Pressable>
-            <Pressable style={[styles.editorButton, styles.cancelButton]} onPress={() => setEditing(null)}>
-              <Text style={styles.editorButtonText}>キャンセル</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      <JobSelectModal
-        visible={jobModalVisible}
-        selectedJobId={jobId}
-        onSelect={(selected) => {
-          setJobId(selected as JobId);
-          setJobModalVisible(false);
-        }}
-        onClose={() => setJobModalVisible(false)}
+      <CharacterSelectModal
+        visible={selectedSlot !== null}
+        characters={characters}
+        slotIndex={selectedSlot ?? 0}
+        onSelect={onSelectCharacter}
+        onClear={onClearSlot}
+        onClose={() => setSelectedSlot(null)}
       />
     </ScrollView>
   );
@@ -135,43 +94,37 @@ export default function PartyScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#09090b" },
   content: { padding: 16 },
-  title: { marginBottom: 16, fontSize: 28, fontWeight: "700", color: "#ffffff" },
+  title: { marginBottom: 4, fontSize: 28, fontWeight: "700", color: "#ffffff" },
+  subtitle: { marginBottom: 16, fontSize: 14, color: "#a1a1aa" },
   slotList: { gap: 12 },
-  editorCard: {
-    marginTop: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#3f3f46",
-    backgroundColor: "#18181b",
-    padding: 16,
-  },
-  editorTitle: { marginBottom: 8, fontSize: 18, fontWeight: "600", color: "#ffffff" },
-  input: {
+  slotPressable: { borderRadius: 16 },
+  slotCard: { marginBottom: 0 },
+  slotLabel: {
     marginBottom: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#3f3f46",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#71717a",
+  },
+  characterName: {
+    fontSize: 18,
+    fontWeight: "600",
     color: "#ffffff",
   },
-  jobSelector: {
-    marginBottom: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#3f3f46",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  characterJob: {
+    marginTop: 2,
+    color: "#a1a1aa",
   },
-  jobSelectorText: { color: "#f4f4f5" },
-  editorButtons: { flexDirection: "row", gap: 8 },
-  editorButton: {
-    flex: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+  statsRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    gap: 16,
+  },
+  statText: {
+    fontSize: 12,
+    color: "#d4d4d8",
+  },
+  emptyText: {
     paddingVertical: 12,
+    color: "#71717a",
   },
-  saveButton: { backgroundColor: "#059669" },
-  cancelButton: { backgroundColor: "#3f3f46" },
-  editorButtonText: { textAlign: "center", fontWeight: "600", color: "#ffffff" },
 });

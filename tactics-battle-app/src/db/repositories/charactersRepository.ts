@@ -1,6 +1,8 @@
 import { getDb } from "@/db/database";
 import { CharacterRecord, JobId } from "@/types/models";
 
+type PartyMemberRecord = CharacterRecord & { slotIndex: number };
+
 const mapCharacter = (row: any): CharacterRecord => ({
   id: row.id,
   slotIndex: row.slot_index,
@@ -51,5 +53,38 @@ export const charactersRepository = {
   async deleteById(id: string): Promise<void> {
     const db = await getDb();
     await db.runAsync("DELETE FROM characters WHERE id = ?", [id]);
+  },
+
+  async getById(id: string): Promise<CharacterRecord | null> {
+    const db = await getDb();
+    const row = await db.getFirstAsync<any>("SELECT * FROM characters WHERE id = ?", [id]);
+    return row ? mapCharacter(row) : null;
+  },
+
+  async listPartyMembers(): Promise<PartyMemberRecord[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<any>(
+      "SELECT * FROM characters WHERE slot_index IS NOT NULL ORDER BY slot_index ASC"
+    );
+    return rows.map(mapCharacter).filter((record): record is PartyMemberRecord => record.slotIndex !== null);
+  },
+
+  async listUnassigned(): Promise<CharacterRecord[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<any>(
+      "SELECT * FROM characters WHERE slot_index IS NULL ORDER BY name ASC"
+    );
+    return rows.map(mapCharacter);
+  },
+
+  async assignToSlot(characterId: string, slotIndex: number): Promise<void> {
+    const db = await getDb();
+    await db.runAsync("UPDATE characters SET slot_index = NULL WHERE slot_index = ?", [slotIndex]);
+    await db.runAsync("UPDATE characters SET slot_index = ? WHERE id = ?", [slotIndex, characterId]);
+  },
+
+  async removeFromSlot(characterId: string): Promise<void> {
+    const db = await getDb();
+    await db.runAsync("UPDATE characters SET slot_index = NULL WHERE id = ?", [characterId]);
   },
 };

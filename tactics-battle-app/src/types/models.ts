@@ -2,7 +2,7 @@ export type JobId = "GUARDIAN" | "CLERIC" | "BLADE" | "ARCANE";
 
 export type CharacterRecord = {
   id: string;
-  slotIndex: number;
+  slotIndex: number | null;
   name: string;
   jobId: JobId;
   level: number;
