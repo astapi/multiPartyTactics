@@ -100,6 +100,13 @@ export const applyDamage = (target: Unit, amount: number): number => {
   return actual;
 };
 
+export const applyFixedDamage = (target: Unit, amount: number): number => {
+  const adjusted = amount <= 0 ? 0 : Math.max(1, Math.floor(amount));
+  const actual = Math.max(0, Math.min(target.hp, adjusted));
+  target.hp -= actual;
+  return actual;
+};
+
 export const applyHealing = (target: Unit, amount: number): number => {
   const actual = Math.max(0, Math.min(target.stats.maxHp - target.hp, amount));
   target.hp += actual;
@@ -218,8 +225,7 @@ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
 
   for (const status of unit.statusEffects) {
     if (status.type === "POISON") {
-      const damage = status.potency ?? 0;
-      poisonedDamage += damage;
+      poisonedDamage += status.potency ?? 0;
     }
 
     if (status.type === "STUN") {
@@ -230,7 +236,7 @@ export const tickStatusesOnTurnStart = (unit: Unit): StatusTickResult => {
   }
 
   if (poisonedDamage > 0) {
-    applyDamage(unit, poisonedDamage);
+    applyFixedDamage(unit, poisonedDamage);
   }
 
   for (let i = unit.statusEffects.length - 1; i >= 0; i -= 1) {

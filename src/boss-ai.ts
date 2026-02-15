@@ -56,9 +56,9 @@ export const selectVenomTyrantAction = (
   const crushingSlam = getSkillById(VENOM_TYRANT_SKILLS, "crushing_slam");
   if (crushingSlam && isSkillUsable(boss, crushingSlam)) {
     const tank = pickTank(allies);
-    if (turn % 3 === 0 || tank) {
-      const target = tank ?? pickHighestHp(allies);
-      return { skill: crushingSlam, target };
+    const highestHp = pickHighestHp(allies);
+    if (turn % 3 === 0 || (tank && highestHp.id === tank.id)) {
+      return { skill: crushingSlam, target: highestHp };
     }
   }
 
