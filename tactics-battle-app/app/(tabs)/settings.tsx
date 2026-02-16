@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft } from "lucide-react-native";
 import { resetDatabase } from "@/db/database";
 import { useI18n } from "@/i18n";
 
@@ -16,7 +15,6 @@ const colors = {
 } as const;
 
 export default function SettingsScreen() {
-  const router = useRouter();
   const { t } = useI18n();
   const [isResetting, setIsResetting] = useState(false);
   const [bgmOn, setBgmOn] = useState(true);
@@ -46,13 +44,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Pressable style={styles.iconBtn} onPress={() => router.back()}>
-            <ArrowLeft size={18} stroke={colors.textPrimary} />
-          </Pressable>
-          <Text style={styles.headerTitle}>{t("settings.header")}</Text>
-        </View>
-        <View style={styles.iconBtnDisabled} />
+        <Text style={styles.headerTitle}>{t("settings.header")}</Text>
       </View>
 
       <View style={styles.content}>
@@ -92,10 +84,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgPrimary },
-  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, paddingHorizontal: 20 },
-  headerLeft: { alignItems: "center", flexDirection: "row", gap: 12 },
-  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, alignItems: "center", justifyContent: "center" },
-  iconBtnDisabled: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, opacity: 0.6 },
+  header: { paddingVertical: 12, paddingHorizontal: 20 },
   headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
   content: { paddingHorizontal: 20, paddingTop: 16, gap: 20 },
   section: { gap: 8 },
