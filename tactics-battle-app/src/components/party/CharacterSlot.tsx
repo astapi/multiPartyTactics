@@ -16,7 +16,7 @@ export const CharacterSlot = ({ slotIndex, character, onEdit, onDelete, onTactic
     <View style={styles.headerRow}>
       <Text style={styles.slotTitle}>Slot {slotIndex + 1}</Text>
       {character ? (
-        <Text style={styles.jobText}>{character.jobId}</Text>
+        <Text style={styles.classText}>{character.classId}</Text>
       ) : (
         <Text style={styles.emptyText}>Empty</Text>
       )}
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   card: { gap: 12 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   slotTitle: { fontSize: 18, fontWeight: "600", color: "#ffffff" },
-  jobText: { color: "#d4d4d8" },
+  classText: { color: "#d4d4d8" },
   emptyText: { color: "#71717a" },
   nameText: { color: "#e4e4e7" },
   buttonRow: { flexDirection: "row", gap: 8 },

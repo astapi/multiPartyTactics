@@ -6,7 +6,7 @@ type PartyMemberRecord = CharacterRecord & { slotIndex: number };
 export const toUnit = (character: PartyMemberRecord): Unit => ({
   id: character.id,
   name: character.name,
-  jobId: character.jobId,
+  classId: character.classId,
   stats: {
     maxHp: character.baseMaxHp,
     atk: character.baseAtk,

@@ -43,7 +43,7 @@ export type Unit = {
   statusEffects: StatusEffect[];
   effects: Effect[];
   cooldowns: Record<string, number>;
-  jobId?: string;
+  classId?: string;
   order: number;
 };
 

@@ -1,18 +1,19 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import {
   ChevronRight,
   Coins,
   Plus,
-  Shield,
   User,
   UserPlus,
   Users,
-  Wand,
 } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getClassById } from "@/constants/classes";
+import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { useI18n } from "@/i18n";
+import { CharacterRecord } from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -34,14 +35,17 @@ export default function GuildScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<GuildTab>("hire");
+  const [characters, setCharacters] = useState<CharacterRecord[]>([]);
 
-  const hireItems = useMemo(
-    () => [
-      { name: "Roland", role: t("guild.role.knight"), cost: 2000, icon: <Shield size={20} stroke={colors.textSecondary} /> },
-      { name: "Elara", role: t("guild.role.mage"), cost: 2500, icon: <Wand size={20} stroke={colors.textSecondary} /> },
-      { name: "Mira", role: t("guild.role.healer"), cost: 3000, icon: <User size={20} stroke={colors.textSecondary} /> },
-    ],
-    [t]
+  const loadCharacters = useCallback(async () => {
+    const list = await charactersRepository.list();
+    setCharacters(list);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadCharacters();
+    }, [loadCharacters])
   );
 
   const parties = useMemo(
@@ -108,16 +112,23 @@ export default function GuildScreen() {
         {activeTab === "hire" ? (
           <>
             <Text style={styles.sectionLabel}>{t("guild.section.hire")}</Text>
-            {hireItems.map((item) => (
-              <Pressable key={item.name} style={({ pressed }) => [styles.listCard, pressed ? styles.listCardPressed : null]}>
-                <View style={styles.avatarCircle}>{item.icon}</View>
+            {characters.map((character) => (
+              <Pressable key={character.id} style={({ pressed }) => [styles.listCard, pressed ? styles.listCardPressed : null]}>
+                <View style={styles.avatarCircle}>
+                  <Image source={getClassById(character.classId).image} style={styles.avatarImage} />
+                </View>
                 <View style={styles.listTextWrap}>
-                  <Text style={styles.listTitle}>{item.name}</Text>
-                  <Text style={styles.listSub}>{`${item.role}  •  ${item.cost.toLocaleString()} G`}</Text>
+                  <Text style={styles.listTitle}>{character.name}</Text>
+                  <Text style={styles.listSub}>{`${character.classId}  •  Lv.${character.level}`}</Text>
                 </View>
                 <ChevronRight size={18} stroke={colors.iconSecondary} />
               </Pressable>
             ))}
+            {characters.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <Text style={styles.emptyText}>{t("guild.hire.empty")}</Text>
+              </View>
+            ) : null}
             <Pressable style={({ pressed }) => [styles.createButton, pressed ? styles.listCardPressed : null]} onPress={() => router.push("/guild/hire")}>
               <UserPlus size={18} stroke={colors.iconSecondary} />
               <Text style={styles.createButtonText}>{t("guild.hire.create")}</Text>
@@ -217,14 +228,26 @@ const styles = StyleSheet.create({
   avatarCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.bgElevated,
+    overflow: "hidden",
   },
+  avatarImage: { width: "100%", height: "100%" },
   listTextWrap: { flex: 1, gap: 2 },
   listTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
   listSub: { color: colors.textTertiary, fontSize: 10, fontWeight: "400" },
+  emptyBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSurface,
+    paddingVertical: 24,
+  },
+  emptyText: { color: colors.textTertiary, fontSize: 13, fontWeight: "500" },
   createButton: {
     alignItems: "center",
     justifyContent: "center",

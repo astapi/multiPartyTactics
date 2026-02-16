@@ -1,10 +1,16 @@
-export type JobId = "GUARDIAN" | "CLERIC" | "BLADE" | "ARCANE";
+export type ClassId =
+  | "GUARDIAN"
+  | "SWORDMAN"
+  | "BERSERKER"
+  | "CLERIC"
+  | "WITCH"
+  | "THIEF";
 
 export type CharacterRecord = {
   id: string;
   slotIndex: number | null;
   name: string;
-  jobId: JobId;
+  classId: ClassId;
   level: number;
   baseMaxHp: number;
   baseAtk: number;

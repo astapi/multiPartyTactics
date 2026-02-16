@@ -8,7 +8,7 @@ import { RuleEditModal } from "@/components/tactics/RuleEditModal";
 import { RuleItem } from "@/components/tactics/RuleItem";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useTactics } from "@/hooks/useTactics";
-import { JOB_DEFINITIONS } from "@/game/skills";
+import { CLASS_DEFINITIONS } from "@/game/skills";
 import { TacticsRuleRecord } from "@/types/models";
 
 export default function TacticsScreen() {
@@ -23,9 +23,9 @@ export default function TacticsScreen() {
     [characters, id]
   );
   const skills = useMemo(() => {
-    const job = JOB_DEFINITIONS.find((jobDef) => jobDef.id === character?.jobId);
-    return job?.skills ?? [];
-  }, [character?.jobId]);
+    const classDef = CLASS_DEFINITIONS.find((definition) => definition.id === character?.classId);
+    return classDef?.skills ?? [];
+  }, [character?.classId]);
 
   if (!character) {
     return (

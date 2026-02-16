@@ -3,8 +3,8 @@ import { Stack, useRouter } from "expo-router";
 import { ArrowLeft, Coins, PenLine, UserPlus } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CLASS_DATA, ClassInfo } from "@/constants/classes";
-import { BASE_STATS_BY_JOB } from "@/constants/baseStats";
+import { CLASS_MASTER, ClassInfo } from "@/constants/classes";
+import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { generateId } from "@/utils/id";
 
@@ -23,7 +23,7 @@ const colors = {
 
 export default function HireScreen() {
   const router = useRouter();
-  const [selectedClass, setSelectedClass] = useState<ClassInfo>(CLASS_DATA[0]);
+  const [selectedClass, setSelectedClass] = useState<ClassInfo>(CLASS_MASTER[0]);
   const [name, setName] = useState("");
 
   const handleCreate = async () => {
@@ -34,13 +34,13 @@ export default function HireScreen() {
     }
 
     try {
-      const base = BASE_STATS_BY_JOB[selectedClass.id];
+      const base = BASE_STATS_BY_CLASS[selectedClass.id];
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
         slotIndex: null,
         name: trimmedName,
-        jobId: selectedClass.id,
+        classId: selectedClass.id,
         level: 1,
         baseMaxHp: base.maxHp,
         baseAtk: base.atk,
@@ -84,26 +84,26 @@ export default function HireScreen() {
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedClass.stats.hp}</Text>
+                <Text style={styles.statValue}>{selectedClass.baseStats.maxHp}</Text>
                 <Text style={styles.statLabel}>HP</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedClass.stats.mp}</Text>
+                <Text style={styles.statValue}>{selectedClass.baseStats.maxMp}</Text>
                 <Text style={styles.statLabel}>MP</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedClass.stats.atk}</Text>
+                <Text style={styles.statValue}>{selectedClass.baseStats.atk}</Text>
                 <Text style={styles.statLabel}>ATK</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{selectedClass.stats.def}</Text>
+                <Text style={styles.statValue}>{selectedClass.baseStats.def}</Text>
                 <Text style={styles.statLabel}>DEF</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.classGrid}>
-            {CLASS_DATA.map((classInfo) => {
+            {CLASS_MASTER.map((classInfo) => {
               const isSelected = classInfo.id === selectedClass.id;
               return (
                 <Pressable
@@ -114,9 +114,6 @@ export default function HireScreen() {
                   <View style={styles.classItemAvatar}>
                     <Image source={classInfo.image} style={styles.classItemImage} />
                   </View>
-                  <Text style={[styles.classItemName, isSelected ? styles.classItemNameSelected : null]}>
-                    {classInfo.name}
-                  </Text>
                 </Pressable>
               );
             })}
@@ -213,19 +210,15 @@ const styles = StyleSheet.create({
   classItem: {
     flex: 1,
     alignItems: "center",
-    gap: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
+    gap: 0,
     paddingVertical: 10,
     paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
   },
-  classItemSelected: { borderWidth: 2, borderColor: colors.borderActive },
+  classItemSelected: { borderBottomColor: colors.borderActive },
   classItemAvatar: { width: 44, height: 44, borderRadius: 14, overflow: "hidden" },
   classItemImage: { width: "100%", height: "100%" },
-  classItemName: { fontSize: 10, fontWeight: "500", color: colors.textTertiary },
-  classItemNameSelected: { fontWeight: "700", color: colors.textPrimary },
   divider: { height: 1, backgroundColor: colors.bgElevated },
   nameSection: { paddingVertical: 16, paddingHorizontal: 20, gap: 10 },
   nameInputWrap: {

@@ -1,16 +1,11 @@
 import en from "./locales/en.json";
 import ja from "./locales/ja.json";
-
-type Locale = "ja" | "en";
+import { Locale } from "./locale";
+import { useLocaleStore } from "@/stores/localeStore";
 
 const translations = { ja, en } as const;
 
 type TranslationKey = keyof (typeof translations)["ja"];
-
-const detectLocale = (): Locale => {
-  const locale = Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase();
-  return locale.startsWith("ja") ? "ja" : "en";
-};
 
 const interpolate = (template: string, params?: Record<string, string | number>): string => {
   if (!params) return template;
@@ -20,7 +15,7 @@ const interpolate = (template: string, params?: Record<string, string | number>)
 };
 
 export const useI18n = () => {
-  const locale = detectLocale();
+  const locale = useLocaleStore((state) => state.locale);
 
   const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
     const value = translations[locale][key] ?? translations.en[key];

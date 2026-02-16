@@ -1,9 +1,8 @@
 export const MIGRATION_001 = `
 CREATE TABLE IF NOT EXISTS characters (
   id TEXT PRIMARY KEY,
-  slot_index INTEGER,
   name TEXT NOT NULL,
-  job_id TEXT NOT NULL,
+  class_id TEXT NOT NULL CHECK (class_id IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')),
   level INTEGER DEFAULT 1,
   base_max_hp INTEGER,
   base_atk INTEGER,
@@ -13,6 +12,29 @@ CREATE TABLE IF NOT EXISTS characters (
   base_mp_regen INTEGER,
   current_hp INTEGER,
   current_mp INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS parties (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS party_members (
+  party_id TEXT NOT NULL,
+  character_id TEXT NOT NULL,
+  slot_index INTEGER NOT NULL,
+  PRIMARY KEY (party_id, slot_index),
+  UNIQUE (party_id, character_id),
+  FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE CASCADE,
+  FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+);
+
+INSERT OR IGNORE INTO parties (id, name) VALUES ('party_default', 'Main Party');
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tactics_rules (
