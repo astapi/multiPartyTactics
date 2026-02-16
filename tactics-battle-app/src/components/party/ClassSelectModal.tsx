@@ -1,25 +1,25 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { JOB_OPTIONS } from "@/constants/jobs";
+import { CLASS_OPTIONS } from "@/constants/jobs";
 
 type Props = {
   visible: boolean;
-  selectedJobId: string;
-  onSelect: (jobId: string) => void;
+  selectedClassId: string;
+  onSelect: (classId: string) => void;
   onClose: () => void;
 };
 
-export const JobSelectModal = ({ visible, selectedJobId, onSelect, onClose }: Props) => (
+export const ClassSelectModal = ({ visible, selectedClassId, onSelect, onClose }: Props) => (
   <Modal visible={visible} transparent animationType="fade">
     <View style={styles.overlay}>
       <View style={styles.container}>
-        <Text style={styles.title}>ジョブ選択</Text>
-        {JOB_OPTIONS.map((job) => (
+        <Text style={styles.title}>クラス選択</Text>
+        {CLASS_OPTIONS.map((classOption) => (
           <Pressable
-            key={job.id}
-            onPress={() => onSelect(job.id)}
-            style={[styles.option, selectedJobId === job.id ? styles.optionSelected : styles.optionDefault]}
+            key={classOption.id}
+            onPress={() => onSelect(classOption.id)}
+            style={[styles.option, selectedClassId === classOption.id ? styles.optionSelected : styles.optionDefault]}
           >
-            <Text style={styles.optionLabel}>{job.label}</Text>
+            <Text style={styles.optionLabel}>{classOption.label}</Text>
           </Pressable>
         ))}
         <Pressable onPress={onClose} style={styles.closeButton}>

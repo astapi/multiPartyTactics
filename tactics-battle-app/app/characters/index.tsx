@@ -42,7 +42,7 @@ export default function CharactersScreen() {
                       <Text style={styles.slotBadge}>PT {character.slotIndex + 1}</Text>
                     )}
                   </View>
-                  <Text style={styles.jobText}>Job: {character.jobId}</Text>
+                  <Text style={styles.classText}>Class: {character.jobId}</Text>
                   <Text style={styles.levelText}>Lv.{character.level}</Text>
                 </Card>
               </Pressable>
@@ -87,6 +87,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ffffff",
   },
-  jobText: { marginTop: 4, color: "#a1a1aa" },
+  classText: { marginTop: 4, color: "#a1a1aa" },
   levelText: { marginTop: 2, color: "#71717a" },
 });

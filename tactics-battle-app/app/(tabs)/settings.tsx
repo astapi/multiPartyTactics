@@ -3,7 +3,10 @@ import { Stack } from "expo-router";
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { resetDatabase } from "@/db/database";
+import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { useI18n } from "@/i18n";
+import { Locale } from "@/i18n/locale";
+import { useLocaleStore } from "@/stores/localeStore";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -15,10 +18,26 @@ const colors = {
 } as const;
 
 export default function SettingsScreen() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const setLocale = useLocaleStore((state) => state.setLocale);
   const [isResetting, setIsResetting] = useState(false);
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [bgmOn, setBgmOn] = useState(true);
   const [sfxOn, setSfxOn] = useState(true);
+
+  const onSelectLanguage = async (nextLocale: Locale) => {
+    if (isSavingLanguage || locale === nextLocale) return;
+    setIsSavingLanguage(true);
+    try {
+      await settingsRepository.setLanguage(nextLocale);
+      setLocale(nextLocale);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert(t("settings.alert.failTitle"), `${t("settings.alert.failBody")}\n${message}`);
+    } finally {
+      setIsSavingLanguage(false);
+    }
+  };
 
   const runReset = async () => {
     setIsResetting(true);
@@ -51,9 +70,15 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
           <View style={styles.card}>
-            <View style={styles.row}><Text style={styles.rowText}>{t("settings.lang.ja")}</Text><Text style={styles.check}>●</Text></View>
+            <Pressable style={styles.row} onPress={() => void onSelectLanguage("ja")}>
+              <Text style={styles.rowText}>{t("settings.lang.ja")}</Text>
+              <Text style={locale === "ja" ? styles.check : styles.muted}>{locale === "ja" ? "●" : "○"}</Text>
+            </Pressable>
             <View style={styles.divider} />
-            <View style={styles.row}><Text style={styles.rowText}>{t("settings.lang.en")}</Text><Text style={styles.muted}>○</Text></View>
+            <Pressable style={styles.row} onPress={() => void onSelectLanguage("en")}>
+              <Text style={styles.rowText}>{t("settings.lang.en")}</Text>
+              <Text style={locale === "en" ? styles.check : styles.muted}>{locale === "en" ? "●" : "○"}</Text>
+            </Pressable>
           </View>
         </View>
 

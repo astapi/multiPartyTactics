@@ -1,12 +1,11 @@
 {
   "common.cancel": "キャンセル",
-
   "home.greeting": "おかえりなさい、",
   "home.playerName": "Adventurer",
   "home.menu.weapon.title": "武器・防具",
   "home.menu.weapon.desc": "装備を購入・更新する",
-  "home.menu.item.title": "ダンジョン",
-  "home.menu.item.desc": "ダンジョンへ出発する",
+  "home.menu.item.title": "アイテムショップ",
+  "home.menu.item.desc": "ポーション・巻物・補給品",
   "home.menu.party.title": "パーティ編成",
   "home.menu.party.desc": "6人編成をセット ({count}/{max})",
   "home.menu.premium.title": "プレミアムショップ",
@@ -15,7 +14,6 @@
   "home.tab.dungeon": "ダンジョン",
   "home.tab.guild": "ギルド",
   "home.tab.more": "その他",
-
   "guild.header.sub": "冒険者ギルド",
   "guild.header.title": "ギルド",
   "guild.tab.hire": "雇用",
@@ -32,14 +30,12 @@
   "guild.party.alpha.sub": "推奨戦力 6,200",
   "guild.party.beta": "Beta Squad",
   "guild.party.beta.sub": "推奨戦力 3,100",
-
   "party.header.title": "Party Formation",
   "party.section.current": "CURRENT PARTY",
   "party.section.available": "AVAILABLE ADVENTURERS",
   "party.available.count": "{count} members",
   "party.slot.empty": "Empty Slot",
   "party.slot.tap": "タップして配置",
-
   "character.empty": "キャラクターが見つかりません",
   "character.equipment": "EQUIPMENT",
   "character.tactics": "TACTICS RULES",
@@ -47,7 +43,6 @@
   "character.addRule": "追加",
   "character.tactics.info": "ルールは上から順に実行されます。",
   "character.tactics.empty": "ルールが未設定です。",
-
   "equip.header.title": "Change Equipment",
   "equip.tab.weapon": "Weapon",
   "equip.tab.armor": "Armor",
@@ -57,14 +52,12 @@
   "equip.inventory": "INVENTORY",
   "equip.tap": "タップして装備",
   "equip.unequip": "装備を外す",
-
   "shop.equip.header": "Weapon & Armor",
   "shop.equip.tab.weapons": "Weapons",
   "shop.equip.tab.armor": "Armor",
   "shop.equip.tab.accessories": "Accessories",
   "shop.equip.buy": "購入",
   "shop.equip.sell": "装備売却",
-
   "shop.premium.header": "Premium Shop",
   "shop.premium.gempacks": "GEM PACKS",
   "shop.premium.pack": "{gem} Gems",
@@ -73,7 +66,6 @@
   "shop.premium.bundle": "SPECIAL BUNDLES",
   "shop.premium.bundleName": "Beginner's Bundle",
   "shop.premium.bundleDesc": "100 Gems + 5,000 Gold + 10 HP Potions",
-
   "settings.header": "Settings",
   "settings.language": "LANGUAGE",
   "settings.lang.ja": "日本語",
@@ -91,12 +83,12 @@
   "settings.alert.doneBody": "データベースを初期化しました。",
   "settings.alert.failTitle": "初期化失敗",
   "settings.alert.failBody": "データベース初期化に失敗しました。",
-
   "dungeon.header.sub": "深層を探索しよう",
   "dungeon.header.title": "Dungeon",
   "dungeon.selectParty": "SELECT PARTY",
   "dungeon.selectDungeon": "SELECT DUNGEON",
   "dungeon.selectFloor": "SELECT FLOOR",
   "dungeon.progress": "進行: Floor {floor} / {max}",
-  "dungeon.deploy": "Deploy Party"
+  "dungeon.deploy": "Deploy Party",
+  "guild.hire.empty": "まだ冒険者がいません"
 }

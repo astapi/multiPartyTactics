@@ -24,6 +24,8 @@ npx expo start
 ## データ保存
 
 - `expo-sqlite` で以下テーブルを初期化
+  - `parties`
+  - `party_members`
   - `characters`
   - `tactics_rules`
   - `dungeon_progress`

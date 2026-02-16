@@ -1,4 +1,10 @@
-export type JobId = "GUARDIAN" | "CLERIC" | "BLADE" | "ARCANE";
+export type JobId =
+  | "GUARDIAN"
+  | "SWORDMAN"
+  | "BERSERKER"
+  | "CLERIC"
+  | "WITCH"
+  | "THIEF";
 
 export type CharacterRecord = {
   id: string;

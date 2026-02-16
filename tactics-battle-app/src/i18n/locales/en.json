@@ -1,12 +1,11 @@
 {
   "common.cancel": "Cancel",
-
   "home.greeting": "Welcome back,",
   "home.playerName": "Adventurer",
   "home.menu.weapon.title": "Weapon & Armor",
   "home.menu.weapon.desc": "Buy and upgrade equipment",
-  "home.menu.item.title": "Dungeon",
-  "home.menu.item.desc": "Head into the dungeon",
+  "home.menu.item.title": "Item Shop",
+  "home.menu.item.desc": "Potions, scrolls & supplies",
   "home.menu.party.title": "Party Formation",
   "home.menu.party.desc": "Set up your party ({count}/{max})",
   "home.menu.premium.title": "Premium Shop",
@@ -15,7 +14,6 @@
   "home.tab.dungeon": "Dungeon",
   "home.tab.guild": "Guild",
   "home.tab.more": "More",
-
   "guild.header.sub": "Adventurer Guild",
   "guild.header.title": "Guild",
   "guild.tab.hire": "Hire",
@@ -32,14 +30,12 @@
   "guild.party.alpha.sub": "Recommended Power 6,200",
   "guild.party.beta": "Beta Squad",
   "guild.party.beta.sub": "Recommended Power 3,100",
-
   "party.header.title": "Party Formation",
   "party.section.current": "CURRENT PARTY",
   "party.section.available": "AVAILABLE ADVENTURERS",
   "party.available.count": "{count} members",
   "party.slot.empty": "Empty Slot",
   "party.slot.tap": "Tap to assign",
-
   "character.empty": "Character not found",
   "character.equipment": "EQUIPMENT",
   "character.tactics": "TACTICS RULES",
@@ -47,7 +43,6 @@
   "character.addRule": "Add",
   "character.tactics.info": "Rules are executed from top to bottom.",
   "character.tactics.empty": "No tactics rules yet.",
-
   "equip.header.title": "Change Equipment",
   "equip.tab.weapon": "Weapon",
   "equip.tab.armor": "Armor",
@@ -57,14 +52,12 @@
   "equip.inventory": "INVENTORY",
   "equip.tap": "Tap to equip",
   "equip.unequip": "Unequip",
-
   "shop.equip.header": "Weapon & Armor",
   "shop.equip.tab.weapons": "Weapons",
   "shop.equip.tab.armor": "Armor",
   "shop.equip.tab.accessories": "Accessories",
   "shop.equip.buy": "Buy",
   "shop.equip.sell": "Sell Equipment",
-
   "shop.premium.header": "Premium Shop",
   "shop.premium.gempacks": "GEM PACKS",
   "shop.premium.pack": "{gem} Gems",
@@ -73,7 +66,6 @@
   "shop.premium.bundle": "SPECIAL BUNDLES",
   "shop.premium.bundleName": "Beginner's Bundle",
   "shop.premium.bundleDesc": "100 Gems + 5,000 Gold + 10 HP Potions",
-
   "settings.header": "Settings",
   "settings.language": "LANGUAGE",
   "settings.lang.ja": "Japanese",
@@ -91,12 +83,12 @@
   "settings.alert.doneBody": "Database has been reset.",
   "settings.alert.failTitle": "Reset Failed",
   "settings.alert.failBody": "Failed to reset database.",
-
   "dungeon.header.sub": "Explore the depths",
   "dungeon.header.title": "Dungeon",
   "dungeon.selectParty": "SELECT PARTY",
   "dungeon.selectDungeon": "SELECT DUNGEON",
   "dungeon.selectFloor": "SELECT FLOOR",
   "dungeon.progress": "Progress: Floor {floor} / {max}",
-  "dungeon.deploy": "Deploy Party"
+  "dungeon.deploy": "Deploy Party",
+  "guild.hire.empty": "No adventurers yet"
 }

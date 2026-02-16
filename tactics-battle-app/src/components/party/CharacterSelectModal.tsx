@@ -42,7 +42,7 @@ export function CharacterSelectModal({
                   onPress={() => onSelect(character)}
                 >
                   <Text style={styles.characterName}>{character.name}</Text>
-                  <Text style={styles.characterJob}>{character.jobId}</Text>
+                  <Text style={styles.characterClass}>{character.jobId}</Text>
                   {character.slotIndex === slotIndex && (
                     <Text style={styles.currentBadge}>現在配置中</Text>
                   )}
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ffffff",
   },
-  characterJob: {
+  characterClass: {
     marginTop: 2,
     color: "#a1a1aa",
   },

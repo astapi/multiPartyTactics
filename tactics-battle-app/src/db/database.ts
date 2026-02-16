@@ -15,6 +15,17 @@ export const initializeDatabase = async (): Promise<void> => {
   const db = await getDb();
   await db.execAsync("PRAGMA foreign_keys = ON;");
   await db.execAsync(MIGRATION_001);
+  const invalidClass = await db.getFirstAsync<{ job_id: string }>(
+    `SELECT job_id
+     FROM characters
+     WHERE job_id NOT IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')
+     LIMIT 1`
+  );
+  if (invalidClass) {
+    throw new Error(
+      `Invalid class id found in DB (${invalidClass.job_id}). Reset database and recreate characters.`
+    );
+  }
 };
 
 export const resetDatabase = async (): Promise<void> => {

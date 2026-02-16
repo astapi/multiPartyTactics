@@ -1,4 +1,5 @@
 import { Action, Effect, StatusEffect, StatusType, Unit } from "../battle";
+import { JobId } from "@/types/models";
 
 export type SkillTarget = "SELF" | "ALLY" | "ENEMY";
 
@@ -75,8 +76,6 @@ export type Skill = {
   effects?: SkillEffect[];
   tags: string[];
 };
-
-export type JobId = "GUARDIAN" | "CLERIC" | "BLADE" | "ARCANE";
 
 export type JobDefinition = {
   id: JobId;

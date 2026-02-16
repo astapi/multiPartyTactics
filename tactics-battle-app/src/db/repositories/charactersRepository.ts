@@ -1,28 +1,47 @@
 import { getDb } from "@/db/database";
+import { isClassId } from "@/constants/classes";
 import { CharacterRecord, JobId } from "@/types/models";
 
 type PartyMemberRecord = CharacterRecord & { slotIndex: number };
+const DEFAULT_PARTY_ID = "party_default";
 
-const mapCharacter = (row: any): CharacterRecord => ({
-  id: row.id,
-  slotIndex: row.slot_index,
-  name: row.name,
-  jobId: row.job_id as JobId,
-  level: row.level,
-  baseMaxHp: row.base_max_hp,
-  baseAtk: row.base_atk,
-  baseDef: row.base_def,
-  baseSpd: row.base_spd,
-  baseMaxMp: row.base_max_mp,
-  baseMpRegen: row.base_mp_regen,
-  currentHp: row.current_hp,
-  currentMp: row.current_mp,
-});
+const mapCharacter = (row: any): CharacterRecord => {
+  const rawJobId = String(row.job_id ?? "");
+  if (!isClassId(rawJobId)) {
+    throw new Error(`Invalid class id found in DB: ${rawJobId}`);
+  }
+  const jobId: JobId = rawJobId;
+  return {
+    id: row.id,
+    slotIndex: row.slot_index ?? null,
+    name: row.name,
+    jobId,
+    level: row.level,
+    baseMaxHp: row.base_max_hp,
+    baseAtk: row.base_atk,
+    baseDef: row.base_def,
+    baseSpd: row.base_spd,
+    baseMaxMp: row.base_max_mp,
+    baseMpRegen: row.base_mp_regen,
+    currentHp: row.current_hp,
+    currentMp: row.current_mp,
+  };
+};
 
 export const charactersRepository = {
   async list(): Promise<CharacterRecord[]> {
     const db = await getDb();
-    const rows = await db.getAllAsync<any>("SELECT * FROM characters ORDER BY slot_index ASC");
+    const rows = await db.getAllAsync<any>(
+      `SELECT c.*, pm.slot_index
+       FROM characters c
+       LEFT JOIN party_members pm
+         ON pm.character_id = c.id AND pm.party_id = ?
+       ORDER BY
+         CASE WHEN pm.slot_index IS NULL THEN 1 ELSE 0 END ASC,
+         pm.slot_index ASC,
+         c.name ASC`,
+      [DEFAULT_PARTY_ID]
+    );
     return rows.map(mapCharacter);
   },
 
@@ -30,11 +49,10 @@ export const charactersRepository = {
     const db = await getDb();
     await db.runAsync(
       `INSERT OR REPLACE INTO characters
-      (id, slot_index, name, job_id, level, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, name, job_id, level, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
-        record.slotIndex,
         record.name,
         record.jobId,
         record.level,
@@ -57,14 +75,26 @@ export const charactersRepository = {
 
   async getById(id: string): Promise<CharacterRecord | null> {
     const db = await getDb();
-    const row = await db.getFirstAsync<any>("SELECT * FROM characters WHERE id = ?", [id]);
+    const row = await db.getFirstAsync<any>(
+      `SELECT c.*, pm.slot_index
+       FROM characters c
+       LEFT JOIN party_members pm
+         ON pm.character_id = c.id AND pm.party_id = ?
+       WHERE c.id = ?`,
+      [DEFAULT_PARTY_ID, id]
+    );
     return row ? mapCharacter(row) : null;
   },
 
   async listPartyMembers(): Promise<PartyMemberRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
-      "SELECT * FROM characters WHERE slot_index IS NOT NULL ORDER BY slot_index ASC"
+      `SELECT c.*, pm.slot_index
+       FROM party_members pm
+       INNER JOIN characters c ON c.id = pm.character_id
+       WHERE pm.party_id = ?
+       ORDER BY pm.slot_index ASC`,
+      [DEFAULT_PARTY_ID]
     );
     return rows.map(mapCharacter).filter((record): record is PartyMemberRecord => record.slotIndex !== null);
   },
@@ -72,19 +102,38 @@ export const charactersRepository = {
   async listUnassigned(): Promise<CharacterRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
-      "SELECT * FROM characters WHERE slot_index IS NULL ORDER BY name ASC"
+      `SELECT c.*, pm.slot_index
+       FROM characters c
+       LEFT JOIN party_members pm
+         ON pm.character_id = c.id AND pm.party_id = ?
+       WHERE pm.character_id IS NULL
+       ORDER BY c.name ASC`,
+      [DEFAULT_PARTY_ID]
     );
     return rows.map(mapCharacter);
   },
 
   async assignToSlot(characterId: string, slotIndex: number): Promise<void> {
     const db = await getDb();
-    await db.runAsync("UPDATE characters SET slot_index = NULL WHERE slot_index = ?", [slotIndex]);
-    await db.runAsync("UPDATE characters SET slot_index = ? WHERE id = ?", [slotIndex, characterId]);
+    await db.runAsync(
+      "DELETE FROM party_members WHERE party_id = ? AND slot_index = ?",
+      [DEFAULT_PARTY_ID, slotIndex]
+    );
+    await db.runAsync(
+      "DELETE FROM party_members WHERE party_id = ? AND character_id = ?",
+      [DEFAULT_PARTY_ID, characterId]
+    );
+    await db.runAsync(
+      "INSERT INTO party_members (party_id, character_id, slot_index) VALUES (?, ?, ?)",
+      [DEFAULT_PARTY_ID, characterId, slotIndex]
+    );
   },
 
   async removeFromSlot(characterId: string): Promise<void> {
     const db = await getDb();
-    await db.runAsync("UPDATE characters SET slot_index = NULL WHERE id = ?", [characterId]);
+    await db.runAsync(
+      "DELETE FROM party_members WHERE party_id = ? AND character_id = ?",
+      [DEFAULT_PARTY_ID, characterId]
+    );
   },
 };

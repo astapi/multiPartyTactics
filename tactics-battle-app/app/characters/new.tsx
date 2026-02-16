@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { JobSelectModal } from "@/components/party/JobSelectModal";
-import { BASE_STATS_BY_JOB } from "@/constants/baseStats";
+import { ClassSelectModal } from "@/components/party/ClassSelectModal";
+import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { JobId } from "@/types/models";
 import { generateId } from "@/utils/id";
@@ -13,14 +13,9 @@ export default function NewCharacterScreen() {
   const [jobId, setJobId] = useState<JobId>("GUARDIAN");
   const [jobModalVisible, setJobModalVisible] = useState(false);
 
-  const isSlotIndexConstraintError = (error: unknown): boolean => {
-    if (!(error instanceof Error)) return false;
-    return error.message.includes("NOT NULL constraint failed: characters.slot_index");
-  };
-
   const onSave = async () => {
     try {
-      const base = BASE_STATS_BY_JOB[jobId];
+      const base = BASE_STATS_BY_CLASS[jobId];
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
@@ -39,13 +34,6 @@ export default function NewCharacterScreen() {
       });
       router.back();
     } catch (error) {
-      if (isSlotIndexConstraintError(error)) {
-        Alert.alert(
-          "作成失敗",
-          "データベースのスキーマ不整合を検出しました。設定画面の「データベース初期化（全データ削除）」を実行してください。"
-        );
-        return;
-      }
       const message = error instanceof Error ? error.message : "不明なエラー";
       Alert.alert("作成失敗", `キャラクターの作成に失敗しました。\n${message}`);
     }
@@ -65,7 +53,7 @@ export default function NewCharacterScreen() {
           style={styles.input}
         />
 
-        <Text style={styles.label}>ジョブ</Text>
+        <Text style={styles.label}>クラス</Text>
         <Pressable
           style={styles.jobSelector}
           onPress={() => setJobModalVisible(true)}
@@ -75,11 +63,11 @@ export default function NewCharacterScreen() {
 
         <View style={styles.statsPreview}>
           <Text style={styles.statsTitle}>ステータス（初期値）</Text>
-          <Text style={styles.statLine}>HP: {BASE_STATS_BY_JOB[jobId].maxHp}</Text>
-          <Text style={styles.statLine}>ATK: {BASE_STATS_BY_JOB[jobId].atk}</Text>
-          <Text style={styles.statLine}>DEF: {BASE_STATS_BY_JOB[jobId].def}</Text>
-          <Text style={styles.statLine}>SPD: {BASE_STATS_BY_JOB[jobId].spd}</Text>
-          <Text style={styles.statLine}>MP: {BASE_STATS_BY_JOB[jobId].maxMp}</Text>
+          <Text style={styles.statLine}>HP: {BASE_STATS_BY_CLASS[jobId].maxHp}</Text>
+          <Text style={styles.statLine}>ATK: {BASE_STATS_BY_CLASS[jobId].atk}</Text>
+          <Text style={styles.statLine}>DEF: {BASE_STATS_BY_CLASS[jobId].def}</Text>
+          <Text style={styles.statLine}>SPD: {BASE_STATS_BY_CLASS[jobId].spd}</Text>
+          <Text style={styles.statLine}>MP: {BASE_STATS_BY_CLASS[jobId].maxMp}</Text>
         </View>
 
         <View style={styles.buttons}>
@@ -92,9 +80,9 @@ export default function NewCharacterScreen() {
         </View>
       </View>
 
-      <JobSelectModal
+      <ClassSelectModal
         visible={jobModalVisible}
-        selectedJobId={jobId}
+        selectedClassId={jobId}
         onSelect={(selected) => {
           setJobId(selected as JobId);
           setJobModalVisible(false);
