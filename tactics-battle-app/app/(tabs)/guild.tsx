@@ -48,35 +48,24 @@ export default function GuildScreen() {
     }, [loadCharacters])
   );
 
-  const parties = useMemo(
-    () => [
-      {
-        title: t("guild.party.alpha"),
-        sub: t("guild.party.alpha.sub"),
-        members: [
-          { lv: 15, name: "Aria" },
-          { lv: 12, name: "Rune" },
-          { lv: 14, name: "Finn" },
-          { lv: 13, name: "Lily" },
-          { lv: 16, name: "Grim" },
-          { lv: 15, name: "Odin" },
-        ],
-      },
-      {
-        title: t("guild.party.beta"),
-        sub: t("guild.party.beta.sub"),
-        members: [
-          { lv: 10, name: "Zara" },
-          { lv: 8, name: "Vex" },
-          { lv: 7, name: "Nova" },
-          { lv: 6, name: "Rex" },
-          { lv: null, name: t("guild.party.empty") },
-          { lv: null, name: t("guild.party.empty") },
-        ],
-      },
-    ],
-    [t]
-  );
+  const mainParty = useMemo(() => {
+    const slotMap = new Map<number, CharacterRecord>();
+    for (const c of characters) {
+      if (c.slotIndex !== null) slotMap.set(c.slotIndex, c);
+    }
+    const members = Array.from({ length: 6 }).map((_, idx) => slotMap.get(idx) ?? null);
+    const assigned = members.filter((member): member is CharacterRecord => member !== null);
+    const minLevel = assigned.length > 0 ? Math.min(...assigned.map((member) => member.level)) : null;
+    const maxLevel = assigned.length > 0 ? Math.max(...assigned.map((member) => member.level)) : null;
+    const sub = assigned.length > 0 && minLevel !== null && maxLevel !== null
+      ? `Lv.${minLevel}-${maxLevel} • ${assigned.length}/6`
+      : `0/6`;
+    return {
+      title: t("party.header.title"),
+      sub,
+      members,
+    };
+  }, [characters, t]);
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -137,37 +126,49 @@ export default function GuildScreen() {
         ) : (
           <>
             <Text style={styles.sectionLabel}>{t("guild.section.party")}</Text>
-            {parties.map((party) => (
-              <Pressable key={party.title} style={({ pressed }) => [styles.partyCard, pressed ? styles.listCardPressed : null]}>
-                <View style={styles.partyTopRow}>
-                  <View style={styles.partyLeftWrap}>
-                    <View style={styles.partyIconWrap}>
-                      <Users size={18} stroke={colors.textSecondary} />
-                    </View>
-                    <View>
-                      <Text style={styles.partyTitle}>{party.title}</Text>
-                      <Text style={styles.partySub}>{party.sub}</Text>
-                    </View>
+            <Pressable
+              style={({ pressed }) => [styles.partyCard, pressed ? styles.listCardPressed : null]}
+              onPress={() => router.push("/party")}
+            >
+              <View style={styles.partyTopRow}>
+                <View style={styles.partyLeftWrap}>
+                  <View style={styles.partyIconWrap}>
+                    <Users size={18} stroke={colors.textSecondary} />
                   </View>
-                  <ChevronRight size={18} stroke={colors.iconSecondary} />
+                  <View>
+                    <Text style={styles.partyTitle}>{mainParty.title}</Text>
+                    <Text style={styles.partySub}>{mainParty.sub}</Text>
+                  </View>
                 </View>
-                <View style={styles.membersRow}>
-                  {party.members.map((member, idx) => {
-                    const empty = member.lv === null;
-                    return (
-                      <View key={`${party.title}-${idx}`} style={styles.memberItem}>
-                        <View style={[styles.memberAvatar, empty ? styles.memberAvatarEmpty : null]}>
-                          {empty ? <Plus size={12} stroke={colors.borderStrong} /> : <User size={14} stroke={colors.textSecondary} />}
-                        </View>
-                        <Text style={empty ? styles.memberLevelEmpty : styles.memberLevel}>{empty ? "" : `Lv${member.lv}`}</Text>
-                        <Text style={empty ? styles.memberNameEmpty : styles.memberName}>{member.name}</Text>
+                <ChevronRight size={18} stroke={colors.iconSecondary} />
+              </View>
+              <View style={styles.membersRow}>
+                {mainParty.members.map((member, idx) => {
+                  const empty = member === null;
+                  return (
+                    <View key={`party-member-${idx}`} style={styles.memberItem}>
+                      <View style={[styles.memberAvatar, empty ? styles.memberAvatarEmpty : null]}>
+                        {empty ? (
+                          <Plus size={12} stroke={colors.borderStrong} />
+                        ) : (
+                          <Image source={getClassById(member.classId).image} style={styles.memberAvatarImage} />
+                        )}
                       </View>
-                    );
-                  })}
-                </View>
-              </Pressable>
-            ))}
-            <Pressable style={({ pressed }) => [styles.createButton, pressed ? styles.listCardPressed : null]}>
+                      <Text style={empty ? styles.memberLevelEmpty : styles.memberLevel}>
+                        {empty ? "" : `Lv${member.level}`}
+                      </Text>
+                      <Text style={empty ? styles.memberNameEmpty : styles.memberName} numberOfLines={1}>
+                        {empty ? t("guild.party.empty") : member.name}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.createButton, pressed ? styles.listCardPressed : null]}
+              onPress={() => router.push("/party")}
+            >
               <Plus size={18} stroke={colors.iconSecondary} />
               <Text style={styles.createButtonText}>{t("guild.party.create")}</Text>
             </Pressable>
@@ -290,7 +291,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.bgElevated,
+    overflow: "hidden",
   },
+  memberAvatarImage: { width: "100%", height: "100%" },
   memberAvatarEmpty: { backgroundColor: colors.bgPrimary, borderWidth: 1, borderColor: colors.borderStrong },
   memberLevel: { color: colors.textTertiary, fontSize: 8, fontWeight: "500" },
   memberLevelEmpty: { color: colors.textDisabled, fontSize: 8, fontWeight: "500", minHeight: 10 },
