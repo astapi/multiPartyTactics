@@ -4,24 +4,24 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { ClassSelectModal } from "@/components/party/ClassSelectModal";
 import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
-import { JobId } from "@/types/models";
+import { ClassId } from "@/types/models";
 import { generateId } from "@/utils/id";
 
 export default function NewCharacterScreen() {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [jobId, setJobId] = useState<JobId>("GUARDIAN");
-  const [jobModalVisible, setJobModalVisible] = useState(false);
+  const [classId, setClassId] = useState<ClassId>("GUARDIAN");
+  const [classModalVisible, setClassModalVisible] = useState(false);
 
   const onSave = async () => {
     try {
-      const base = BASE_STATS_BY_CLASS[jobId];
+      const base = BASE_STATS_BY_CLASS[classId];
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
         slotIndex: null,
         name: name.trim() || "New Character",
-        jobId,
+        classId,
         level: 1,
         baseMaxHp: base.maxHp,
         baseAtk: base.atk,
@@ -55,19 +55,19 @@ export default function NewCharacterScreen() {
 
         <Text style={styles.label}>クラス</Text>
         <Pressable
-          style={styles.jobSelector}
-          onPress={() => setJobModalVisible(true)}
+          style={styles.classSelector}
+          onPress={() => setClassModalVisible(true)}
         >
-          <Text style={styles.jobSelectorText}>{jobId}</Text>
+          <Text style={styles.classSelectorText}>{classId}</Text>
         </Pressable>
 
         <View style={styles.statsPreview}>
           <Text style={styles.statsTitle}>ステータス（初期値）</Text>
-          <Text style={styles.statLine}>HP: {BASE_STATS_BY_CLASS[jobId].maxHp}</Text>
-          <Text style={styles.statLine}>ATK: {BASE_STATS_BY_CLASS[jobId].atk}</Text>
-          <Text style={styles.statLine}>DEF: {BASE_STATS_BY_CLASS[jobId].def}</Text>
-          <Text style={styles.statLine}>SPD: {BASE_STATS_BY_CLASS[jobId].spd}</Text>
-          <Text style={styles.statLine}>MP: {BASE_STATS_BY_CLASS[jobId].maxMp}</Text>
+          <Text style={styles.statLine}>HP: {BASE_STATS_BY_CLASS[classId].maxHp}</Text>
+          <Text style={styles.statLine}>ATK: {BASE_STATS_BY_CLASS[classId].atk}</Text>
+          <Text style={styles.statLine}>DEF: {BASE_STATS_BY_CLASS[classId].def}</Text>
+          <Text style={styles.statLine}>SPD: {BASE_STATS_BY_CLASS[classId].spd}</Text>
+          <Text style={styles.statLine}>MP: {BASE_STATS_BY_CLASS[classId].maxMp}</Text>
         </View>
 
         <View style={styles.buttons}>
@@ -81,13 +81,13 @@ export default function NewCharacterScreen() {
       </View>
 
       <ClassSelectModal
-        visible={jobModalVisible}
-        selectedClassId={jobId}
+        visible={classModalVisible}
+        selectedClassId={classId}
         onSelect={(selected) => {
-          setJobId(selected as JobId);
-          setJobModalVisible(false);
+          setClassId(selected as ClassId);
+          setClassModalVisible(false);
         }}
-        onClose={() => setJobModalVisible(false)}
+        onClose={() => setClassModalVisible(false)}
       />
     </ScrollView>
   );
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: "#ffffff",
   },
-  jobSelector: {
+  classSelector: {
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#3f3f46",
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
-  jobSelectorText: { color: "#f4f4f5" },
+  classSelectorText: { color: "#f4f4f5" },
   statsPreview: {
     borderRadius: 12,
     borderWidth: 1,

@@ -88,7 +88,7 @@ export default function PartyScreen() {
                 <View style={styles.slotAvatar}>{character ? <User size={16} stroke={colors.textSecondary} /> : <Plus size={16} stroke={colors.iconSecondary} />}</View>
                 <View style={styles.slotTextWrap}>
                   <Text style={styles.slotName}>{character?.name ?? t("party.slot.empty")}</Text>
-                  <Text style={styles.slotSub}>{character ? `${character.jobId}  •  Lv.${character.level}` : t("party.slot.tap")}</Text>
+                  <Text style={styles.slotSub}>{character ? `${character.classId}  •  Lv.${character.level}` : t("party.slot.tap")}</Text>
                 </View>
                 <ChevronRight size={16} stroke={colors.iconSecondary} />
               </View>
@@ -109,7 +109,7 @@ export default function PartyScreen() {
               </View>
               <View style={styles.listTextWrap}>
                 <Text style={styles.listName}>{character.name}</Text>
-                <Text style={styles.listSub}>{`${character.jobId}  •  Lv.${character.level}`}</Text>
+                <Text style={styles.listSub}>{`${character.classId}  •  Lv.${character.level}`}</Text>
               </View>
               <ChevronRight size={18} stroke={colors.iconSecondary} />
             </Pressable>

@@ -1,21 +1,21 @@
 import { getDb } from "@/db/database";
 import { isClassId } from "@/constants/classes";
-import { CharacterRecord, JobId } from "@/types/models";
+import { CharacterRecord, ClassId } from "@/types/models";
 
 type PartyMemberRecord = CharacterRecord & { slotIndex: number };
 const DEFAULT_PARTY_ID = "party_default";
 
 const mapCharacter = (row: any): CharacterRecord => {
-  const rawJobId = String(row.job_id ?? "");
-  if (!isClassId(rawJobId)) {
-    throw new Error(`Invalid class id found in DB: ${rawJobId}`);
+  const rawClassId = String(row.class_id ?? "");
+  if (!isClassId(rawClassId)) {
+    throw new Error(`Invalid class id found in DB: ${rawClassId}`);
   }
-  const jobId: JobId = rawJobId;
+  const classId: ClassId = rawClassId;
   return {
     id: row.id,
     slotIndex: row.slot_index ?? null,
     name: row.name,
-    jobId,
+    classId,
     level: row.level,
     baseMaxHp: row.base_max_hp,
     baseAtk: row.base_atk,
@@ -49,12 +49,12 @@ export const charactersRepository = {
     const db = await getDb();
     await db.runAsync(
       `INSERT OR REPLACE INTO characters
-      (id, name, job_id, level, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
+      (id, name, class_id, level, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.name,
-        record.jobId,
+        record.classId,
         record.level,
         record.baseMaxHp,
         record.baseAtk,

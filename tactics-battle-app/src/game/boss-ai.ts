@@ -22,7 +22,7 @@ const pickLowestHpPercent = (units: Unit[]): Unit =>
   );
 
 const pickTank = (units: Unit[]): Unit | null =>
-  units.find((unit) => unit.jobId === "GUARDIAN") ?? null;
+  units.find((unit) => unit.classId === "GUARDIAN") ?? null;
 
 const pickNonPoisonedLowestHp = (units: Unit[]): Unit | null => {
   const candidates = units.filter(

@@ -5,7 +5,7 @@ export * from "./cleric";
 export * from "./blade";
 export * from "./arcane";
 export * from "./boss";
-export * from "./jobs";
+export * from "./classes";
 
 import { Skill } from "./types";
 

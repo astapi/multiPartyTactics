@@ -2,9 +2,9 @@ import { ARCANE_SKILLS } from "./arcane";
 import { BLADE_SKILLS } from "./blade";
 import { CLERIC_SKILLS } from "./cleric";
 import { GUARDIAN_SKILLS } from "./guardian";
-import { JobDefinition } from "./types";
+import { ClassDefinition } from "./types";
 
-export const CLASS_DEFINITIONS: JobDefinition[] = [
+export const CLASS_DEFINITIONS: ClassDefinition[] = [
   { id: "GUARDIAN", name: "Guardian", role: "TANK", skills: GUARDIAN_SKILLS },
   { id: "SWORDMAN", name: "Swordman", role: "DPS", skills: BLADE_SKILLS },
   { id: "BERSERKER", name: "Berserker", role: "DPS", skills: BLADE_SKILLS },

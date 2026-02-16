@@ -1,5 +1,5 @@
 import { Action, Effect, StatusEffect, StatusType, Unit } from "../battle";
-import { JobId } from "@/types/models";
+import { ClassId } from "@/types/models";
 
 export type SkillTarget = "SELF" | "ALLY" | "ENEMY";
 
@@ -77,8 +77,8 @@ export type Skill = {
   tags: string[];
 };
 
-export type JobDefinition = {
-  id: JobId;
+export type ClassDefinition = {
+  id: ClassId;
   name: string;
   role: "TANK" | "HEALER" | "DPS" | "SUPPORT";
   skills: Skill[];

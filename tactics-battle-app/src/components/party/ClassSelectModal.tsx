@@ -1,5 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { CLASS_OPTIONS } from "@/constants/jobs";
+import { CLASS_OPTIONS } from "@/constants/classesOptions";
 
 type Props = {
   visible: boolean;

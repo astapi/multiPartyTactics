@@ -115,11 +115,11 @@ export default function GuildScreen() {
             {characters.map((character) => (
               <Pressable key={character.id} style={({ pressed }) => [styles.listCard, pressed ? styles.listCardPressed : null]}>
                 <View style={styles.avatarCircle}>
-                  <Image source={getClassById(character.jobId).image} style={styles.avatarImage} />
+                  <Image source={getClassById(character.classId).image} style={styles.avatarImage} />
                 </View>
                 <View style={styles.listTextWrap}>
                   <Text style={styles.listTitle}>{character.name}</Text>
-                  <Text style={styles.listSub}>{`${character.jobId}  •  Lv.${character.level}`}</Text>
+                  <Text style={styles.listSub}>{`${character.classId}  •  Lv.${character.level}`}</Text>
                 </View>
                 <ChevronRight size={18} stroke={colors.iconSecondary} />
               </Pressable>

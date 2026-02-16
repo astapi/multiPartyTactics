@@ -16,7 +16,7 @@ export const CharacterSlot = ({ slotIndex, character, onEdit, onDelete, onTactic
     <View style={styles.headerRow}>
       <Text style={styles.slotTitle}>Slot {slotIndex + 1}</Text>
       {character ? (
-        <Text style={styles.classText}>{character.jobId}</Text>
+        <Text style={styles.classText}>{character.classId}</Text>
       ) : (
         <Text style={styles.emptyText}>Empty</Text>
       )}

@@ -15,16 +15,24 @@ export const initializeDatabase = async (): Promise<void> => {
   const db = await getDb();
   await db.execAsync("PRAGMA foreign_keys = ON;");
   await db.execAsync(MIGRATION_001);
-  const invalidClass = await db.getFirstAsync<{ job_id: string }>(
-    `SELECT job_id
-     FROM characters
-     WHERE job_id NOT IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')
-     LIMIT 1`
-  );
-  if (invalidClass) {
-    throw new Error(
-      `Invalid class id found in DB (${invalidClass.job_id}). Reset database and recreate characters.`
+  try {
+    const invalidClass = await db.getFirstAsync<{ class_id: string }>(
+      `SELECT class_id
+       FROM characters
+       WHERE class_id NOT IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')
+       LIMIT 1`
     );
+    if (invalidClass) {
+      throw new Error(
+        `Invalid class id found in DB (${invalidClass.class_id}). Reset database and recreate characters.`
+      );
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("no such column: class_id")) {
+      throw new Error("Legacy schema detected. Reset database and recreate characters.");
+    }
+    throw error;
   }
 };
 

@@ -42,7 +42,7 @@ export default function CharactersScreen() {
                       <Text style={styles.slotBadge}>PT {character.slotIndex + 1}</Text>
                     )}
                   </View>
-                  <Text style={styles.classText}>Class: {character.jobId}</Text>
+                  <Text style={styles.classText}>Class: {character.classId}</Text>
                   <Text style={styles.levelText}>Lv.{character.level}</Text>
                 </Card>
               </Pressable>

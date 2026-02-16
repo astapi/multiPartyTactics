@@ -71,7 +71,7 @@ export default function CharacterDetailScreen() {
             <Shield size={36} stroke={colors.textStrong} />
           </View>
           <Text style={styles.profileName}>{character.name}</Text>
-          <Text style={styles.profileSub}>{`${character.jobId}  Lv.${character.level}`}</Text>
+          <Text style={styles.profileSub}>{`${character.classId}  Lv.${character.level}`}</Text>
 
           <View style={styles.statRow}>
             <View style={styles.statCard}>

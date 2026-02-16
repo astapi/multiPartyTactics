@@ -1,8 +1,8 @@
-import { JobId } from "@/types/models";
+import { ClassId } from "@/types/models";
 import { ImageSourcePropType } from "react-native";
 
 export type ClassInfo = {
-  id: JobId;
+  id: ClassId;
   name: string;
   description: string;
   image: ImageSourcePropType;
@@ -70,13 +70,13 @@ export const CLASS_MASTER: ClassInfo[] = [
 
 const CLASS_MAP = Object.fromEntries(
   CLASS_MASTER.map((classInfo) => [classInfo.id, classInfo])
-) as Record<JobId, ClassInfo>;
+) as Record<ClassId, ClassInfo>;
 
-export const isClassId = (value: string): value is JobId => {
+export const isClassId = (value: string): value is ClassId => {
   return value in CLASS_MAP;
 };
 
-export const getClassById = (id: JobId): ClassInfo => {
+export const getClassById = (id: ClassId): ClassInfo => {
   const classInfo = CLASS_MAP[id];
   if (!classInfo) {
     throw new Error(`Unknown class id: ${id}`);
