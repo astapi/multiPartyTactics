@@ -1,74 +1,111 @@
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ArrowLeft } from "lucide-react-native";
 import { resetDatabase } from "@/db/database";
+import { useI18n } from "@/i18n";
+
+const colors = {
+  bgPrimary: "#ffffff",
+  bgSurface: "#f5f5f5",
+  textPrimary: "#1a1a1a",
+  textSecondary: "#666666",
+  textMuted: "#aaaaaa",
+  borderDefault: "#e0e0e0",
+} as const;
 
 export default function SettingsScreen() {
+  const router = useRouter();
+  const { t } = useI18n();
   const [isResetting, setIsResetting] = useState(false);
+  const [bgmOn, setBgmOn] = useState(true);
+  const [sfxOn, setSfxOn] = useState(true);
 
   const runReset = async () => {
     setIsResetting(true);
     try {
       await resetDatabase();
-      Alert.alert("初期化完了", "データベースを初期化しました。");
+      Alert.alert(t("settings.alert.doneTitle"), t("settings.alert.doneBody"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "不明なエラー";
-      Alert.alert("初期化失敗", `データベース初期化に失敗しました。\n${message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert(t("settings.alert.failTitle"), `${t("settings.alert.failBody")}\n${message}`);
     } finally {
       setIsResetting(false);
     }
   };
 
   const onPressReset = () => {
-    Alert.alert(
-      "データ初期化",
-      "キャラクター/タクティクス/進行状況が削除されます。",
-      [
-        { text: "キャンセル", style: "cancel" },
-        {
-          text: "初期化する",
-          style: "destructive",
-          onPress: () => {
-            void runReset();
-          },
-        },
-      ]
-    );
+    Alert.alert(t("settings.reset.title"), t("settings.reset.body"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("settings.reset.confirm"), style: "destructive", onPress: () => void runReset() },
+    ]);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>設定</Text>
-      <Text style={styles.description}>今後、音量や演出速度などを追加予定です。</Text>
-      <Pressable
-        disabled={isResetting}
-        onPress={onPressReset}
-        style={[styles.resetButton, isResetting ? styles.resetButtonDisabled : null]}
-      >
-        <Text style={styles.resetButtonText}>
-          {isResetting ? "初期化中..." : "データベース初期化（全データ削除）"}
-        </Text>
-      </Pressable>
-    </View>
+    <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Pressable style={styles.iconBtn} onPress={() => router.back()}>
+            <ArrowLeft size={18} stroke={colors.textPrimary} />
+          </Pressable>
+          <Text style={styles.headerTitle}>{t("settings.header")}</Text>
+        </View>
+        <View style={styles.iconBtnDisabled} />
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
+          <View style={styles.card}>
+            <View style={styles.row}><Text style={styles.rowText}>{t("settings.lang.ja")}</Text><Text style={styles.check}>●</Text></View>
+            <View style={styles.divider} />
+            <View style={styles.row}><Text style={styles.rowText}>{t("settings.lang.en")}</Text><Text style={styles.muted}>○</Text></View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t("settings.audio")}</Text>
+          <View style={styles.card}>
+            <View style={styles.row}><Text style={styles.rowText}>{t("settings.audio.bgm")}</Text><Switch value={bgmOn} onValueChange={setBgmOn} /></View>
+            <View style={styles.divider} />
+            <View style={styles.row}><Text style={styles.rowText}>{t("settings.audio.sfx")}</Text><Switch value={sfxOn} onValueChange={setSfxOn} /></View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t("settings.account")}</Text>
+          <View style={styles.card}>
+            <Pressable style={styles.row} onPress={onPressReset}><Text style={styles.rowText}>{isResetting ? t("settings.reset.loading") : t("settings.reset.button")}</Text></Pressable>
+          </View>
+        </View>
+
+        <View style={styles.versionWrap}>
+          <Text style={styles.versionText}>Dungeon Tactics v1.0.0</Text>
+          <Text style={styles.versionText}>Player ID: ADV-2024-0815</Text>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#09090b", padding: 16 },
-  title: { fontSize: 20, fontWeight: "600", color: "#ffffff" },
-  description: { marginTop: 8, color: "#a1a1aa" },
-  resetButton: {
-    marginTop: 24,
-    borderRadius: 12,
-    backgroundColor: "#b91c1c",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  resetButtonDisabled: {
-    opacity: 0.6,
-  },
-  resetButtonText: {
-    textAlign: "center",
-    fontWeight: "600",
-    color: "#ffffff",
-  },
+  screen: { flex: 1, backgroundColor: colors.bgPrimary },
+  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, paddingHorizontal: 20 },
+  headerLeft: { alignItems: "center", flexDirection: "row", gap: 12 },
+  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, alignItems: "center", justifyContent: "center" },
+  iconBtnDisabled: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, opacity: 0.6 },
+  headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
+  content: { paddingHorizontal: 20, paddingTop: 16, gap: 20 },
+  section: { gap: 8 },
+  sectionLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: "500", letterSpacing: 1 },
+  card: { borderRadius: 20, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, overflow: "hidden" },
+  row: { minHeight: 50, paddingHorizontal: 16, alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  rowText: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
+  divider: { height: 1, backgroundColor: colors.borderDefault },
+  muted: { color: colors.textMuted },
+  check: { color: colors.textPrimary },
+  versionWrap: { alignItems: "center", gap: 4, paddingTop: 24 },
+  versionText: { color: colors.textMuted, fontSize: 11 },
 });

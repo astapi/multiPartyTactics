@@ -11,6 +11,49 @@ npm run build        # TypeScriptをビルド
 npm test             # テストを実行（node --test test/*.test.js）
 ```
 
+## UIカラースタイル定義
+
+出典: Pencilのカラーシステム `design.pen` Node ID `nFCmx`（Light Theme Color Palette）。
+
+```css
+:root {
+  /* Background */
+  --color-bg-primary: #ffffff;
+  --color-bg-subtle: #fafafa;
+  --color-bg-surface: #f5f5f5;
+  --color-bg-elevated: #e5e5e5;
+  --color-bg-muted: #ebebeb;
+
+  /* Text */
+  --color-text-primary: #1a1a1a;
+  --color-text-strong: #444444;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #888888;
+  --color-text-muted: #aaaaaa;
+  --color-text-disabled: #cccccc;
+  --color-text-accent: #555555;
+  --color-text-inverted: #ffffff;
+
+  /* Border / Stroke */
+  --color-border-default: #e0e0e0;
+  --color-border-strong: #d0d0d0;
+  --color-border-active: #1a1a1a;
+  --color-border-subtle: #f0f0f0;
+
+  /* Icon / UI Element */
+  --color-icon-primary: #444444;
+  --color-icon-default: #666666;
+  --color-icon-secondary: #999999;
+  --color-icon-emphasis: #333333;
+}
+```
+
+## UIカラー運用ルール
+
+- UIで使う色は必ず上記トークンから選定すること
+- 16進カラーのハードコード追加は禁止
+- 新規色が必要な場合は、先に `design.pen` の `nFCmx` を更新し、トークン定義へ反映すること
+
 ## アーキテクチャ
 
 ターン制タクティクス戦闘シミュレーターのCLI実装。4人パーティ vs 単体ボス（ヴェノム・タイラント）の戦闘をシミュレートする。
