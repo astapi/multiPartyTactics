@@ -2,11 +2,15 @@ import { useState } from "react";
 import { Stack } from "expo-router";
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { resetDatabase } from "@/db/database";
+import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { useI18n } from "@/i18n";
 import { Locale } from "@/i18n/locale";
 import { useLocaleStore } from "@/stores/localeStore";
+import { ClassId } from "@/types/models";
+import { generateId } from "@/utils/id";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -21,9 +25,19 @@ export default function SettingsScreen() {
   const { t, locale } = useI18n();
   const setLocale = useLocaleStore((state) => state.setLocale);
   const [isResetting, setIsResetting] = useState(false);
+  const [isCreatingDefaults, setIsCreatingDefaults] = useState(false);
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [bgmOn, setBgmOn] = useState(true);
   const [sfxOn, setSfxOn] = useState(true);
+
+  const debugDefaults: Array<{ name: string; classId: ClassId; level: number; slotIndex: number }> = [
+    { name: "Aria", classId: "GUARDIAN", level: 1, slotIndex: 0 },
+    { name: "Rune", classId: "SWORDMAN", level: 1, slotIndex: 1 },
+    { name: "Finn", classId: "THIEF", level: 1, slotIndex: 2 },
+    { name: "Lily", classId: "CLERIC", level: 1, slotIndex: 3 },
+    { name: "Grim", classId: "BERSERKER", level: 1, slotIndex: 4 },
+    { name: "Odin", classId: "WITCH", level: 1, slotIndex: 5 },
+  ];
 
   const onSelectLanguage = async (nextLocale: Locale) => {
     if (isSavingLanguage || locale === nextLocale) return;
@@ -57,6 +71,54 @@ export default function SettingsScreen() {
       { text: t("common.cancel"), style: "cancel" },
       { text: t("settings.reset.confirm"), style: "destructive", onPress: () => void runReset() },
     ]);
+  };
+
+  const createDefaultCharacters = async () => {
+    if (isCreatingDefaults) return;
+    setIsCreatingDefaults(true);
+    try {
+      const existing = await charactersRepository.list();
+      const byName = new Map(existing.map((character) => [character.name, character]));
+      let createdCount = 0;
+
+      for (const preset of debugDefaults) {
+        let characterId = byName.get(preset.name)?.id;
+        if (!characterId) {
+          const base = BASE_STATS_BY_CLASS[preset.classId];
+          const id = generateId("char");
+          await charactersRepository.upsert({
+            id,
+            slotIndex: null,
+            name: preset.name,
+            classId: preset.classId,
+            level: preset.level,
+            baseMaxHp: base.maxHp,
+            baseAtk: base.atk,
+            baseDef: base.def,
+            baseSpd: base.spd,
+            baseMaxMp: base.maxMp,
+            baseMpRegen: base.mpRegen,
+            currentHp: base.maxHp,
+            currentMp: base.maxMp,
+          });
+          characterId = id;
+          createdCount += 1;
+        }
+        if (characterId) {
+          await charactersRepository.assignToSlot(characterId, preset.slotIndex);
+        }
+      }
+
+      Alert.alert(
+        t("settings.debug.doneTitle"),
+        t("settings.debug.doneBody", { created: createdCount, total: debugDefaults.length })
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert(t("settings.debug.failTitle"), `${t("settings.debug.failBody")}\n${message}`);
+    } finally {
+      setIsCreatingDefaults(false);
+    }
   };
 
   return (
@@ -95,6 +157,17 @@ export default function SettingsScreen() {
           <Text style={styles.sectionLabel}>{t("settings.account")}</Text>
           <View style={styles.card}>
             <Pressable style={styles.row} onPress={onPressReset}><Text style={styles.rowText}>{isResetting ? t("settings.reset.loading") : t("settings.reset.button")}</Text></Pressable>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t("settings.debug")}</Text>
+          <View style={styles.card}>
+            <Pressable style={styles.row} onPress={() => void createDefaultCharacters()}>
+              <Text style={styles.rowText}>
+                {isCreatingDefaults ? t("settings.debug.loading") : t("settings.debug.createDefaults")}
+              </Text>
+            </Pressable>
           </View>
         </View>
 
