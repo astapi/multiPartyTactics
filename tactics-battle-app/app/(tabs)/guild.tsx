@@ -2,11 +2,8 @@ import { Stack, useRouter } from "expo-router";
 import {
   ChevronRight,
   Coins,
-  Home,
   Plus,
-  Settings,
   Shield,
-  Swords,
   User,
   UserPlus,
   Users,
@@ -167,26 +164,6 @@ export default function GuildScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNavWrap}>
-        <View style={styles.bottomNav}>
-          <Pressable style={styles.bottomNavItem} onPress={() => router.push("/")}>
-            <Home size={18} stroke={colors.textMuted} />
-            <Text style={styles.bottomNavText}>{t("home.tab.home")}</Text>
-          </Pressable>
-          <Pressable style={styles.bottomNavItem} onPress={() => router.push("/dungeon")}>
-            <Swords size={18} stroke={colors.textMuted} />
-            <Text style={styles.bottomNavText}>{t("home.tab.dungeon")}</Text>
-          </Pressable>
-          <View style={styles.bottomNavItem}>
-            <Users size={18} stroke={colors.textPrimary} />
-            <Text style={styles.bottomNavTextActive}>{t("home.tab.guild")}</Text>
-          </View>
-          <Pressable style={styles.bottomNavItem} onPress={() => router.push("/settings")}>
-            <Settings size={18} stroke={colors.textMuted} />
-            <Text style={styles.bottomNavText}>{t("home.tab.more")}</Text>
-          </Pressable>
-        </View>
-      </View>
     </SafeAreaView>
   );
 }
@@ -296,19 +273,4 @@ const styles = StyleSheet.create({
   memberLevelEmpty: { color: colors.textDisabled, fontSize: 8, fontWeight: "500", minHeight: 10 },
   memberName: { color: colors.textPrimary, fontSize: 9, fontWeight: "600" },
   memberNameEmpty: { color: colors.textDisabled, fontSize: 9, fontWeight: "500" },
-  bottomNavWrap: { paddingTop: 12, paddingRight: 16, paddingBottom: 20, paddingLeft: 16 },
-  bottomNav: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    height: 64,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
-    padding: 4,
-  },
-  bottomNavItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 6, paddingHorizontal: 16 },
-  bottomNavText: { color: colors.textMuted, fontSize: 10, fontWeight: "500" },
-  bottomNavTextActive: { color: colors.textPrimary, fontSize: 10, fontWeight: "600" },
 });

@@ -4,13 +4,9 @@ import {
   Coins,
   FlaskRound,
   Gem,
-  Home,
-  Settings,
   Shield,
   ShoppingBag,
   Sword,
-  Swords,
-  Users,
 } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -110,26 +106,6 @@ export default function HomeScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.tabSection}>
-        <View style={styles.tabBar}>
-          <View style={styles.tabItemActive}>
-            <Home size={18} stroke={colors.textPrimary} />
-            <Text style={styles.tabLabelActive}>{t("home.tab.home")}</Text>
-          </View>
-          <Pressable style={styles.tabItem} onPress={() => router.push("/dungeon")}>
-            <Swords size={18} stroke={colors.textMuted} />
-            <Text style={styles.tabLabel}>{t("home.tab.dungeon")}</Text>
-          </Pressable>
-          <Pressable style={styles.tabItem} onPress={() => router.push("/guild")}>
-            <Users size={18} stroke={colors.textMuted} />
-            <Text style={styles.tabLabel}>{t("home.tab.guild")}</Text>
-          </Pressable>
-          <Pressable style={styles.tabItem} onPress={() => router.push("/settings")}>
-            <Settings size={18} stroke={colors.textMuted} />
-            <Text style={styles.tabLabel}>{t("home.tab.more")}</Text>
-          </Pressable>
-        </View>
-      </View>
     </SafeAreaView>
   );
 }
@@ -223,49 +199,6 @@ const styles = StyleSheet.create({
   menuDesc: {
     color: colors.textTertiary,
     fontSize: 12,
-    fontWeight: "500",
-  },
-  tabSection: {
-    paddingTop: 12,
-    paddingRight: 16,
-    paddingBottom: 20,
-    paddingLeft: 16,
-  },
-  tabBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    height: 64,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
-    padding: 4,
-  },
-  tabItemActive: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-  },
-  tabItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-  },
-  tabLabelActive: {
-    color: colors.textPrimary,
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  tabLabel: {
-    color: colors.textMuted,
-    fontSize: 10,
     fontWeight: "500",
   },
 });
