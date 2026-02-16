@@ -25,7 +25,8 @@ const turnLine = (lines, scenarioName, actor, turn) =>
     (line) =>
       line.includes(`[${scenarioName}]`) &&
       line.includes(`turn ${turn}`) &&
-      line.includes(`actor=${actor}`)
+      line.includes(`actor=${actor}`) &&
+      !line.includes(' eval ')
   );
 
 test('scenario A turn 1 uses Guard Stance and Berserk, heal not triggered', () => {
@@ -60,12 +61,17 @@ test('scenario B uses Cleanse when poison is applied', () => {
 
 test('scenario C uses Cleanse on poisoned ally in early turns', () => {
   const logs = captureLogs(() => runAllScenarios());
-  const cleanseLine = findLine(
+  const evalLine = findLine(
     logs,
     (line) =>
       line.includes('[Scenario C]') &&
+      line.includes('eval') &&
       line.includes('rule=cleanse_turn_leq3') &&
-      line.includes('action=Cleanse')
+      line.includes('ruleTarget=none')
   );
-  assert.ok(cleanseLine, 'Cleanse line for Scenario C not found');
+  assert.ok(evalLine, 'Cleanse evaluation line for Scenario C not found');
+
+  const clericTurn1 = turnLine(logs, 'Scenario C', 'Cleric', 1);
+  assert.ok(clericTurn1, 'Cleric turn 1 line not found');
+  assert.equal(clericTurn1.includes('action=Cleanse'), false);
 });

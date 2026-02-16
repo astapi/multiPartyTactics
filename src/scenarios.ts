@@ -60,7 +60,7 @@ type RuleEvaluationLog = {
 };
 
 type ActionResolution = {
-  ruleEvaluation: RuleEvaluationLog | null;
+  ruleEvaluations: RuleEvaluationLog[];
   actionName: string;
   actionTarget: string | null;
   result: SkillUseResult | null;
@@ -442,6 +442,23 @@ const formatTurnLog = (entry: TurnLogEntry): string => {
   ].join(" ");
 };
 
+const formatRuleEvaluationLog = (
+  scenarioName: string,
+  turn: number,
+  actorName: string,
+  evaluation: RuleEvaluationLog
+): string =>
+  [
+    `[${scenarioName}]`,
+    `turn ${turn}`,
+    `actor=${actorName}`,
+    "eval",
+    `rule=${evaluation.ruleId}`,
+    `usable=${evaluation.usable}`,
+    `condition=${evaluation.conditionMet}`,
+    `ruleTarget=${evaluation.targetName ?? "none"}`,
+  ].join(" ");
+
 const toRuleEvaluationLog = (evaluation: RuleEvaluation): RuleEvaluationLog => ({
   ruleId: evaluation.rule.id,
   usable: evaluation.usable,
@@ -459,8 +476,10 @@ const executePartyTurn = (
   skillMap: Map<string, Skill>
 ): ActionResolution => {
   const rules = scenario.tactics[actor.id] ?? [];
+  const ruleEvaluations: RuleEvaluationLog[] = [];
   for (const ruleEntry of rules) {
     const evaluation = evaluateRule(actor, ruleEntry, { turn, actor, allies, enemies }, skillMap);
+    ruleEvaluations.push(toRuleEvaluationLog(evaluation));
     if (!evaluation.usable || !evaluation.conditionMet || !evaluation.target) {
       continue;
     }
@@ -472,7 +491,7 @@ const executePartyTurn = (
 
     const result = executeSkill(actor, evaluation.target, skill, rng);
     return {
-      ruleEvaluation: toRuleEvaluationLog(evaluation),
+      ruleEvaluations,
       actionName: skill.name,
       actionTarget: evaluation.target.name,
       result,
@@ -480,7 +499,7 @@ const executePartyTurn = (
   }
 
   return {
-    ruleEvaluation: null,
+    ruleEvaluations,
     actionName: "WAIT",
     actionTarget: null,
     result: null,
@@ -502,12 +521,14 @@ const executeBossTurn = (
   }
   const result = executeSkill(boss, decision.target, skill, rng);
   return {
-    ruleEvaluation: {
-      ruleId: "boss_ai",
-      usable: true,
-      conditionMet: true,
-      targetName: decision.target.name,
-    },
+    ruleEvaluations: [
+      {
+        ruleId: "boss_ai",
+        usable: true,
+        conditionMet: true,
+        targetName: decision.target.name,
+      },
+    ],
     actionName: skill.name,
     actionTarget: decision.target.name,
     result,
@@ -589,6 +610,9 @@ const runScenario = (scenario: Scenario, maxTurns: number): ScenarioSummary => {
               rng,
               skillMap
             );
+      for (const evaluation of resolution.ruleEvaluations) {
+        console.log(formatRuleEvaluationLog(scenario.name, turn, actor.name, evaluation));
+      }
       const statusApplied = resolution.result
         ? resolution.result.appliedStatuses.map((status) => status.type)
         : [];
@@ -601,7 +625,10 @@ const runScenario = (scenario: Scenario, maxTurns: number): ScenarioSummary => {
           scenarioName: scenario.name,
           turn,
           actorName: actor.name,
-          ruleEvaluation: resolution.ruleEvaluation,
+          ruleEvaluation:
+            resolution.ruleEvaluations.length > 0
+              ? resolution.ruleEvaluations[resolution.ruleEvaluations.length - 1]
+              : null,
           actionName: resolution.actionName,
           actionTarget: resolution.actionTarget,
           damage: resolution.result ? resolution.result.damage : 0,

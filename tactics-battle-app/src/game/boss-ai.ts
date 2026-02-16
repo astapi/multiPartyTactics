@@ -1,4 +1,4 @@
-import { Unit } from "./battle";
+import { Unit } from "@/game/battle";
 import {
   Skill,
   VENOM_TYRANT_SKILLS,
@@ -6,7 +6,7 @@ import {
   getSkillById,
   hasEffect,
   isSkillUsable,
-} from "./skills";
+} from "@/game/skills";
 
 export type BossDecision = {
   skill: Skill;
@@ -28,9 +28,7 @@ const pickNonPoisonedLowestHp = (units: Unit[]): Unit | null => {
   const candidates = units.filter(
     (unit) => !unit.statusEffects.some((status) => status.type === "POISON")
   );
-  if (candidates.length === 0) {
-    return null;
-  }
+  if (candidates.length === 0) return null;
   return pickLowestHpPercent(candidates);
 };
 
@@ -39,10 +37,6 @@ export const selectVenomTyrantAction = (
   allies: Unit[],
   turn: number
 ): BossDecision => {
-  if (allies.length === 0) {
-    throw new Error("Boss AI requires at least one ally target.");
-  }
-
   const enrage = getSkillById(VENOM_TYRANT_SKILLS, "enrage");
   if (
     enrage &&
@@ -65,14 +59,12 @@ export const selectVenomTyrantAction = (
   const venomSpit = getSkillById(VENOM_TYRANT_SKILLS, "venom_spit");
   if (venomSpit && isSkillUsable(boss, venomSpit)) {
     const target = pickNonPoisonedLowestHp(allies);
-    if (target) {
-      return { skill: venomSpit, target };
-    }
+    if (target) return { skill: venomSpit, target };
   }
 
   const claw = getSkillById(VENOM_TYRANT_SKILLS, "claw");
   if (!claw) {
-    throw new Error("Venom Tyrant is missing Claw skill.");
+    throw new Error("Venom Tyrant is missing Claw.");
   }
   return { skill: claw, target: pickLowestHpPercent(allies) };
 };

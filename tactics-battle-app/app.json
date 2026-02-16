@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Tactics Battle App",
+    "slug": "tactics-battle-app",
+    "scheme": "tacticsbattle",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.astapi.tactics-battle-app"
+    },
+    "android": {
+      "package": "com.astapi.tacticsbattleapp"
+    }
+  }
+}
