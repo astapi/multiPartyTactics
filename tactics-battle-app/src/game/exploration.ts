@@ -7,11 +7,19 @@ import { createSeededRng } from "@/utils/rng";
 const cfg = difficultyConfig.exploration;
 
 export type ExplorationEventType = "LOG" | "ENCOUNTER" | "TREASURE" | "TRAP";
+export type ExplorationMessageId =
+  | "exploration.event.log.cautious_advance"
+  | "exploration.event.log.advance_in_silence"
+  | "exploration.event.log.watch_footing"
+  | "exploration.event.log.distant_noise"
+  | "exploration.event.encounter.spotted_enemy"
+  | "exploration.event.treasure.found_chest"
+  | "exploration.event.trap.triggered";
 
 export type ExplorationEvent = {
   tick: number;
   type: ExplorationEventType;
-  message: string;
+  messageId: ExplorationMessageId;
   payload?: {
     itemId?: string;
     damage?: number;
@@ -37,11 +45,11 @@ export type ExplorationParams = {
 const clamp = (value: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, value));
 
-const LOG_MESSAGES = [
-  "慎重に前進した。",
-  "静寂の中を進んでいる。",
-  "足元を確認しながら進む。",
-  "遠くから物音が聞こえる。",
+const LOG_MESSAGE_IDS: ExplorationMessageId[] = [
+  "exploration.event.log.cautious_advance",
+  "exploration.event.log.advance_in_silence",
+  "exploration.event.log.watch_footing",
+  "exploration.event.log.distant_noise",
 ];
 
 const TRAP_DEBUFFS = ["POISON", "SLOW", "WEAKEN"] as const;
@@ -102,7 +110,7 @@ export const generateExplorationResult = (
       events.push({
         tick,
         type: "ENCOUNTER",
-        message: "敵影を発見！戦闘準備。",
+        messageId: "exploration.event.encounter.spotted_enemy",
       });
       continue;
     }
@@ -112,7 +120,7 @@ export const generateExplorationResult = (
       events.push({
         tick,
         type: "TREASURE",
-        message: "宝箱を発見した。",
+        messageId: "exploration.event.treasure.found_chest",
         payload: { itemId },
       });
       continue;
@@ -127,14 +135,14 @@ export const generateExplorationResult = (
       events.push({
         tick,
         type: "TRAP",
-        message: "罠が発動した。",
+        messageId: "exploration.event.trap.triggered",
         payload: { damage, debuffType },
       });
       continue;
     }
 
-    const message = LOG_MESSAGES[Math.floor(rng() * LOG_MESSAGES.length)];
-    events.push({ tick, type: "LOG", message });
+    const messageId = LOG_MESSAGE_IDS[Math.floor(rng() * LOG_MESSAGE_IDS.length)];
+    events.push({ tick, type: "LOG", messageId });
   }
 
   const totalTicks = maxTicks;
