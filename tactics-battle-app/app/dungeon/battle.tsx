@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Pause, Play } from "lucide-react-native";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
@@ -16,7 +17,6 @@ import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
-
 const CLASS_IMAGE: Record<string, ImageSourcePropType> = {
   GUARDIAN: require("@/assets/images/class/gurdian.png"),
   SWORDMAN: require("@/assets/images/class/swordman.png"),
@@ -38,7 +38,6 @@ const getEnemyImage = (enemyId: string): ImageSourcePropType => {
   if (id.includes("poison_toad") || id.includes("poison_frog")) return require("@/assets/images/enemies/poison_frog.png");
   return require("@/assets/images/enemies/slime.png");
 };
-
 const getClassImage = (classId?: string): ImageSourcePropType =>
   (classId && CLASS_IMAGE[classId]) || CLASS_IMAGE.SWORDMAN;
 
@@ -72,6 +71,7 @@ export default function BattleScreen() {
   const [battleCompleted, setBattleCompleted] = useState(false);
   const [revealedLogCount, setRevealedLogCount] = useState(0);
   const [autoReturned, setAutoReturned] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
@@ -129,6 +129,7 @@ export default function BattleScreen() {
         setBattleCompleted(false);
         setRevealedLogCount(0);
         setAutoReturned(false);
+        setIsPaused(false);
         setPhase("ENCOUNTER");
       } catch (error) {
         console.error("Failed to load battle:", error);
@@ -188,23 +189,23 @@ export default function BattleScreen() {
   };
 
   useEffect(() => {
-    if (!battleCompleted || phase !== "RESULT") return;
+    if (!battleCompleted || phase !== "RESULT" || isPaused) return;
     if (revealedLogCount >= logs.length) return;
     const timer = setInterval(() => {
       setRevealedLogCount((prev) => Math.min(prev + 1, logs.length));
     }, 50);
     return () => clearInterval(timer);
-  }, [battleCompleted, logs.length, phase, revealedLogCount]);
+  }, [battleCompleted, isPaused, logs.length, phase, revealedLogCount]);
 
   useEffect(() => {
-    if (!battleCompleted || autoReturned || phase !== "RESULT") return;
+    if (!battleCompleted || autoReturned || phase !== "RESULT" || isPaused) return;
     if (logs.length > 0 && revealedLogCount < logs.length) return;
     const timeout = setTimeout(() => {
       setAutoReturned(true);
       router.back();
     }, 900);
     return () => clearTimeout(timeout);
-  }, [autoReturned, battleCompleted, logs.length, phase, revealedLogCount, router]);
+  }, [autoReturned, battleCompleted, isPaused, logs.length, phase, revealedLogCount, router]);
 
   useEffect(() => {
     if (!encounterData || phase !== "ENCOUNTER") return;
@@ -256,11 +257,8 @@ export default function BattleScreen() {
       party,
       logs,
       turnText: "Turn --",
-      leftButtonLabel: "Retreat",
-      rightButtonLabel: "Auto",
-      onLeftPress: () => router.back(),
-      onRightPress: () => void onStartBattle(),
-      disableRight: true,
+      isPaused,
+      onPausePress: () => setIsPaused((prev) => !prev),
     });
   }
 
@@ -276,12 +274,8 @@ export default function BattleScreen() {
     party,
     logs: visibleLogs,
     turnText: `Turn ${turns}`,
-    leftButtonLabel: "Retreat",
-    rightButtonLabel:
-      status === "WIN" ? "Victory" : status === "LOSE" ? "Defeat" : status === "DRAW" ? "Draw" : "Auto",
-    onLeftPress: () => router.back(),
-    onRightPress: () => undefined,
-    disableRight: true,
+    isPaused,
+    onPausePress: () => setIsPaused((prev) => !prev),
   });
 
   function renderBattleLayout(params: {
@@ -291,13 +285,10 @@ export default function BattleScreen() {
     party: Unit[];
     logs: typeof logs;
     turnText: string;
-    leftButtonLabel: string;
-    rightButtonLabel: string;
-    onLeftPress: () => void;
-    onRightPress: () => void;
-    disableRight?: boolean;
+    isPaused: boolean;
+    onPausePress: () => void;
   }) {
-    const logRows = params.logs.slice(-7);
+    const logRows = params.logs;
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
         <Stack.Screen options={{ headerShown: false }} />
@@ -322,7 +313,6 @@ export default function BattleScreen() {
               ))}
             </View>
           </ImageBackground>
-
           <Text style={styles.partyLabel}>PARTY</Text>
           <View style={styles.partyGrid}>
             {params.party.slice(0, 6).map((member) => {
@@ -361,15 +351,8 @@ export default function BattleScreen() {
           </ScrollView>
 
           <View style={styles.actionRow}>
-            <Pressable style={[styles.actionButton, styles.leftButton]} onPress={params.onLeftPress}>
-              <Text style={styles.leftButtonText}>{params.leftButtonLabel}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.actionButton, styles.rightButton, params.disableRight ? styles.rightButtonDisabled : null]}
-              onPress={params.onRightPress}
-              disabled={params.disableRight}
-            >
-              <Text style={styles.rightButtonText}>{params.rightButtonLabel}</Text>
+            <Pressable style={[styles.controlButton, styles.pauseButton]} onPress={params.onPausePress}>
+              {params.isPaused ? <Play size={24} color="#1a1a1a" /> : <Pause size={24} color="#1a1a1a" />}
             </Pressable>
           </View>
         </View>
@@ -463,26 +446,27 @@ const styles = StyleSheet.create({
   logBox: {
     flex: 1,
     minHeight: 60,
-    maxHeight: 100,
   },
   logContent: { paddingBottom: 6 },
   logLine: { color: "#5b5b5b", fontSize: 11, lineHeight: 15 },
   logLineMuted: { color: "#9b9b9b", fontSize: 11 },
-  actionRow: { flexDirection: "row", gap: 10, marginTop: 8 },
-  actionButton: {
-    flex: 1,
-    borderRadius: 18,
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 8,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  controlButton: {
+    width: 104,
+    height: 56,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
   },
-  leftButton: {
+  pauseButton: {
     backgroundColor: "#e4e4e4",
     borderWidth: 1,
     borderColor: "#d2d2d2",
   },
-  rightButton: { backgroundColor: "#626262" },
-  rightButtonDisabled: { opacity: 0.8 },
-  leftButtonText: { color: "#5e5e5e", fontWeight: "700", fontSize: 16 },
-  rightButtonText: { color: "#f5f5f5", fontWeight: "700", fontSize: 16 },
 });
