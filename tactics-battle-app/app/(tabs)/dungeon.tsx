@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { CircleCheck, Compass, Shield, Swords, TriangleAlert } from "lucide-react-native";
+import { CircleCheck, Compass, Shield, TriangleAlert } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DUNGEONS } from "@/constants/dungeons";
@@ -95,14 +95,6 @@ export default function DungeonScreen() {
           <CircleCheck size={18} stroke="#ffffff" />
         </View>
 
-        <View style={styles.partyCard}>
-          <View style={styles.partyIcon}><Swords size={18} stroke={colors.iconSecondary} /></View>
-          <View style={styles.partyTextWrap}>
-            <Text style={styles.partyName}>Bravo Team</Text>
-            <Text style={styles.partySub}>4/6 members  •  Avg Lv.8</Text>
-          </View>
-        </View>
-
         <View style={styles.divider} />
 
         <Text style={styles.sectionLabel}>{t("dungeon.selectDungeon")}</Text>
@@ -180,17 +172,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
-  partyCard: {
-    alignItems: "center",
-    flexDirection: "row",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
   partyIconDark: {
     width: 40,
     height: 40,
@@ -198,14 +179,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#333333",
-  },
-  partyIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.bgElevated,
   },
   partyTextWrap: { flex: 1, gap: 2 },
   partyNameDark: { color: "#ffffff", fontSize: 14, fontWeight: "700" },
