@@ -61,14 +61,12 @@ export const executeSkill = (
   const appliedEffects: Effect[] = [];
 
   if (skill.type === "attack") {
-    const bonusPower =
-      skill.conditionalPower &&
-      skill.conditionalPower.kind === "TARGET_HP_BELOW" &&
-      getHpPercent(target) < skill.conditionalPower.threshold
-        ? skill.conditionalPower.bonus
-        : 0;
-    const power = (skill.power ?? 0) + bonusPower;
-    const dealt = applyDamage(target, calculatePhysicalDamage(actor, target, power));
+    const randomFactor = 0.98 + rng() * 0.04;
+    const multiplier = skill.multiplier ?? 1;
+    const dealt = applyDamage(
+      target,
+      calculatePhysicalDamage(actor, target, multiplier, randomFactor)
+    );
     damage += dealt;
   }
 
@@ -162,7 +160,7 @@ export const executeSkill = (
 
   const action: Action =
     skill.type === "attack"
-      ? { kind: "ATTACK", power: skill.power ?? 0, target }
+      ? { kind: "ATTACK", multiplier: skill.multiplier ?? 1, target }
       : { kind: "WAIT" };
 
   return { action, damage, healing, appliedStatuses, cleansedStatuses, appliedEffects };

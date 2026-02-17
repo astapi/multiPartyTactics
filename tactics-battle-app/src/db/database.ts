@@ -15,7 +15,39 @@ export const initializeDatabase = async (): Promise<void> => {
   const db = await getDb();
   await db.execAsync("PRAGMA foreign_keys = ON;");
   await db.execAsync(MIGRATION_001);
+  const migrateBattleSessionStatusToDraw = async (): Promise<void> => {
+    const schema = await db.getFirstAsync<{ sql: string }>(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'battle_sessions'"
+    );
+    if (!schema?.sql || schema.sql.includes("'DRAW'")) {
+      return;
+    }
+
+    await db.execAsync(`
+      BEGIN;
+      ALTER TABLE battle_sessions RENAME TO battle_sessions_old;
+      CREATE TABLE battle_sessions (
+        id TEXT PRIMARY KEY,
+        dungeon_id TEXT NOT NULL,
+        floor INTEGER NOT NULL,
+        turn INTEGER NOT NULL DEFAULT 1,
+        status TEXT NOT NULL DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'WIN', 'LOSE', 'DRAW')),
+        exploration_seed INTEGER,
+        started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        ended_at TEXT,
+        FOREIGN KEY (dungeon_id) REFERENCES dungeons(id)
+      );
+      INSERT INTO battle_sessions (id, dungeon_id, floor, turn, status, exploration_seed, started_at, ended_at)
+      SELECT id, dungeon_id, floor, turn, status, exploration_seed, started_at, ended_at
+      FROM battle_sessions_old;
+      DROP TABLE battle_sessions_old;
+      COMMIT;
+    `);
+  };
+
   try {
+    await migrateBattleSessionStatusToDraw();
+
     const invalidClass = await db.getFirstAsync<{ class_id: string }>(
       `SELECT class_id
        FROM characters

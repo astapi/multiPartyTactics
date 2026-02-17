@@ -8,7 +8,7 @@ export const VENOM_TYRANT_SKILLS: Skill[] = [
     target: "ENEMY",
     mpCost: 0,
     cooldown: 0,
-    power: 6,
+    multiplier: 1.1,
     tags: ["basic"],
   },
   {
@@ -28,7 +28,7 @@ export const VENOM_TYRANT_SKILLS: Skill[] = [
     target: "ENEMY",
     mpCost: 0,
     cooldown: 3,
-    power: 14,
+    multiplier: 1.9,
     effects: [{ kind: "DEBUFF", id: "DEF_DOWN", stat: "def", amount: -2, duration: 2 }],
     tags: ["big_hit"],
   },

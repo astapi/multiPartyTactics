@@ -55,7 +55,7 @@ export type TurnOrderEntry = {
 export type Action =
   | {
       kind: "ATTACK";
-      power: number;
+      multiplier: number;
       target: Unit;
       statusToApply?: StatusEffect;
     }
@@ -82,19 +82,20 @@ export type TurnResult = {
 export const calculatePhysicalDamage = (
   attacker: Unit,
   defender: Unit,
-  power: number
+  skillMultiplier: number,
+  randomFactor = 1
 ): number => {
-  return Math.max(
-    1,
-    power + getEffectiveStat(attacker, "atk") - getEffectiveStat(defender, "def")
+  const attack = getEffectiveStat(attacker, "atk");
+  const defense = getEffectiveStat(defender, "def");
+  const base = Math.max(1, attack - defense);
+  const scaled = Math.floor(
+    base * Math.max(0, skillMultiplier) * getDamageTakenMultiplier(defender) * randomFactor
   );
+  return Math.max(1, scaled);
 };
 
 export const applyDamage = (target: Unit, amount: number): number => {
-  const adjusted =
-    amount <= 0
-      ? 0
-      : Math.max(1, Math.floor(amount * getDamageTakenMultiplier(target)));
+  const adjusted = amount <= 0 ? 0 : Math.max(1, Math.floor(amount));
   const actual = Math.max(0, Math.min(target.hp, adjusted));
   target.hp -= actual;
   return actual;
@@ -267,7 +268,7 @@ export const performAction = (actor: Unit, action: Action): TurnResult => {
     };
   }
 
-  const damage = calculatePhysicalDamage(actor, action.target, action.power);
+  const damage = calculatePhysicalDamage(actor, action.target, action.multiplier);
   const actualDamage = applyDamage(action.target, damage);
   if (action.statusToApply) {
     applyStatus(action.target, action.statusToApply);

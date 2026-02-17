@@ -2,13 +2,14 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function ResultScreen() {
-  const { status } = useLocalSearchParams<{ status: "WIN" | "LOSE" | string }>();
+  const { status } = useLocalSearchParams<{ status: "WIN" | "LOSE" | "DRAW" | string }>();
   const isWin = status === "WIN";
+  const isDraw = status === "DRAW";
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, isWin ? styles.win : styles.lose]}>
-        {isWin ? "VICTORY" : "DEFEAT"}
+      <Text style={[styles.title, isDraw ? styles.draw : isWin ? styles.win : styles.lose]}>
+        {isDraw ? "DRAW" : isWin ? "VICTORY" : "DEFEAT"}
       </Text>
       <Text style={styles.result}>Result: {status}</Text>
       <Link href="/" asChild>
@@ -28,6 +29,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 36, fontWeight: "700" },
   win: { color: "#34d399" },
+  draw: { color: "#facc15" },
   lose: { color: "#fb7185" },
   result: { marginTop: 12, color: "#d4d4d8" },
   backButton: {
