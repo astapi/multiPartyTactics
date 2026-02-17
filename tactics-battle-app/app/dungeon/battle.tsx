@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -75,6 +75,7 @@ export default function BattleScreen() {
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
+  const logScrollRef = useRef<ScrollView | null>(null);
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
@@ -212,6 +213,15 @@ export default function BattleScreen() {
     void onStartBattle();
   }, [encounterData, phase]);
 
+  const renderedLogCount = phase === "RESULT" ? Math.min(revealedLogCount, logs.length) : logs.length;
+
+  useEffect(() => {
+    if (renderedLogCount <= 0) return;
+    requestAnimationFrame(() => {
+      logScrollRef.current?.scrollToEnd({ animated: true });
+    });
+  }, [renderedLogCount]);
+
   if (phase === "LOADING") {
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
@@ -338,7 +348,12 @@ export default function BattleScreen() {
             <Text style={styles.logTitle}>Battle Log</Text>
             <Text style={styles.turnText}>{params.turnText}</Text>
           </View>
-          <ScrollView style={styles.logBox} contentContainerStyle={styles.logContent}>
+          <ScrollView
+            ref={logScrollRef}
+            style={styles.logBox}
+            contentContainerStyle={styles.logContent}
+            onContentSizeChange={() => logScrollRef.current?.scrollToEnd({ animated: true })}
+          >
             {logRows.length === 0 ? (
               <Text style={styles.logLineMuted}>Waiting for command...</Text>
             ) : (
