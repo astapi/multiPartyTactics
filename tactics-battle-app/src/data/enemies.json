@@ -1,0 +1,40 @@
+{
+  "enemies": [
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "stats": {
+        "maxHp": 64,
+        "atk": 18,
+        "def": 8,
+        "spd": 14,
+        "maxMp": 10,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "slime",
+      "name": "Slime",
+      "stats": {
+        "maxHp": 92,
+        "atk": 12,
+        "def": 14,
+        "spd": 7,
+        "maxMp": 8,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "poison_toad",
+      "name": "Poison Toad",
+      "stats": {
+        "maxHp": 118,
+        "atk": 21,
+        "def": 12,
+        "spd": 11,
+        "maxMp": 16,
+        "mpRegen": 2
+      }
+    }
+  ]
+}
