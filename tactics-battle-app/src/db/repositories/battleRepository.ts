@@ -3,9 +3,13 @@ import { BattleLogRecord, BattleSessionRecord } from "@/types/models";
 
 const mapSession = (row: any): BattleSessionRecord => ({
   id: row.id,
-  dungeonProgressId: row.dungeon_progress_id,
+  dungeonId: row.dungeon_id,
+  floor: row.floor,
   turn: row.turn,
   status: row.status,
+  explorationSeed: row.exploration_seed ?? null,
+  startedAt: row.started_at,
+  endedAt: row.ended_at ?? null,
 });
 
 const mapLog = (row: any): BattleLogRecord => ({
@@ -24,14 +28,28 @@ export const battleRepository = {
   async createSession(session: BattleSessionRecord): Promise<void> {
     const db = await getDb();
     await db.runAsync(
-      "INSERT INTO battle_sessions (id, dungeon_progress_id, turn, status) VALUES (?, ?, ?, ?)",
-      [session.id, session.dungeonProgressId, session.turn, session.status]
+      `INSERT INTO battle_sessions
+      (id, dungeon_id, floor, turn, status, exploration_seed, started_at, ended_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        session.id,
+        session.dungeonId,
+        session.floor,
+        session.turn,
+        session.status,
+        session.explorationSeed,
+        session.startedAt,
+        session.endedAt,
+      ]
     );
   },
 
   async updateSessionStatus(id: string, status: BattleSessionRecord["status"]): Promise<void> {
     const db = await getDb();
-    await db.runAsync("UPDATE battle_sessions SET status = ? WHERE id = ?", [status, id]);
+    await db.runAsync(
+      "UPDATE battle_sessions SET status = ?, ended_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [status, id]
+    );
   },
 
   async appendLogs(logs: BattleLogRecord[]): Promise<void> {

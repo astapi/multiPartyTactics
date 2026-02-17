@@ -1,10 +1,21 @@
 export type DungeonOption = {
   id: string;
-  name: string;
+  floorLabel: string;
+  minFloor: number;
   floors: number;
 };
 
 export const DUNGEONS: DungeonOption[] = [
-  { id: "training-cavern", name: "Training Cavern", floors: 5 },
-  { id: "venom-ruins", name: "Venom Ruins", floors: 10 },
+  {
+    id: "crestoria_dungeon_1_4",
+    floorLabel: "1-4F",
+    minFloor: 1,
+    floors: 4,
+  },
+  {
+    id: "crestoria_dungeon_5_9",
+    floorLabel: "5-9F",
+    minFloor: 5,
+    floors: 9,
+  },
 ];

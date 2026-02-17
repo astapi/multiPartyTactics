@@ -21,7 +21,11 @@ import { useBattleStore } from "@/stores/battleStore";
 
 export default function BattleScreen() {
   const router = useRouter();
-  const { progressId } = useLocalSearchParams<{ progressId: string }>();
+  const { dungeonId, floor, explorationSeed } = useLocalSearchParams<{
+    dungeonId?: string;
+    floor?: string;
+    explorationSeed?: string;
+  }>();
   const [turn, setTurn] = useState(1);
   const [ready, setReady] = useState(false);
   const [party, setParty] = useState<Unit[]>([]);
@@ -49,11 +53,17 @@ export default function BattleScreen() {
         map[unit.id] = await tacticsRepository.listByCharacter(unit.id);
       }
       const nextSessionId = createBattleSessionId();
+      const parsedFloor = Math.max(1, Number.parseInt(floor ?? "1", 10) || 1);
+      const parsedSeed = explorationSeed ? Number.parseInt(explorationSeed, 10) : null;
       await battleRepository.createSession({
         id: nextSessionId,
-        dungeonProgressId: progressId ?? null,
+        dungeonId: dungeonId ?? "crestoria_dungeon_1_4",
+        floor: parsedFloor,
         turn: 1,
         status: "IN_PROGRESS",
+        explorationSeed: Number.isFinite(parsedSeed) ? parsedSeed : null,
+        startedAt: new Date().toISOString(),
+        endedAt: null,
       });
 
       setParty(units);
@@ -66,7 +76,7 @@ export default function BattleScreen() {
       setReady(true);
     };
     void load();
-  }, [progressId, reset, setLogs, setSessionId, setStatus]);
+  }, [dungeonId, explorationSeed, floor, reset, setLogs, setSessionId, setStatus]);
 
   const onRunTurn = async () => {
     if (!sessionId || !ready || party.length === 0 || status !== "IN_PROGRESS") return;
