@@ -10,6 +10,7 @@ import {
   ExplorationResult,
   generateExplorationResult,
 } from "@/game/exploration";
+import { useI18n } from "@/i18n";
 import { toUnit } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
 
@@ -22,14 +23,51 @@ const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   TRAP: "⚠",
 };
 
-const formatEvent = (event: ExplorationEvent): string => {
+const getTreasureItemLabel = (
+  itemId: string | undefined,
+  t: ReturnType<typeof useI18n>["t"]
+): string => {
+  switch (itemId) {
+    case "potion_small":
+      return t("exploration.item.potion_small");
+    case "ether_small":
+      return t("exploration.item.ether_small");
+    case "gold_cache":
+      return t("exploration.item.gold_cache");
+    default:
+      return t("exploration.item.unknown");
+  }
+};
+
+const getTrapDebuffLabel = (
+  debuffType: string | undefined,
+  t: ReturnType<typeof useI18n>["t"]
+): string => {
+  switch (debuffType) {
+    case "POISON":
+      return t("exploration.debuff.poison");
+    case "SLOW":
+      return t("exploration.debuff.slow");
+    case "WEAKEN":
+      return t("exploration.debuff.weaken");
+    default:
+      return t("exploration.debuff.none");
+  }
+};
+
+const formatEvent = (event: ExplorationEvent, t: ReturnType<typeof useI18n>["t"]): string => {
   if (event.type === "TREASURE") {
-    return `${event.message} (${event.payload?.itemId ?? "Unknown"})`;
+    return t(event.messageId, {
+      itemId: getTreasureItemLabel(event.payload?.itemId, t),
+    });
   }
   if (event.type === "TRAP") {
-    return `${event.message} (DMG:${event.payload?.damage ?? 0} / ${event.payload?.debuffType ?? "None"})`;
+    return t(event.messageId, {
+      damage: event.payload?.damage ?? 0,
+      debuffType: getTrapDebuffLabel(event.payload?.debuffType, t),
+    });
   }
-  return event.message;
+  return t(event.messageId);
 };
 
 const formatClock = (tick: number): string => {
@@ -41,6 +79,7 @@ const formatClock = (tick: number): string => {
 
 export default function ExplorationScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useLocalSearchParams<{ dungeonId?: string; floor?: string }>();
 
   const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_4";
@@ -228,7 +267,7 @@ export default function ExplorationScreen() {
         >
           {displayedEvents.map((event, index) => (
             <Text key={`${event.tick}-${event.type}-${index}`} style={styles.logLine}>
-              {`${EVENT_PREFIX[event.type]}  ${formatEvent(event)}`}
+              {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, t)}`}
             </Text>
           ))}
         </ScrollView>
