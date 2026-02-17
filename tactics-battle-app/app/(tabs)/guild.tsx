@@ -102,7 +102,11 @@ export default function GuildScreen() {
           <>
             <Text style={styles.sectionLabel}>{t("guild.section.hire")}</Text>
             {characters.map((character) => (
-              <Pressable key={character.id} style={({ pressed }) => [styles.listCard, pressed ? styles.listCardPressed : null]}>
+              <Pressable
+                key={character.id}
+                style={({ pressed }) => [styles.listCard, pressed ? styles.listCardPressed : null]}
+                onPress={() => router.push(`/characters/${character.id}`)}
+              >
                 <View style={styles.avatarCircle}>
                   <Image source={getClassById(character.classId).image} style={styles.avatarImage} />
                 </View>
