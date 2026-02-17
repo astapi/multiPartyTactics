@@ -22,8 +22,8 @@ export type ExplorationEvent = {
 export type ExplorationResult = {
   seed: number;
   events: ExplorationEvent[];
-  encounterTick: number | null;
-  encounter: EncounterResult | null;
+  encounterTicks: number[];
+  encounters: EncounterResult[];
   totalTicks: number;
 };
 
@@ -84,26 +84,27 @@ export const generateExplorationResult = (
   );
   const maxTicks = cfg.maxTicks;
 
-  let encounterTick: number | null = null;
-  let encounter: EncounterResult | null = null;
+  const encounterTicks: number[] = [];
+  const encounters: EncounterResult[] = [];
 
   for (let tick = 1; tick <= maxTicks; tick += 1) {
     const ramp = Math.min(cfg.encounterRampMax, tick * cfg.encounterRampPerTick);
     const encounterChance = clamp(baseEncounter + ramp, cfg.encounterChanceMin, cfg.finalEncounterMax);
 
     if (rng() < encounterChance) {
-      encounterTick = tick;
-      encounter = generateEncounter({
+      encounterTicks.push(tick);
+      const enc = generateEncounter({
         dungeonId: params.dungeon.id,
         floor,
         seed: (params.seed + tick * 1009) >>> 0,
       });
+      encounters.push(enc);
       events.push({
         tick,
         type: "ENCOUNTER",
-        message: "敵影を発見！戦闘に移行します。",
+        message: "敵影を発見！戦闘準備。",
       });
-      break;
+      continue;
     }
 
     if (rng() < treasureChance) {
@@ -136,6 +137,6 @@ export const generateExplorationResult = (
     events.push({ tick, type: "LOG", message });
   }
 
-  const totalTicks = encounterTick ?? maxTicks;
-  return { seed: params.seed, events, encounterTick, encounter, totalTicks };
+  const totalTicks = maxTicks;
+  return { seed: params.seed, events, encounterTicks, encounters, totalTicks };
 };
