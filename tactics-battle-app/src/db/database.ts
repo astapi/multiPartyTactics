@@ -27,6 +27,30 @@ export const initializeDatabase = async (): Promise<void> => {
         `Invalid class id found in DB (${invalidClass.class_id}). Reset database and recreate characters.`
       );
     }
+
+    const dungeonProgressColumns = await db.getAllAsync<{ name: string }>(
+      "PRAGMA table_info(dungeon_progress)"
+    );
+    const dungeonProgressColumnSet = new Set(
+      dungeonProgressColumns.map((column) => column.name)
+    );
+    if (!dungeonProgressColumnSet.has("last_entered_floor")) {
+      throw new Error(
+        "Legacy dungeon schema detected. Reset database and recreate dungeon data."
+      );
+    }
+
+    const battleSessionColumns = await db.getAllAsync<{ name: string }>(
+      "PRAGMA table_info(battle_sessions)"
+    );
+    const battleSessionColumnSet = new Set(
+      battleSessionColumns.map((column) => column.name)
+    );
+    if (!battleSessionColumnSet.has("dungeon_id")) {
+      throw new Error(
+        "Legacy battle schema detected. Reset database and recreate dungeon data."
+      );
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes("no such column: class_id")) {

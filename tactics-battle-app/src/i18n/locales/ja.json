@@ -95,6 +95,8 @@
   "dungeon.selectParty": "SELECT PARTY",
   "dungeon.selectDungeon": "SELECT DUNGEON",
   "dungeon.selectFloor": "SELECT FLOOR",
+  "dungeon.name.crestoria_dungeon_1_4": "クレストリアダンジョン 1-4F",
+  "dungeon.name.crestoria_dungeon_5_9": "クレストリアダンジョン 5-9F",
   "dungeon.progress": "進行: Floor {floor} / {max}",
   "dungeon.deploy": "Deploy Party",
   "guild.hire.empty": "まだ冒険者がいません"

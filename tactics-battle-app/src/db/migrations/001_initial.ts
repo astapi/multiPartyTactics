@@ -49,18 +49,48 @@ CREATE TABLE IF NOT EXISTS tactics_rules (
   FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS dungeon_progress (
+CREATE TABLE IF NOT EXISTS dungeons (
   id TEXT PRIMARY KEY,
-  dungeon_id TEXT NOT NULL,
-  current_floor INTEGER DEFAULT 1,
-  is_cleared INTEGER DEFAULT 0
+  min_floor INTEGER NOT NULL,
+  max_floor INTEGER NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_bonus INTEGER NOT NULL DEFAULT 0 CHECK (is_bonus IN (0, 1)),
+  parent_dungeon_id TEXT,
+  unlock_from_dungeon_id TEXT,
+  unlock_from_floor INTEGER,
+  is_enabled INTEGER NOT NULL DEFAULT 1 CHECK (is_enabled IN (0, 1)),
+  FOREIGN KEY (parent_dungeon_id) REFERENCES dungeons(id),
+  FOREIGN KEY (unlock_from_dungeon_id) REFERENCES dungeons(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dungeons_sort_order ON dungeons(sort_order);
+
+CREATE TABLE IF NOT EXISTS unlocked_dungeons (
+  dungeon_id TEXT PRIMARY KEY,
+  unlocked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  unlock_reason TEXT,
+  FOREIGN KEY (dungeon_id) REFERENCES dungeons(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dungeon_progress (
+  dungeon_id TEXT PRIMARY KEY,
+  last_entered_floor INTEGER NOT NULL DEFAULT 1,
+  max_cleared_floor INTEGER NOT NULL DEFAULT 0,
+  clear_count INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (dungeon_id) REFERENCES dungeons(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS battle_sessions (
   id TEXT PRIMARY KEY,
-  dungeon_progress_id TEXT,
-  turn INTEGER DEFAULT 1,
-  status TEXT DEFAULT 'IN_PROGRESS'
+  dungeon_id TEXT NOT NULL,
+  floor INTEGER NOT NULL,
+  turn INTEGER NOT NULL DEFAULT 1,
+  status TEXT NOT NULL DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'WIN', 'LOSE')),
+  exploration_seed INTEGER,
+  started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at TEXT,
+  FOREIGN KEY (dungeon_id) REFERENCES dungeons(id)
 );
 
 CREATE TABLE IF NOT EXISTS battle_logs (
@@ -74,4 +104,14 @@ CREATE TABLE IF NOT EXISTS battle_logs (
   healing INTEGER,
   log_message TEXT
 );
+
+INSERT OR IGNORE INTO dungeons
+(id, min_floor, max_floor, sort_order, is_bonus, is_enabled)
+VALUES
+('crestoria_dungeon_1_4', 1, 4, 10, 0, 1),
+('crestoria_dungeon_5_9', 5, 9, 20, 0, 1);
+
+INSERT OR IGNORE INTO unlocked_dungeons (dungeon_id, unlock_reason)
+VALUES
+('crestoria_dungeon_1_4', 'initial');
 `;

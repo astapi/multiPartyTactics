@@ -49,17 +49,22 @@ export type TacticsRuleRecord = {
 };
 
 export type DungeonProgressRecord = {
-  id: string;
   dungeonId: string;
-  currentFloor: number;
-  isCleared: number;
+  lastEnteredFloor: number;
+  maxClearedFloor: number;
+  clearCount: number;
+  updatedAt: string;
 };
 
 export type BattleSessionRecord = {
   id: string;
-  dungeonProgressId: string | null;
+  dungeonId: string;
+  floor: number;
   turn: number;
   status: "IN_PROGRESS" | "WIN" | "LOSE";
+  explorationSeed: number | null;
+  startedAt: string;
+  endedAt: string | null;
 };
 
 export type BattleLogRecord = {
