@@ -34,38 +34,53 @@ export default function ExplorationScreen() {
   const [result, setResult] = useState<ExplorationResult | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     let mounted = true;
 
     const init = async () => {
-      const list = await dungeonRepository.list();
-      const found = list.find((row) => row.dungeonId === resolvedDungeonId);
-      const nextProgress = found ?? {
-        dungeonId: resolvedDungeonId,
-        lastEnteredFloor: floor,
-        maxClearedFloor: 0,
-        clearCount: 0,
-        updatedAt: "",
-      };
-      await dungeonRepository.upsert({
-        ...nextProgress,
-        lastEnteredFloor: floor,
-      });
+      try {
+        const list = await dungeonRepository.list();
+        const found = list.find((row) => row.dungeonId === resolvedDungeonId);
+        const nextProgress = found ?? {
+          dungeonId: resolvedDungeonId,
+          lastEnteredFloor: floor,
+          maxClearedFloor: 0,
+          clearCount: 0,
+          updatedAt: "",
+        };
+        await dungeonRepository.upsert({
+          ...nextProgress,
+          lastEnteredFloor: floor,
+        });
 
-      const partyRecords = await charactersRepository.listPartyMembers();
-      const party = partyRecords.map(toUnit);
-      const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
-      const seed = generateTimeSeed();
-      const nextResult = generateExplorationResult({
-        party,
-        dungeon,
-        floor,
-        seed,
-      });
+        const partyRecords = await charactersRepository.listPartyMembers();
+        if (partyRecords.length === 0) {
+          if (mounted) {
+            setError("パーティメンバーがいません。ギルドでキャラクターを追加してください。");
+          }
+          return;
+        }
+        const party = partyRecords.map(toUnit);
+        const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
+        const seed = generateTimeSeed();
+        const nextResult = generateExplorationResult({
+          party,
+          dungeon,
+          floor,
+          seed,
+        });
 
-      if (!mounted) return;
-      setResult(nextResult);
-      setCurrentTick(0);
+        if (!mounted) return;
+        setResult(nextResult);
+        setCurrentTick(0);
+      } catch (err) {
+        console.error("Failed to initialize exploration:", err);
+        if (mounted) {
+          setError("探索の初期化に失敗しました。");
+        }
+      }
     };
 
     void init();
@@ -95,9 +110,15 @@ export default function ExplorationScreen() {
     if (currentTick < result.encounterTick) return;
 
     setIsNavigating(true);
+    const encounterPayload = result.encounter ? JSON.stringify(result.encounter) : "";
     router.replace({
       pathname: "/dungeon/battle",
-      params: { dungeonId: resolvedDungeonId, floor: String(floor), explorationSeed: String(result.seed) },
+      params: {
+        dungeonId: resolvedDungeonId,
+        floor: String(floor),
+        explorationSeed: String(result.seed),
+        encounter: encounterPayload,
+      },
     });
   }, [currentTick, floor, isNavigating, resolvedDungeonId, result, router]);
 
@@ -105,6 +126,14 @@ export default function ExplorationScreen() {
     () => (result ? result.events.filter((event) => event.tick <= currentTick).slice(-30) : []),
     [currentTick, result]
   );
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   if (!result) {
     return (
@@ -125,7 +154,12 @@ export default function ExplorationScreen() {
           onPress={() =>
             router.replace({
               pathname: "/dungeon/battle",
-              params: { dungeonId: resolvedDungeonId, floor: String(floor), explorationSeed: String(result.seed) },
+              params: {
+                dungeonId: resolvedDungeonId,
+                floor: String(floor),
+                explorationSeed: String(result.seed),
+                encounter: result.encounter ? JSON.stringify(result.encounter) : "",
+              },
             })
           }
         />
@@ -149,6 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#09090b",
   },
   loadingText: { color: "#d4d4d8" },
+  errorText: { color: "#ef4444", textAlign: "center", paddingHorizontal: 24 },
   container: { flex: 1, backgroundColor: "#09090b", padding: 16 },
   title: { marginBottom: 8, fontSize: 20, fontWeight: "600", color: "#ffffff" },
   elapsed: { color: "#a1a1aa" },

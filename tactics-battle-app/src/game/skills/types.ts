@@ -71,8 +71,7 @@ export type Skill = {
   target: SkillTarget;
   mpCost: number;
   cooldown: number;
-  power?: number;
-  conditionalPower?: ConditionalPower;
+  multiplier?: number;
   effects?: SkillEffect[];
   tags: string[];
 };

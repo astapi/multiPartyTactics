@@ -1,6 +1,10 @@
 import { DungeonOption } from "@/constants/dungeons";
+import difficultyConfig from "@/data/difficultyConfig.json";
 import { Unit } from "@/game/battle";
+import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { createSeededRng } from "@/utils/rng";
+
+const cfg = difficultyConfig.exploration;
 
 export type ExplorationEventType = "LOG" | "ENCOUNTER" | "TREASURE" | "TRAP";
 
@@ -19,6 +23,7 @@ export type ExplorationResult = {
   seed: number;
   events: ExplorationEvent[];
   encounterTick: number | null;
+  encounter: EncounterResult | null;
   totalTicks: number;
 };
 
@@ -56,25 +61,43 @@ export const generateExplorationResult = (
         partySize
       : 0;
 
-  const partyPenalty = (6 - Math.min(6, partySize)) * 0.012;
-  const powerFactor = clamp(1 - avgPower * 0.0015, 0.72, 1.08);
-  const baseEncounter = clamp(
-    (0.08 + floor * 0.015 * dungeonDepthFactor + partyPenalty) * powerFactor,
-    0.06,
-    0.45
+  const partyPenalty = (6 - Math.min(6, partySize)) * cfg.partyPenaltyPerMissing;
+  const powerFactor = clamp(
+    1 - avgPower * cfg.powerFactorMultiplier,
+    cfg.powerFactorMin,
+    cfg.powerFactorMax
   );
-  const treasureChance = clamp(0.08 - floor * 0.003, 0.03, 0.08);
-  const trapChance = clamp(0.05 + floor * 0.005, 0.05, 0.2);
-  const maxTicks = 40;
+  const baseEncounter = clamp(
+    (cfg.baseEncounterChance + floor * cfg.floorEncounterMultiplier * dungeonDepthFactor + partyPenalty) * powerFactor,
+    cfg.encounterChanceMin,
+    cfg.encounterChanceMax
+  );
+  const treasureChance = clamp(
+    cfg.treasureChanceBase - floor * cfg.treasureChanceFloorReduction,
+    cfg.treasureChanceMin,
+    cfg.treasureChanceMax
+  );
+  const trapChance = clamp(
+    cfg.trapChanceBase + floor * cfg.trapChanceFloorIncrease,
+    cfg.trapChanceMin,
+    cfg.trapChanceMax
+  );
+  const maxTicks = cfg.maxTicks;
 
   let encounterTick: number | null = null;
+  let encounter: EncounterResult | null = null;
 
   for (let tick = 1; tick <= maxTicks; tick += 1) {
-    const ramp = Math.min(0.35, tick * 0.008);
-    const encounterChance = clamp(baseEncounter + ramp, 0.06, 0.8);
+    const ramp = Math.min(cfg.encounterRampMax, tick * cfg.encounterRampPerTick);
+    const encounterChance = clamp(baseEncounter + ramp, cfg.encounterChanceMin, cfg.finalEncounterMax);
 
     if (rng() < encounterChance) {
       encounterTick = tick;
+      encounter = generateEncounter({
+        dungeonId: params.dungeon.id,
+        floor,
+        seed: (params.seed + tick * 1009) >>> 0,
+      });
       events.push({
         tick,
         type: "ENCOUNTER",
@@ -95,7 +118,10 @@ export const generateExplorationResult = (
     }
 
     if (rng() < trapChance) {
-      const damage = Math.max(1, Math.floor(4 + floor * 2 + rng() * 8));
+      const damage = Math.max(
+        1,
+        Math.floor(cfg.trapBaseDamage + floor * cfg.trapFloorDamageMultiplier + rng() * cfg.trapRandomDamageRange)
+      );
       const debuffType = TRAP_DEBUFFS[Math.floor(rng() * TRAP_DEBUFFS.length)];
       events.push({
         tick,
@@ -111,5 +137,5 @@ export const generateExplorationResult = (
   }
 
   const totalTicks = encounterTick ?? maxTicks;
-  return { seed: params.seed, events, encounterTick, totalTicks };
+  return { seed: params.seed, events, encounterTick, encounter, totalTicks };
 };

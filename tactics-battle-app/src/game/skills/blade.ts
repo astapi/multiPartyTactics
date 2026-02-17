@@ -21,7 +21,7 @@ export const BLADE_SKILLS: Skill[] = [
     target: "ENEMY",
     mpCost: 5,
     cooldown: 1,
-    power: 10,
+    multiplier: 1.4,
     tags: ["damage"],
   },
   {
@@ -31,12 +31,7 @@ export const BLADE_SKILLS: Skill[] = [
     target: "ENEMY",
     mpCost: 8,
     cooldown: 4,
-    power: 14,
-    conditionalPower: {
-      kind: "TARGET_HP_BELOW",
-      threshold: 0.3,
-      bonus: 6,
-    },
+    multiplier: 2.0,
     tags: ["damage", "finisher"],
   },
 ];

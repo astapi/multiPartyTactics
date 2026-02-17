@@ -56,12 +56,25 @@ export type DungeonProgressRecord = {
   updatedAt: string;
 };
 
+/**
+ * 戦闘の状態を表す型
+ * - IDLE: 戦闘開始前（Store専用、DBには保存されない）
+ * - IN_PROGRESS: 戦闘中
+ * - WIN: 勝利
+ * - LOSE: 敗北
+ * - DRAW: 引き分け
+ */
+export type BattleStatus = "IDLE" | "IN_PROGRESS" | "WIN" | "LOSE" | "DRAW";
+
+/** DB保存用の戦闘ステータス（IDLEを除く） */
+export type BattleSessionStatus = Exclude<BattleStatus, "IDLE">;
+
 export type BattleSessionRecord = {
   id: string;
   dungeonId: string;
   floor: number;
   turn: number;
-  status: "IN_PROGRESS" | "WIN" | "LOSE";
+  status: BattleSessionStatus;
   explorationSeed: number | null;
   startedAt: string;
   endedAt: string | null;

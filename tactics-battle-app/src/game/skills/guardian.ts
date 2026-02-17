@@ -18,7 +18,7 @@ export const GUARDIAN_SKILLS: Skill[] = [
     target: "ENEMY",
     mpCost: 5,
     cooldown: 4,
-    power: 6,
+    multiplier: 1.2,
     effects: [{ kind: "STATUS", status: "STUN", duration: 1, chance: 0.3 }],
     tags: ["damage", "control"],
   },

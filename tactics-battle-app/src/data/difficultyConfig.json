@@ -1,0 +1,27 @@
+{
+  "exploration": {
+    "baseEncounterChance": 0.08,
+    "floorEncounterMultiplier": 0.015,
+    "partyPenaltyPerMissing": 0.012,
+    "powerFactorMultiplier": 0.0015,
+    "powerFactorMin": 0.72,
+    "powerFactorMax": 1.08,
+    "encounterChanceMin": 0.06,
+    "encounterChanceMax": 0.45,
+    "encounterRampPerTick": 0.008,
+    "encounterRampMax": 0.35,
+    "finalEncounterMax": 0.8,
+    "treasureChanceBase": 0.08,
+    "treasureChanceFloorReduction": 0.003,
+    "treasureChanceMin": 0.03,
+    "treasureChanceMax": 0.08,
+    "trapChanceBase": 0.05,
+    "trapChanceFloorIncrease": 0.005,
+    "trapChanceMin": 0.05,
+    "trapChanceMax": 0.2,
+    "trapBaseDamage": 4,
+    "trapFloorDamageMultiplier": 2,
+    "trapRandomDamageRange": 8,
+    "maxTicks": 40
+  }
+}

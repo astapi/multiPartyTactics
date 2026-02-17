@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS battle_sessions (
   dungeon_id TEXT NOT NULL,
   floor INTEGER NOT NULL,
   turn INTEGER NOT NULL DEFAULT 1,
-  status TEXT NOT NULL DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'WIN', 'LOSE')),
+  status TEXT NOT NULL DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'WIN', 'LOSE', 'DRAW')),
   exploration_seed INTEGER,
   started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ended_at TEXT,

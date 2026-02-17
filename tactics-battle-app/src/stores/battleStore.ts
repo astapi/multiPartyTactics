@@ -1,14 +1,14 @@
 import { create } from "zustand";
-import { BattleLogRecord } from "@/types/models";
+import { BattleLogRecord, BattleStatus } from "@/types/models";
 
 type BattleState = {
   sessionId: string | null;
   logs: BattleLogRecord[];
-  status: "IDLE" | "IN_PROGRESS" | "WIN" | "LOSE";
+  status: BattleStatus;
   setSessionId: (sessionId: string | null) => void;
   setLogs: (logs: BattleLogRecord[]) => void;
   appendLog: (log: BattleLogRecord) => void;
-  setStatus: (status: BattleState["status"]) => void;
+  setStatus: (status: BattleStatus) => void;
   reset: () => void;
 };
 
