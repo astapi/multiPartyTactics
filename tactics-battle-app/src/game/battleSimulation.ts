@@ -32,8 +32,8 @@ export type BattleSimulationResult = {
   finalEnemies: Unit[];
 };
 
-const ENEMY_BASIC_ATTACK: Skill = {
-  id: "enemy_basic_attack",
+const BASIC_ATTACK: Skill = {
+  id: "basic_attack",
   name: "Attack",
   type: "attack",
   target: "ENEMY",
@@ -172,16 +172,19 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           turn
         );
         if (!resolution.skill || !resolution.target) {
+          // ルールがマッチしない場合は通常攻撃
+          const target = getLowestHpPercent(aliveEnemies);
+          const result = executeSkill(actor, target, BASIC_ATTACK, rng);
           logs.push(
             createBattleLog(
               params.sessionId,
               turn,
               actor.name,
-              "WAIT",
-              null,
+              BASIC_ATTACK.name,
+              target.name,
+              result.damage,
               0,
-              0,
-              `${actor.name} waits`
+              `${actor.name} attacked ${target.name}`
             )
           );
           continue;
@@ -205,13 +208,13 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           return { outcome: "LOSE", turns: turn, logs, finalParty: party, finalEnemies: enemies };
         }
         const target = getLowestHpPercent(aliveParty);
-        const result = executeSkill(actor, target, ENEMY_BASIC_ATTACK, rng);
+        const result = executeSkill(actor, target, BASIC_ATTACK, rng);
         logs.push(
           createBattleLog(
             params.sessionId,
             turn,
             actor.name,
-            ENEMY_BASIC_ATTACK.name,
+            BASIC_ATTACK.name,
             target.name,
             result.damage,
             0,
