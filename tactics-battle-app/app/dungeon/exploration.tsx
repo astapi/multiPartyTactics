@@ -17,6 +17,7 @@ import { toUnit } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
 
 const HERO_IMAGE = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
+const EXPLORATION_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 
 const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   LOG: "⋄",
@@ -262,14 +263,14 @@ export default function ExplorationScreen() {
     if (!isFocused) return;
     if (displayedEvents.length === 0) return;
     requestAnimationFrame(() => {
-      logScrollRef.current?.scrollToEnd({ animated: true });
+      logScrollRef.current?.scrollToEnd({ animated: false });
     });
   }, [displayedEvents.length, isFocused]);
 
   if (error) {
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
+        <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.stateMessageWrap}>
             <Text style={styles.errorText}>{error}</Text>
@@ -282,7 +283,7 @@ export default function ExplorationScreen() {
   if (!result) {
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
+        <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.stateMessageWrap}>
             <Text style={styles.loadingText}>探索準備中...</Text>
@@ -294,7 +295,7 @@ export default function ExplorationScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
       <View style={styles.container}>
         <View style={styles.headerSection}>
           <View style={styles.topRow}>

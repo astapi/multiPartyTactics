@@ -18,6 +18,7 @@ import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
+const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 
 const DUNGEON_NAME_I18N_KEY = {
   crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
@@ -53,7 +54,7 @@ export default function BattleScreen() {
   const [phase, setPhase] = useState<BattlePhase>("LOADING");
   const [error, setError] = useState<string | null>(null);
   const [initialParty, setInitialParty] = useState<Unit[]>([]);
-  const [encounterData, setEncounterData] = useState<EncounterResult | null>(null);
+  const [encounterData, setEncounterData] = useState<EncounterResult | null>(() => parseEncounter(encounter));
   const [tacticsByCharacter, setTacticsByCharacter] = useState<Record<string, TacticsRuleRecord[]>>({});
   const [resolvedDungeonId, setResolvedDungeonId] = useState("crestoria_dungeon_1_4");
   const [resolvedFloor, setResolvedFloor] = useState(1);
@@ -84,6 +85,14 @@ export default function BattleScreen() {
       reset();
       setPhase("LOADING");
       setError(null);
+      const parsedFloor = Math.max(1, Number.parseInt(floor ?? "1", 10) || 1);
+      const parsedSeed = explorationSeed ? Number.parseInt(explorationSeed, 10) : Date.now();
+      const nextDungeonId = dungeonId ?? "crestoria_dungeon_1_4";
+      const parsedEncounter = parseEncounter(encounter);
+      setResolvedDungeonId(nextDungeonId);
+      setResolvedFloor(parsedFloor);
+      setResolvedSeed(Number.isFinite(parsedSeed) ? parsedSeed : null);
+      setEncounterData(parsedEncounter);
       try {
         const selected = await charactersRepository.listPartyMembers();
         if (selected.length === 0) {
@@ -101,11 +110,8 @@ export default function BattleScreen() {
         for (const unit of units) {
           map[unit.id] = await tacticsRepository.listByCharacter(unit.id);
         }
-        const parsedFloor = Math.max(1, Number.parseInt(floor ?? "1", 10) || 1);
-        const parsedSeed = explorationSeed ? Number.parseInt(explorationSeed, 10) : Date.now();
-        const nextDungeonId = dungeonId ?? "crestoria_dungeon_1_4";
         const nextEncounterData =
-          parseEncounter(encounter) ??
+          parsedEncounter ??
           generateEncounter({
             dungeonId: nextDungeonId,
             floor: parsedFloor,
@@ -117,9 +123,6 @@ export default function BattleScreen() {
         setPartyUiMetaById(nextPartyUiMetaById);
         setTacticsByCharacter(map);
         setEncounterData(nextEncounterData);
-        setResolvedDungeonId(nextDungeonId);
-        setResolvedFloor(parsedFloor);
-        setResolvedSeed(Number.isFinite(parsedSeed) ? parsedSeed : null);
         setLogs([]);
         setStatus("IDLE");
         setBattleCompleted(false);
@@ -205,7 +208,16 @@ export default function BattleScreen() {
 
   useEffect(() => {
     if (!encounterData || phase !== "ENCOUNTER") return;
-    void onStartBattle();
+    let cancelled = false;
+    const rafId = requestAnimationFrame(() => {
+      if (!cancelled) {
+        void onStartBattle();
+      }
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+    };
   }, [encounterData, phase]);
 
   const renderedLogCount = phase === "RESULT" ? Math.min(revealedLogCount, logs.length) : logs.length;
@@ -213,36 +225,54 @@ export default function BattleScreen() {
   useEffect(() => {
     if (renderedLogCount <= 0) return;
     requestAnimationFrame(() => {
-      logScrollRef.current?.scrollToEnd({ animated: true });
+      logScrollRef.current?.scrollToEnd({ animated: false });
     });
   }, [renderedLogCount]);
 
   if (phase === "LOADING") {
-    return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>戦闘準備中...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    if (encounterData) {
+      return renderBattleLayout({
+        floor: encounterData.rollMeta.floor,
+        title: dungeonTitle,
+        enemies: encounterData.enemies.map((enemy, idx) => ({
+          id: `${enemy.enemyId}-${idx}`,
+          name: enemy.name,
+          image: getEnemyImage(enemy.enemyId),
+        })),
+        party,
+        logs: [],
+        turnText: "Turn --",
+        isPaused,
+        onPausePress: () => setIsPaused((prev) => !prev),
+      });
+    }
+    return renderBattleSkeleton();
   }
 
   if (phase === "SIMULATING") {
-    return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>戦闘シミュレーション中...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    if (encounterData) {
+      return renderBattleLayout({
+        floor: encounterData.rollMeta.floor,
+        title: dungeonTitle,
+        enemies: encounterData.enemies.map((enemy, idx) => ({
+          id: `${enemy.enemyId}-${idx}`,
+          name: enemy.name,
+          image: getEnemyImage(enemy.enemyId),
+        })),
+        party,
+        logs: [],
+        turnText: "Turn --",
+        isPaused,
+        onPausePress: () => setIsPaused((prev) => !prev),
+      });
+    }
+    return renderBattleSkeleton();
   }
 
   if (phase === "ERROR") {
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
+        <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>{error ?? "不明なエラーが発生しました。"}</Text>
         </View>
@@ -296,7 +326,7 @@ export default function BattleScreen() {
     const logRows = params.logs;
     return (
       <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-        <Stack.Screen options={{ headerShown: false }} />
+        <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.header}>
             <View style={styles.floorBadge}>
@@ -361,6 +391,71 @@ export default function BattleScreen() {
               level: partyUiMetaById[member.id]?.level,
             }))}
           />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  function renderBattleSkeleton() {
+    return (
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+        <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={[styles.skeletonBlock, styles.skeletonFloorBadge]} />
+            <View style={[styles.skeletonBlock, styles.skeletonHeaderTitle]} />
+            <View style={[styles.skeletonBlock, styles.skeletonAutoBadge]} />
+          </View>
+
+          <View style={styles.logSection}>
+            <View style={styles.logHeader}>
+              <View style={[styles.skeletonBlock, styles.skeletonLogLabel]} />
+              <View style={[styles.skeletonBlock, styles.skeletonTurnLabel]} />
+            </View>
+            <View style={styles.logBox}>
+              <View style={styles.skeletonLogContent}>
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <View
+                    key={`log-skel-${idx}`}
+                    style={[
+                      styles.skeletonBlock,
+                      styles.skeletonLogLine,
+                      idx % 3 === 0 && styles.skeletonLogLineShort,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.enemyArea}>
+            <ImageBackground source={BATTLE_BG} style={styles.enemyArea} imageStyle={styles.enemyAreaImage}>
+              <View style={[styles.enemyAreaOverlay, styles.skeletonEnemyOverlay]}>
+                <View style={styles.enemyRow}>
+                  {Array.from({ length: 3 }).map((_, idx) => (
+                    <View key={`enemy-skel-${idx}`} style={styles.enemyItem}>
+                      <View style={[styles.skeletonBlock, styles.skeletonEnemySprite]} />
+                      <View style={[styles.skeletonBlock, styles.skeletonEnemyName]} />
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </ImageBackground>
+          </View>
+
+          <View style={styles.skeletonPartySection}>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <View key={`party-skel-${idx}`} style={styles.skeletonPartyColumn}>
+                <View style={styles.skeletonPartyHeader}>
+                  <View style={[styles.skeletonBlock, styles.skeletonPartyAvatar]} />
+                  <View style={[styles.skeletonBlock, styles.skeletonPartyName]} />
+                </View>
+                <View style={[styles.skeletonBlock, styles.skeletonPartyStat]} />
+                <View style={[styles.skeletonBlock, styles.skeletonPartyStat]} />
+                <View style={[styles.skeletonBlock, styles.skeletonPartyStat]} />
+              </View>
+            ))}
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -483,5 +578,98 @@ const styles = StyleSheet.create({
     textShadowColor: "#000000",
     textShadowRadius: 3,
     fontSize: 10,
+  },
+  skeletonBlock: {
+    backgroundColor: "#e7e7e7",
+    borderRadius: 6,
+  },
+  skeletonFloorBadge: {
+    width: 40,
+    height: 20,
+    borderRadius: 8,
+  },
+  skeletonHeaderTitle: {
+    flex: 1,
+    height: 20,
+    marginHorizontal: 8,
+    maxWidth: 180,
+  },
+  skeletonAutoBadge: {
+    width: 48,
+    height: 20,
+    borderRadius: 8,
+  },
+  skeletonLogLabel: {
+    width: 64,
+    height: 10,
+  },
+  skeletonTurnLabel: {
+    width: 48,
+    height: 10,
+  },
+  skeletonLogContent: {
+    flex: 1,
+    justifyContent: "flex-end",
+    paddingVertical: 4,
+  },
+  skeletonLogLine: {
+    height: 10,
+    marginBottom: 8,
+    width: "100%",
+  },
+  skeletonLogLineShort: {
+    width: "78%",
+  },
+  skeletonEnemyOverlay: {
+    backgroundColor: "rgba(0,0,0,0.18)",
+  },
+  skeletonEnemySprite: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+  skeletonEnemyName: {
+    width: 56,
+    height: 10,
+    marginTop: 6,
+    backgroundColor: "rgba(255,255,255,0.35)",
+  },
+  skeletonPartySection: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "flex-start",
+    borderTopWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+  },
+  skeletonPartyColumn: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 2,
+  },
+  skeletonPartyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    width: "100%",
+  },
+  skeletonPartyAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+  },
+  skeletonPartyName: {
+    width: 32,
+    height: 11,
+  },
+  skeletonPartyStat: {
+    width: 44,
+    height: 11,
   },
 });
