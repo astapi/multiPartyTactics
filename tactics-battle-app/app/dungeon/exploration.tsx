@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Package } from "lucide-react-native";
+import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/PartyStatusStrip";
 import { DUNGEONS } from "@/constants/dungeons";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
@@ -77,6 +79,11 @@ const formatClock = (tick: number): string => {
   return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 };
 
+type ExplorationPartySnapshotMember = PartyStatusStripMember & {
+  baseHp: number;
+  baseMp: number;
+};
+
 export default function ExplorationScreen() {
   const router = useRouter();
   const { t } = useI18n();
@@ -92,6 +99,7 @@ export default function ExplorationScreen() {
   const [isFocused, setIsFocused] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const logScrollRef = useRef<ScrollView | null>(null);
+  const [partySnapshot, setPartySnapshot] = useState<ExplorationPartySnapshotMember[]>([]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -121,6 +129,16 @@ export default function ExplorationScreen() {
           }
           return;
         }
+        const nextPartySnapshot: ExplorationPartySnapshotMember[] = partyRecords.map((record) => ({
+          id: record.id,
+          name: record.name,
+          classId: record.classId,
+          hp: record.currentHp,
+          mp: record.currentMp,
+          level: record.level,
+          baseHp: record.currentHp,
+          baseMp: record.currentMp,
+        }));
         const party = partyRecords.map(toUnit);
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
@@ -133,6 +151,7 @@ export default function ExplorationScreen() {
 
         if (!mounted) return;
         setResult(nextResult);
+        setPartySnapshot(nextPartySnapshot);
         setCurrentTick(0);
         setNextEncounterIndex(0);
         setIsPaused(false);
@@ -206,6 +225,38 @@ export default function ExplorationScreen() {
     () => displayedEvents.filter((event) => event.type === "TREASURE").length,
     [displayedEvents]
   );
+  const totalTreasureCount = useMemo(
+    () => (result ? result.events.filter((event) => event.type === "TREASURE").length : 0),
+    [result]
+  );
+  const stepProgressRatio = useMemo(() => {
+    if (!result || result.totalTicks <= 0) return 0;
+    return Math.max(0, Math.min(1, currentTick / result.totalTicks));
+  }, [currentTick, result]);
+  const displayedPartyMembers = useMemo<PartyStatusStripMember[]>(() => {
+    if (partySnapshot.length === 0) return [];
+    const members = partySnapshot.map((member) => ({
+      id: member.id,
+      name: member.name,
+      classId: member.classId,
+      hp: member.baseHp,
+      mp: member.baseMp,
+      level: member.level,
+    }));
+    if (!result) return members;
+
+    for (const event of result.events) {
+      if (event.tick > currentTick) break;
+      if (event.type !== "TRAP") continue;
+      const damage = Math.max(0, Math.floor(event.payload?.damage ?? 0));
+      if (damage <= 0) continue;
+      for (const member of members) {
+        member.hp = Math.max(0, member.hp - damage);
+      }
+    }
+
+    return members;
+  }, [currentTick, partySnapshot, result]);
 
   useEffect(() => {
     if (!isFocused) return;
@@ -245,52 +296,71 @@ export default function ExplorationScreen() {
     <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
-        <View style={styles.topRow}>
-          <Text style={styles.title}>{`B${floor}F - Exploring`}</Text>
-          <View style={styles.timeBadge}>
-            <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
+        <View style={styles.headerSection}>
+          <View style={styles.topRow}>
+            <Text style={styles.title}>{`B${floor}F - Exploring`}</Text>
+            <View style={styles.timeBadge}>
+              <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
+            </View>
           </View>
         </View>
 
         <ImageBackground source={HERO_IMAGE} style={styles.hero} imageStyle={styles.heroImage}>
           <View style={styles.heroOverlay}>
             <Text style={styles.heroMain}>The air grows damp. Water drips from the cavern ceiling.</Text>
-            <Text style={styles.heroSub}>{`B${floor}F  •  ${treasureCount} treasure`}</Text>
+            <View style={styles.heroProgressWrap}>
+              <Text style={styles.heroProgressLabel}>{`B${floor}F  ${currentTick} / ${result.totalTicks} steps`}</Text>
+              <View style={styles.heroProgressTrack}>
+                <View style={[styles.heroProgressFill, { width: `${Math.floor(stepProgressRatio * 100)}%` }]} />
+              </View>
+            </View>
           </View>
         </ImageBackground>
 
-        <ScrollView
-          ref={logScrollRef}
-          style={styles.logBox}
-          contentContainerStyle={styles.logContent}
-          onContentSizeChange={() => logScrollRef.current?.scrollToEnd({ animated: true })}
-        >
-          {displayedEvents.map((event, index) => (
-            <Text key={`${event.tick}-${event.type}-${index}`} style={styles.logLine}>
-              {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, t)}`}
-            </Text>
-          ))}
-        </ScrollView>
+        <View style={styles.logSection}>
+          <ScrollView
+            ref={logScrollRef}
+            style={styles.logBox}
+            contentContainerStyle={styles.logContent}
+          >
+            {displayedEvents.map((event, index) => (
+              <Text key={`${event.tick}-${event.type}-${index}`} style={styles.logLine}>
+                {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, t)}`}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+
+        <PartyStatusStrip members={displayedPartyMembers} containerStyle={styles.partyStrip} />
 
         <View style={styles.footerMeta}>
-          <Text style={styles.footerLeft}>Items</Text>
-          <Text style={styles.footerRight}>{`${currentTick} / ${result.totalTicks}`}</Text>
+          <View style={styles.footerMetaLeft}>
+            <Package size={18} color="#666666" />
+            <Text style={styles.footerLeft}>Treasure</Text>
+          </View>
+          <View style={styles.footerMetaRight}>
+            <Text style={styles.footerCountCurrent}>{String(treasureCount)}</Text>
+            <Text style={styles.footerCountSlash}>/</Text>
+            <Text style={styles.footerCountMax}>{String(totalTreasureCount)}</Text>
+          </View>
         </View>
-        <View style={styles.actionRow}>
-          <Pressable
-            style={[styles.actionButton, styles.retreatButton]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.retreatText}>Retreat</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.actionButton, styles.pauseButton]}
-            onPress={() => setIsPaused((prev) => !prev)}
-          >
-            <Text style={styles.pauseText}>
-              {isPaused ? "Resume" : "Pause"}
-            </Text>
-          </Pressable>
+        <View style={styles.actionSection}>
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.actionButton, styles.retreatButton]}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.retreatText}>Retreat</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.actionButton, styles.pauseButton]}
+              onPress={() => setIsPaused((prev) => !prev)}
+            >
+              <Text style={styles.pauseText}>
+                {isPaused ? "Resume" : "Pause"}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -302,8 +372,9 @@ const styles = StyleSheet.create({
   stateMessageWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
   loadingText: { color: "#6b7280", fontSize: 14 },
   errorText: { color: "#ef4444", textAlign: "center", paddingHorizontal: 24, fontSize: 14 },
-  container: { flex: 1, backgroundColor: "#f2f2f2", padding: 12, paddingBottom: 6 },
-  topRow: { marginBottom: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  container: { flex: 1, backgroundColor: "#f2f2f2" },
+  headerSection: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 8 },
+  topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   title: { fontSize: 26, fontWeight: "800", color: "#121212" },
   timeBadge: {
     borderRadius: 999,
@@ -316,8 +387,8 @@ const styles = StyleSheet.create({
   timeBadgeText: { fontSize: 12, color: "#3a3a3a", fontWeight: "600" },
   hero: {
     height: 125,
-    marginBottom: 8,
-    borderRadius: 8,
+    marginBottom: 0,
+    borderRadius: 0,
     overflow: "hidden",
     justifyContent: "flex-end",
   },
@@ -328,7 +399,32 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   heroMain: { color: "#ffffff", fontSize: 12, lineHeight: 16 },
+  heroProgressWrap: {
+    marginTop: 6,
+    gap: 4,
+  },
+  heroProgressLabel: {
+    color: "#d4d4d8",
+    fontSize: 10,
+    fontWeight: "500",
+  },
+  heroProgressTrack: {
+    width: "100%",
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    overflow: "hidden",
+  },
+  heroProgressFill: {
+    height: "100%",
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
   heroSub: { color: "#d4d4d8", marginTop: 4, fontSize: 10 },
+  logSection: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+  },
   logBox: {
     flex: 1,
     borderTopWidth: 1,
@@ -337,18 +433,37 @@ const styles = StyleSheet.create({
   },
   logContent: { paddingVertical: 8, paddingHorizontal: 4 },
   logLine: { marginBottom: 12, color: "#404040", fontSize: 13, lineHeight: 16 },
+  partyStrip: {
+    marginTop: 0,
+  },
   footerMeta: {
-    marginTop: 4,
+    marginTop: 0,
     marginBottom: 8,
-    paddingTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderColor: "#d8d8d8",
+    borderColor: "#e0e0e0",
+    backgroundColor: "#f5f5f5",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  footerLeft: { fontSize: 12, color: "#5f5f5f", fontWeight: "500" },
-  footerRight: { fontSize: 12, color: "#121212", fontWeight: "700" },
-  actionRow: { flexDirection: "row", gap: 10, marginBottom: 6 },
+  footerMetaLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  footerLeft: { fontSize: 13, color: "#666666", fontWeight: "500" },
+  footerMetaRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  footerCountCurrent: { fontSize: 15, color: "#1a1a1a", fontWeight: "700" },
+  footerCountSlash: { fontSize: 13, color: "#aaaaaa", fontWeight: "400" },
+  footerCountMax: { fontSize: 15, color: "#888888", fontWeight: "700" },
+  actionSection: { paddingHorizontal: 12, paddingBottom: 6 },
+  actionRow: { flexDirection: "row", gap: 10 },
   actionButton: {
     flex: 1,
     borderRadius: 12,
