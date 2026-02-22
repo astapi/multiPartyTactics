@@ -6,6 +6,7 @@ import { Pause, Play } from "lucide-react-native";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
+import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { Unit } from "@/game/battle";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
 import { simulateBattle } from "@/game/battleSimulation";
@@ -17,14 +18,6 @@ import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
-const CLASS_IMAGE: Record<string, ImageSourcePropType> = {
-  GUARDIAN: require("@/assets/images/class/gurdian.png"),
-  SWORDMAN: require("@/assets/images/class/swordman.png"),
-  BERSERKER: require("@/assets/images/class/berserker.png"),
-  CLERIC: require("@/assets/images/class/cleric.png"),
-  WITCH: require("@/assets/images/class/witch.png"),
-  THIEF: require("@/assets/images/class/thief.png"),
-};
 
 const DUNGEON_NAME_I18N_KEY = {
   crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
@@ -38,9 +31,6 @@ const getEnemyImage = (enemyId: string): ImageSourcePropType => {
   if (id.includes("poison_toad") || id.includes("poison_frog")) return require("@/assets/images/enemies/poison_frog.png");
   return require("@/assets/images/enemies/slime.png");
 };
-const getClassImage = (classId?: string): ImageSourcePropType =>
-  (classId && CLASS_IMAGE[classId]) || CLASS_IMAGE.SWORDMAN;
-
 const parseEncounter = (raw: string | undefined): EncounterResult | null => {
   if (!raw) return null;
   try {
@@ -75,11 +65,11 @@ export default function BattleScreen() {
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
+  const [partyUiMetaById, setPartyUiMetaById] = useState<Record<string, { level: number }>>({});
   const logScrollRef = useRef<ScrollView | null>(null);
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
-  const status = useBattleStore((s) => s.status);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
@@ -102,6 +92,10 @@ export default function BattleScreen() {
           setPhase("ERROR");
           return;
         }
+        const nextPartyUiMetaById = selected.reduce<Record<string, { level: number }>>((acc, member) => {
+          acc[member.id] = { level: member.level };
+          return acc;
+        }, {});
         const units = selected.map(toUnit);
         const map: Record<string, TacticsRuleRecord[]> = {};
         for (const unit of units) {
@@ -120,6 +114,7 @@ export default function BattleScreen() {
 
         setInitialParty(units);
         setParty(units);
+        setPartyUiMetaById(nextPartyUiMetaById);
         setTacticsByCharacter(map);
         setEncounterData(nextEncounterData);
         setResolvedDungeonId(nextDungeonId);
@@ -308,68 +303,64 @@ export default function BattleScreen() {
               <Text style={styles.floorBadgeText}>{`B${params.floor}F`}</Text>
             </View>
             <Text style={styles.headerTitle}>{params.title}</Text>
-            <View style={styles.autoBadge}>
+            <Pressable
+              onPress={params.onPausePress}
+              style={[styles.autoBadge, params.isPaused && styles.autoBadgePaused]}
+              hitSlop={8}
+            >
+              {params.isPaused ? <Play size={10} color="#555555" /> : <Pause size={10} color="#555555" />}
               <Text style={styles.autoBadgeText}>AUTO</Text>
-            </View>
-          </View>
-
-          <ImageBackground source={BATTLE_BG} style={styles.scene} imageStyle={styles.sceneImage}>
-            <View style={styles.enemyRow}>
-              {params.enemies.slice(0, 3).map((enemy) => (
-                <View key={enemy.id} style={styles.enemyItem}>
-                  <Image source={enemy.image} style={styles.enemyImage} resizeMode="contain" />
-                  <Text style={styles.enemyLabel}>{enemy.name}</Text>
-                </View>
-              ))}
-            </View>
-          </ImageBackground>
-          <Text style={styles.partyLabel}>PARTY</Text>
-          <View style={styles.partyGrid}>
-            {params.party.slice(0, 6).map((member) => {
-              const hpRate = member.stats.maxHp > 0 ? Math.max(0, Math.min(1, member.hp / member.stats.maxHp)) : 0;
-              return (
-                <View key={member.id} style={styles.partyCard}>
-                  <Image source={getClassImage(member.classId)} style={styles.partyPortrait} resizeMode="contain" />
-                  <Text style={styles.partyName} numberOfLines={1}>
-                    {member.name}
-                  </Text>
-                  <Text style={styles.partyClass} numberOfLines={1}>
-                    {member.classId ?? "Adventurer"}
-                  </Text>
-                  <View style={styles.hpTrack}>
-                    <View style={[styles.hpFill, { width: `${Math.floor(hpRate * 100)}%` }]} />
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-
-          <View style={styles.logHeader}>
-            <Text style={styles.logTitle}>Battle Log</Text>
-            <Text style={styles.turnText}>{params.turnText}</Text>
-          </View>
-          <ScrollView
-            ref={logScrollRef}
-            style={styles.logBox}
-            contentContainerStyle={styles.logContent}
-            onContentSizeChange={() => logScrollRef.current?.scrollToEnd({ animated: true })}
-          >
-            {logRows.length === 0 ? (
-              <Text style={styles.logLineMuted}>Waiting for command...</Text>
-            ) : (
-              logRows.map((log, idx) => (
-                <Text key={`${log.turn}-${idx}`} style={styles.logLine}>
-                  {log.logMessage}
-                </Text>
-              ))
-            )}
-          </ScrollView>
-
-          <View style={styles.actionRow}>
-            <Pressable style={[styles.controlButton, styles.pauseButton]} onPress={params.onPausePress}>
-              {params.isPaused ? <Play size={24} color="#1a1a1a" /> : <Pause size={24} color="#1a1a1a" />}
             </Pressable>
           </View>
+
+          <View style={styles.logSection}>
+            <View style={styles.logHeader}>
+              <Text style={styles.logTitle}>Battle Log</Text>
+              <Text style={styles.turnText}>{params.turnText}</Text>
+            </View>
+            <ScrollView
+              ref={logScrollRef}
+              style={styles.logBox}
+              contentContainerStyle={styles.logContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {logRows.length === 0 ? (
+                <Text style={styles.logLineMuted}>Waiting for command...</Text>
+              ) : (
+                logRows.map((log, idx) => (
+                  <Text key={`${log.turn}-${idx}`} style={styles.logLine}>
+                    {log.logMessage}
+                  </Text>
+                ))
+              )}
+            </ScrollView>
+          </View>
+
+          <ImageBackground source={BATTLE_BG} style={styles.enemyArea} imageStyle={styles.enemyAreaImage}>
+            <View style={styles.enemyAreaOverlay}>
+              <View style={styles.enemyRow}>
+                {params.enemies.slice(0, 3).map((enemy) => (
+                  <View key={enemy.id} style={styles.enemyItem}>
+                    <Image source={enemy.image} style={styles.enemyImage} resizeMode="contain" />
+                    <Text style={styles.enemyLabel} numberOfLines={1}>
+                      {enemy.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </ImageBackground>
+
+          <PartyStatusStrip
+            members={params.party.map((member) => ({
+              id: member.id,
+              name: member.name,
+              classId: member.classId,
+              hp: member.hp,
+              mp: member.mp,
+              level: partyUiMetaById[member.id]?.level,
+            }))}
+          />
         </View>
       </SafeAreaView>
     );
@@ -377,111 +368,120 @@ export default function BattleScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#efefef" },
+  screen: { flex: 1, backgroundColor: "#ffffff" },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#efefef",
+    backgroundColor: "#ffffff",
   },
   loadingText: { color: "#525252", fontSize: 14 },
   errorText: { color: "#ef4444", textAlign: "center", paddingHorizontal: 24 },
-  container: { flex: 1, backgroundColor: "#efefef", paddingHorizontal: 8, paddingVertical: 6 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 8, gap: 8 },
+  container: { flex: 1, backgroundColor: "#ffffff" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   floorBadge: {
     borderRadius: 8,
     backgroundColor: "#111111",
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
   },
   floorBadgeText: { color: "#efefef", fontWeight: "700", fontSize: 11 },
-  headerTitle: { flex: 1, color: "#121212", fontSize: 21, fontWeight: "700" },
+  headerTitle: { flex: 1, color: "#1a1a1a", fontSize: 18, fontWeight: "700" },
   autoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#cccccc",
-    backgroundColor: "#f7f7f7",
-    paddingHorizontal: 7,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  autoBadgeText: { color: "#4b4b4b", fontWeight: "600", fontSize: 10 },
-  scene: {
-    height: 144,
-    borderRadius: 10,
-    overflow: "hidden",
-    marginBottom: 8,
-    justifyContent: "flex-end",
+  autoBadgePaused: {
+    backgroundColor: "#ececec",
   },
-  sceneImage: { resizeMode: "cover" },
-  enemyRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.15)",
-    paddingBottom: 6,
-    paddingHorizontal: 10,
+  autoBadgeText: { color: "#555555", fontWeight: "600", fontSize: 10 },
+  logSection: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    gap: 4,
   },
-  enemyItem: { alignItems: "center", width: 80 },
-  enemyImage: { width: 58, height: 58 },
-  enemyLabel: { color: "#efefef", textShadowColor: "#000000", textShadowRadius: 3, fontSize: 11 },
-  partyLabel: { color: "#9b9b9b", fontSize: 10, letterSpacing: 1, marginBottom: 6 },
-  partyGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 8, rowGap: 6 },
-  partyCard: {
-    width: "32.2%",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d4d4d4",
-    backgroundColor: "#f0f0f0",
-    alignItems: "center",
-    paddingTop: 6,
-    paddingBottom: 5,
-    paddingHorizontal: 4,
-  },
-  partyPortrait: { width: 28, height: 28, marginBottom: 2 },
-  partyName: { color: "#1a1a1a", fontSize: 11, fontWeight: "600" },
-  partyClass: { color: "#9b9b9b", fontSize: 9, marginBottom: 4 },
-  hpTrack: {
-    width: "100%",
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: "#cccccc",
-    overflow: "hidden",
-  },
-  hpFill: { height: "100%", backgroundColor: "#4b4b4b" },
   logHeader: {
-    borderTopWidth: 1,
-    borderColor: "#d8d8d8",
-    paddingTop: 6,
-    marginBottom: 4,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  logTitle: { color: "#5b5b5b", fontSize: 12, letterSpacing: 1 },
-  turnText: { color: "#2a2a2a", fontSize: 12 },
+  logTitle: {
+    color: "#666666",
+    fontSize: 10,
+    letterSpacing: 1,
+  },
+  turnText: {
+    color: "#1a1a1a",
+    fontSize: 10,
+    fontWeight: "500",
+  },
   logBox: {
     flex: 1,
     minHeight: 60,
   },
-  logContent: { paddingBottom: 6 },
-  logLine: { color: "#5b5b5b", fontSize: 11, lineHeight: 15 },
-  logLineMuted: { color: "#9b9b9b", fontSize: 11 },
-  actionRow: {
-    flexDirection: "row",
-    marginTop: 8,
-    justifyContent: "center",
+  logContent: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+    paddingVertical: 4,
+  },
+  logLine: {
+    color: "#666666",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  logLineMuted: {
+    color: "#9b9b9b",
+    fontSize: 11,
+  },
+  enemyArea: {
+    height: 220,
+    width: "100%",
+  },
+  enemyAreaImage: {
+    resizeMode: "cover",
+  },
+  enemyAreaOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.10)",
+    paddingTop: 8,
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 14,
   },
-  controlButton: {
-    width: 104,
-    height: 56,
-    borderRadius: 999,
-    alignItems: "center",
+  enemyRow: {
+    flexDirection: "row",
     justifyContent: "center",
+    alignItems: "flex-end",
+    gap: 20,
   },
-  pauseButton: {
-    backgroundColor: "#e4e4e4",
-    borderWidth: 1,
-    borderColor: "#d2d2d2",
+  enemyItem: {
+    alignItems: "center",
+    width: 90,
+  },
+  enemyImage: { width: 72, height: 72 },
+  enemyLabel: {
+    marginTop: 4,
+    color: "#efefef",
+    textShadowColor: "#000000",
+    textShadowRadius: 3,
+    fontSize: 10,
   },
 });
