@@ -1,7 +1,15 @@
-import { useState } from "react";
-import { Stack } from "expo-router";
+import { useRef, useState } from "react";
+import { Stack, useRouter } from "expo-router";
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from "react-native-reanimated";
 import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { resetDatabase } from "@/db/database";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
@@ -9,6 +17,7 @@ import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { useI18n } from "@/i18n";
 import { Locale } from "@/i18n/locale";
 import { useLocaleStore } from "@/stores/localeStore";
+import { generateEncounter } from "@/game/encounter";
 import { ClassId } from "@/types/models";
 import { generateId } from "@/utils/id";
 
@@ -21,7 +30,54 @@ const colors = {
   borderDefault: "#e0e0e0",
 } as const;
 
+type DebugEncounterTransitionType = 1 | 2 | 3;
+
+type PendingBattleRoute = {
+  dungeonId: string;
+  floor: number;
+  explorationSeed: number;
+  encounter: string;
+};
+
+const clamp01 = (value: number) => {
+  "worklet";
+  return Math.max(0, Math.min(1, value));
+};
+
+const EncounterSlashBand = ({
+  progress,
+  index,
+}: {
+  progress: SharedValue<number>;
+  index: number;
+}) => {
+  const bandStyle = useAnimatedStyle(() => {
+    const p = progress.value;
+    const start = index * 0.08;
+    const local = clamp01((p - start) / 0.35);
+    const fade = clamp01((0.95 - p) / 0.2);
+    const x = (1 - local) * 360 - 180 + index * 6;
+    const opacity = local > 0 ? Math.min(1, fade + 0.15) : 0;
+    return {
+      opacity,
+      transform: [{ translateX: x }, { rotate: "-18deg" }],
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.encounterSlashBand,
+        { top: 120 + index * 54, backgroundColor: index % 2 === 0 ? "#ffffff" : "#f0f0f0" },
+        styles.encounterSlashBandAlt,
+        bandStyle,
+      ]}
+    />
+  );
+};
+
 export default function SettingsScreen() {
+  const router = useRouter();
   const { t, locale } = useI18n();
   const setLocale = useLocaleStore((state) => state.setLocale);
   const [isResetting, setIsResetting] = useState(false);
@@ -29,6 +85,10 @@ export default function SettingsScreen() {
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [bgmOn, setBgmOn] = useState(true);
   const [sfxOn, setSfxOn] = useState(true);
+  const [transitionType, setTransitionType] = useState<DebugEncounterTransitionType | null>(null);
+  const [isTransitionPlaying, setIsTransitionPlaying] = useState(false);
+  const transitionProgress = useSharedValue(0);
+  const pendingBattleRouteRef = useRef<PendingBattleRoute | null>(null);
 
   const debugDefaults: Array<{ name: string; classId: ClassId; level: number; slotIndex: number }> = [
     { name: "Aria", classId: "GUARDIAN", level: 1, slotIndex: 0 },
@@ -121,14 +181,148 @@ export default function SettingsScreen() {
     }
   };
 
+  const commitDebugBattleTransition = () => {
+    const nextRoute = pendingBattleRouteRef.current;
+    pendingBattleRouteRef.current = null;
+    setIsTransitionPlaying(false);
+    setTransitionType(null);
+    transitionProgress.value = 0;
+    if (!nextRoute) return;
+
+    router.push({
+      pathname: "/dungeon/battle",
+      params: {
+        dungeonId: nextRoute.dungeonId,
+        floor: String(nextRoute.floor),
+        explorationSeed: String(nextRoute.explorationSeed),
+        encounter: nextRoute.encounter,
+      },
+    });
+  };
+
+  const triggerDebugEncounterTransition = (type: DebugEncounterTransitionType) => {
+    if (isTransitionPlaying) return;
+
+    const dungeonId = "crestoria_dungeon_1_4";
+    const floor = 1;
+    const explorationSeed = Date.now() >>> 0;
+    const encounter = generateEncounter({
+      dungeonId,
+      floor,
+      seed: (explorationSeed + 1009) >>> 0,
+    });
+
+    pendingBattleRouteRef.current = {
+      dungeonId,
+      floor,
+      explorationSeed,
+      encounter: JSON.stringify(encounter),
+    };
+
+    setTransitionType(type);
+    setIsTransitionPlaying(true);
+    transitionProgress.value = 0;
+
+    const duration = type === 1 ? 380 : type === 2 ? 460 : 520;
+    transitionProgress.value = withTiming(
+      1,
+      {
+        duration,
+        easing: Easing.out(Easing.cubic),
+      },
+      (finished) => {
+        if (finished) {
+          runOnJS(commitDebugBattleTransition)();
+        }
+      }
+    );
+  };
+
+  const contentMotionStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (!transitionType || p <= 0) return { transform: [{ scale: 1 }, { translateX: 0 }, { translateY: 0 }] };
+
+    if (transitionType === 1) {
+      const shake = Math.sin(p * Math.PI * 18) * (1 - p) * 10;
+      const scale = 1 + Math.sin(clamp01(p * 1.05) * Math.PI) * 0.035;
+      return {
+        transform: [{ scale }, { translateX: shake }, { translateY: 0 }],
+      };
+    }
+
+    if (transitionType === 2) {
+      const scale = 1 + p * 0.015;
+      return {
+        transform: [{ scale }, { translateX: 0 }, { translateY: 0 }],
+      };
+    }
+
+    const scale = 1 + p * 0.02;
+    const nudge = -6 * clamp01((p - 0.55) / 0.45);
+    return {
+      transform: [{ scale }, { translateX: 0 }, { translateY: nudge }],
+    };
+  });
+
+  const encounterFlashStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (!transitionType) return { opacity: 0 };
+
+    let opacity = 0;
+    if (transitionType === 1) {
+      const first = 1 - clamp01(Math.abs(p - 0.12) / 0.12);
+      const second = 1 - clamp01(Math.abs(p - 0.3) / 0.13);
+      opacity = Math.max(first, second) * 0.95;
+    } else if (transitionType === 2) {
+      opacity = clamp01((p - 0.08) / 0.12) * clamp01((0.75 - p) / 0.35) * 0.6;
+    } else {
+      const pulse = 1 - clamp01(Math.abs(p - 0.18) / 0.16);
+      opacity = pulse * 0.9;
+    }
+    return { opacity };
+  });
+
+  const encounterDarkFadeStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (!transitionType) return { opacity: 0 };
+    const start = transitionType === 3 ? 0.35 : 0.55;
+    return { opacity: clamp01((p - start) / (1 - start)) };
+  });
+
+  const shutterTopStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (transitionType !== 3) return { transform: [{ translateY: -220 }] };
+    const local = clamp01((p - 0.15) / 0.55);
+    return { transform: [{ translateY: -220 + local * 220 }] };
+  });
+  const shutterBottomStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (transitionType !== 3) return { transform: [{ translateY: 220 }] };
+    const local = clamp01((p - 0.15) / 0.55);
+    return { transform: [{ translateY: 220 - local * 220 }] };
+  });
+  const shutterLeftStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (transitionType !== 3) return { transform: [{ translateX: -220 }] };
+    const local = clamp01((p - 0.22) / 0.58);
+    return { transform: [{ translateX: -220 + local * 220 }] };
+  });
+  const shutterRightStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    if (transitionType !== 3) return { transform: [{ translateX: 220 }] };
+    const local = clamp01((p - 0.22) / 0.58);
+    return { transform: [{ translateX: 220 - local * 220 }] };
+  });
+
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t("settings.header")}</Text>
-      </View>
+      <Animated.View style={[styles.screenContent, contentMotionStyle]}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t("settings.header")}</Text>
+        </View>
 
-      <View style={styles.content}>
+        <View style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
           <View style={styles.card}>
@@ -168,6 +362,36 @@ export default function SettingsScreen() {
                 {isCreatingDefaults ? t("settings.debug.loading") : t("settings.debug.createDefaults")}
               </Text>
             </Pressable>
+            <View style={styles.divider} />
+            <Pressable
+              style={[styles.row, isTransitionPlaying && styles.rowDisabled]}
+              disabled={isTransitionPlaying}
+              onPress={() => triggerDebugEncounterTransition(1)}
+            >
+              <Text style={styles.rowText}>
+                {isTransitionPlaying ? "Playing..." : "Battle Transition Test 1 (Flash)"}
+              </Text>
+            </Pressable>
+            <View style={styles.divider} />
+            <Pressable
+              style={[styles.row, isTransitionPlaying && styles.rowDisabled]}
+              disabled={isTransitionPlaying}
+              onPress={() => triggerDebugEncounterTransition(2)}
+            >
+              <Text style={styles.rowText}>
+                {isTransitionPlaying ? "Playing..." : "Battle Transition Test 2 (Slashes)"}
+              </Text>
+            </Pressable>
+            <View style={styles.divider} />
+            <Pressable
+              style={[styles.row, isTransitionPlaying && styles.rowDisabled]}
+              disabled={isTransitionPlaying}
+              onPress={() => triggerDebugEncounterTransition(3)}
+            >
+              <Text style={styles.rowText}>
+                {isTransitionPlaying ? "Playing..." : "Battle Transition Test 3 (Shutter)"}
+              </Text>
+            </Pressable>
           </View>
         </View>
 
@@ -175,13 +399,39 @@ export default function SettingsScreen() {
           <Text style={styles.versionText}>Dungeon Tactics v1.0.0</Text>
           <Text style={styles.versionText}>Player ID: ADV-2024-0815</Text>
         </View>
-      </View>
+        </View>
+      </Animated.View>
+
+      {transitionType ? (
+        <View pointerEvents="none" style={styles.encounterOverlayRoot}>
+          <Animated.View style={[styles.encounterDarkFade, encounterDarkFadeStyle]} />
+          <Animated.View style={[styles.encounterFlash, encounterFlashStyle]} />
+
+          {transitionType === 2 ? (
+            <View style={styles.encounterSlashLayer}>
+              {Array.from({ length: 7 }).map((_, idx) => (
+                <EncounterSlashBand key={`slash-${idx}`} progress={transitionProgress} index={idx} />
+              ))}
+            </View>
+          ) : null}
+
+          {transitionType === 3 ? (
+            <View style={styles.encounterShutterLayer}>
+              <Animated.View style={[styles.encounterShutterHorizontal, styles.encounterShutterTop, shutterTopStyle]} />
+              <Animated.View style={[styles.encounterShutterHorizontal, styles.encounterShutterBottom, shutterBottomStyle]} />
+              <Animated.View style={[styles.encounterShutterVertical, styles.encounterShutterLeft, shutterLeftStyle]} />
+              <Animated.View style={[styles.encounterShutterVertical, styles.encounterShutterRight, shutterRightStyle]} />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgPrimary },
+  screenContent: { flex: 1 },
   header: { paddingVertical: 12, paddingHorizontal: 20 },
   headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
   content: { paddingHorizontal: 20, paddingTop: 16, gap: 20 },
@@ -189,10 +439,69 @@ const styles = StyleSheet.create({
   sectionLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: "500", letterSpacing: 1 },
   card: { borderRadius: 20, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, overflow: "hidden" },
   row: { minHeight: 50, paddingHorizontal: 16, alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  rowDisabled: { opacity: 0.55 },
   rowText: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
   divider: { height: 1, backgroundColor: colors.borderDefault },
   muted: { color: colors.textMuted },
   check: { color: colors.textPrimary },
   versionWrap: { alignItems: "center", gap: 4, paddingTop: 24 },
   versionText: { color: colors.textMuted, fontSize: 11 },
+  encounterOverlayRoot: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: "hidden",
+  },
+  encounterDarkFade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#000000",
+    opacity: 0,
+  },
+  encounterFlash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#ffffff",
+    opacity: 0,
+  },
+  encounterSlashLayer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+  },
+  encounterSlashBand: {
+    position: "absolute",
+    left: -160,
+    width: 520,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+  },
+  encounterSlashBandAlt: {
+    opacity: 0.9,
+  },
+  encounterShutterLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  encounterShutterHorizontal: {
+    position: "absolute",
+    left: 0,
+    width: "100%",
+    height: "24%",
+    backgroundColor: "#111111",
+  },
+  encounterShutterTop: {
+    top: 0,
+  },
+  encounterShutterBottom: {
+    bottom: 0,
+  },
+  encounterShutterVertical: {
+    position: "absolute",
+    top: "24%",
+    bottom: "24%",
+    width: "26%",
+    backgroundColor: "#111111",
+  },
+  encounterShutterLeft: {
+    left: 0,
+  },
+  encounterShutterRight: {
+    right: 0,
+  },
 });
