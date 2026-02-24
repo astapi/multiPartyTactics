@@ -1,6 +1,7 @@
 import * as SQLite from "expo-sqlite";
 import { MIGRATION_001 } from "./migrations/001_initial";
 import { MIGRATION_002 } from "./migrations/002_equipment_loot";
+import { MIGRATION_003 } from "./migrations/003_character_equipment";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -17,6 +18,7 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync("PRAGMA foreign_keys = ON;");
   await db.execAsync(MIGRATION_001);
   await db.execAsync(MIGRATION_002);
+  await db.execAsync(MIGRATION_003);
   const migrateBattleSessionStatusToDraw = async (): Promise<void> => {
     const schema = await db.getFirstAsync<{ sql: string }>(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'battle_sessions'"

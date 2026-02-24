@@ -10,11 +10,16 @@ export type EquipmentCategory =
   | "staff"
   | "shield";
 
+export type EquipmentSlot = "weapon" | "armor";
+
+export type ShieldSize = "small" | "large";
+
 export type EquipmentSource = "shop" | "monster" | "chest";
 
 export type EquipmentMasterItem = {
   id: string;
   category: EquipmentCategory;
+  shieldSize?: ShieldSize;
   source: EquipmentSource;
   jp: string;
   en: string;
@@ -61,6 +66,14 @@ export type EquipmentStackRecord = {
   quantity: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type CharacterEquipmentRecord = {
+  characterId: string;
+  slotType: EquipmentSlot;
+  baseItemId: string;
+  mutationPrefixId: string | null;
+  equippedAt: string;
 };
 
 export type EquipmentGrantRecord = {

@@ -4,6 +4,7 @@ import {
   Coins,
   FlaskRound,
   Gem,
+  Package,
   Shield,
   ShoppingBag,
   Sword,
@@ -44,6 +45,12 @@ export default function HomeScreen() {
       icon: "item" as const,
       title: t("home.menu.item.title"),
       description: t("home.menu.item.desc"),
+    },
+    {
+      href: "/inventory" as const,
+      icon: "inventory" as const,
+      title: t("home.menu.inventory.title"),
+      description: t("home.menu.inventory.desc"),
     },
     {
       href: "/party" as const,
@@ -94,6 +101,7 @@ export default function HomeScreen() {
             <View style={styles.menuIconWrap}>
               {item.icon === "weapon" ? <Sword size={20} stroke={colors.textStrong} /> : null}
               {item.icon === "item" ? <FlaskRound size={20} stroke={colors.textStrong} /> : null}
+              {item.icon === "inventory" ? <Package size={20} stroke={colors.textStrong} /> : null}
               {item.icon === "party" ? <Shield size={20} stroke={colors.textStrong} /> : null}
               {item.icon === "premium" ? <ShoppingBag size={20} stroke={colors.textStrong} /> : null}
             </View>

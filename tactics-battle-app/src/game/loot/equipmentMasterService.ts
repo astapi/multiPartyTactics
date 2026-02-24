@@ -43,6 +43,13 @@ const validateMaster = (master: EquipmentMasterBundle): void => {
     }
   }
 
+  for (const item of master.equipment) {
+    if (item.category !== "shield") continue;
+    if (item.shieldSize !== "small" && item.shieldSize !== "large") {
+      throw new Error(`shield item must define shieldSize (small|large): ${item.id}`);
+    }
+  }
+
   const shouldBeApplicable = master.equipment
     .filter((item) => item.source === "monster" && item.can_mutate)
     .map((item) => item.id);

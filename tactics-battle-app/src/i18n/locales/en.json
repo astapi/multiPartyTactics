@@ -6,6 +6,8 @@
   "home.menu.weapon.desc": "Buy and upgrade equipment",
   "home.menu.item.title": "Item Shop",
   "home.menu.item.desc": "Potions, scrolls & supplies",
+  "home.menu.inventory.title": "Inventory",
+  "home.menu.inventory.desc": "View owned items and equipment",
   "home.menu.party.title": "Party Formation",
   "home.menu.party.desc": "Set up your party ({count}/{max})",
   "home.menu.premium.title": "Premium Shop",

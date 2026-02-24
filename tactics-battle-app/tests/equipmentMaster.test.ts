@@ -45,4 +45,13 @@ describe("game/loot/equipmentMasterService", () => {
     expect(chest.every((item) => item.source === "chest")).toBe(true);
     expect(monster.every((item) => item.source === "monster")).toBe(true);
   });
+
+  it("requires shield items to define shield size metadata", () => {
+    const master = getEquipmentMaster();
+    const shields = master.equipment.filter((item) => item.category === "shield");
+    expect(shields.length).toBeGreaterThan(0);
+    expect(shields.every((item) => item.shieldSize === "small" || item.shieldSize === "large")).toBe(
+      true
+    );
+  });
 });

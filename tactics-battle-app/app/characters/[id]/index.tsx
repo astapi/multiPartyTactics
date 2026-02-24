@@ -3,7 +3,9 @@ import { Link, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rout
 import { ArrowLeft, ChevronRight, GripVertical, Plus, Shield, Sword } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { buildEquipmentDisplayName } from "@/game/loot/equipmentMasterService";
 import {
   getConditionTypeLabel,
   getSkillIdDisplayName,
@@ -39,14 +41,21 @@ const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
 export default function CharacterDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { rules } = useTactics(id);
   const [character, setCharacter] = useState<CharacterRecord | null>(null);
+  const [equippedBySlot, setEquippedBySlot] = useState<
+    Awaited<ReturnType<typeof characterEquipmentRepository.getByCharacterId>>
+  >({});
 
   const load = useCallback(async () => {
     if (!id) return;
-    const found = await charactersRepository.getById(id);
+    const [found, equipped] = await Promise.all([
+      charactersRepository.getById(id),
+      characterEquipmentRepository.getByCharacterId(id),
+    ]);
     setCharacter(found ?? null);
+    setEquippedBySlot(equipped);
   }, [id]);
 
   useFocusEffect(
@@ -57,6 +66,19 @@ export default function CharacterDetailScreen() {
 
   const topRules = useMemo(() => [...rules].sort((a, b) => a.priority - b.priority).slice(0, 3), [rules]);
   const classLabel = t(CLASS_NAME_KEYS[character?.classId ?? "SWORDMAN"]);
+  const unequippedLabel = locale === "ja" ? "未装備" : "Unequipped";
+  const weaponLabel = useMemo(() => {
+    const weapon = equippedBySlot.weapon;
+    if (!weapon) return unequippedLabel;
+    const name = buildEquipmentDisplayName(weapon.baseItemId, weapon.mutationPrefixId);
+    return locale === "ja" ? name.jp : name.en;
+  }, [equippedBySlot.weapon, locale, unequippedLabel]);
+  const armorLabel = useMemo(() => {
+    const armor = equippedBySlot.armor;
+    if (!armor) return unequippedLabel;
+    const name = buildEquipmentDisplayName(armor.baseItemId, armor.mutationPrefixId);
+    return locale === "ja" ? name.jp : name.en;
+  }, [equippedBySlot.armor, locale, unequippedLabel]);
 
   if (!character) {
     return (
@@ -123,16 +145,16 @@ export default function CharacterDetailScreen() {
           <View style={styles.itemCard}>
             <Sword size={18} stroke={colors.textSecondary} />
             <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>{t("character.detail.equip.weapon.ironSword")}</Text>
-              <Text style={styles.itemSub}>ATK +22</Text>
+              <Text style={styles.itemName}>{weaponLabel}</Text>
+              <Text style={styles.itemSub}>{equippedBySlot.weapon ? t("equip.equipped") : unequippedLabel}</Text>
             </View>
             <ChevronRight size={18} stroke={colors.iconSecondary} />
           </View>
           <View style={styles.itemCard}>
             <Shield size={18} stroke={colors.textSecondary} />
             <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>{t("character.detail.equip.armor.knightPlate")}</Text>
-              <Text style={styles.itemSub}>DEF +18</Text>
+              <Text style={styles.itemName}>{armorLabel}</Text>
+              <Text style={styles.itemSub}>{equippedBySlot.armor ? t("equip.equipped") : unequippedLabel}</Text>
             </View>
             <ChevronRight size={18} stroke={colors.iconSecondary} />
           </View>

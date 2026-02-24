@@ -6,6 +6,8 @@
   "home.menu.weapon.desc": "装備を購入・更新する",
   "home.menu.item.title": "アイテムショップ",
   "home.menu.item.desc": "ポーション・巻物・補給品",
+  "home.menu.inventory.title": "インベントリ",
+  "home.menu.inventory.desc": "所持品と装備を確認する",
   "home.menu.party.title": "パーティ編成",
   "home.menu.party.desc": "6人編成をセット ({count}/{max})",
   "home.menu.premium.title": "プレミアムショップ",
