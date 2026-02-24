@@ -69,14 +69,14 @@
     { "id": "crystal_staff", "category": "staff", "source": "monster", "jp": "結晶杖", "en": "Crystal Staff", "can_mutate": true },
     { "id": "deep_ore_staff", "category": "staff", "source": "monster", "jp": "深鉱杖", "en": "Deep Ore Staff", "can_mutate": true },
 
-    { "id": "wood_shield", "category": "shield", "source": "shop", "jp": "ウッドシールド", "en": "Wood Shield", "can_mutate": false },
-    { "id": "iron_shield", "category": "shield", "source": "shop", "jp": "アイアンシールド", "en": "Iron Shield", "can_mutate": false },
-    { "id": "bone_shield", "category": "shield", "source": "monster", "jp": "骨盾", "en": "Bone Shield", "can_mutate": true },
-    { "id": "carapace_shield", "category": "shield", "source": "monster", "jp": "甲殻盾", "en": "Carapace Shield", "can_mutate": true },
-    { "id": "scale_shield", "category": "shield", "source": "monster", "jp": "鱗盾", "en": "Scale Shield", "can_mutate": true },
-    { "id": "dragon_scale_shield", "category": "shield", "source": "monster", "jp": "竜鱗盾", "en": "Dragon Scale Shield", "can_mutate": true },
-    { "id": "stone_hide_shield", "category": "shield", "source": "monster", "jp": "石皮盾", "en": "Stonehide Shield", "can_mutate": true },
-    { "id": "crystal_shield", "category": "shield", "source": "monster", "jp": "結晶盾", "en": "Crystal Shield", "can_mutate": true },
+    { "id": "wood_shield", "category": "shield", "shieldSize": "large", "source": "shop", "jp": "ウッドシールド", "en": "Wood Shield", "can_mutate": false },
+    { "id": "iron_shield", "category": "shield", "shieldSize": "large", "source": "shop", "jp": "アイアンシールド", "en": "Iron Shield", "can_mutate": false },
+    { "id": "bone_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "骨盾", "en": "Bone Shield", "can_mutate": true },
+    { "id": "carapace_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "甲殻盾", "en": "Carapace Shield", "can_mutate": true },
+    { "id": "scale_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "鱗盾", "en": "Scale Shield", "can_mutate": true },
+    { "id": "dragon_scale_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "竜鱗盾", "en": "Dragon Scale Shield", "can_mutate": true },
+    { "id": "stone_hide_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "石皮盾", "en": "Stonehide Shield", "can_mutate": true },
+    { "id": "crystal_shield", "category": "shield", "shieldSize": "large", "source": "monster", "jp": "結晶盾", "en": "Crystal Shield", "can_mutate": true },
 
     { "id": "mythril_sword", "category": "one_handed_sword", "source": "chest", "jp": "ミスリルソード", "en": "Mythril Sword", "can_mutate": false },
     { "id": "orichalcum_sword", "category": "one_handed_sword", "source": "chest", "jp": "オリハルコンソード", "en": "Orichalcum Sword", "can_mutate": false },
@@ -92,8 +92,8 @@
     { "id": "mythril_staff", "category": "staff", "source": "chest", "jp": "ミスリルスタッフ", "en": "Mythril Staff", "can_mutate": false },
     { "id": "deep_ore_staff_chest", "category": "staff", "source": "chest", "jp": "深鉱石の杖", "en": "Deep Ore Staff", "can_mutate": false },
 
-    { "id": "mythril_shield", "category": "shield", "source": "chest", "jp": "ミスリルシールド", "en": "Mythril Shield", "can_mutate": false },
-    { "id": "silver_shield", "category": "shield", "source": "chest", "jp": "白銀の盾", "en": "Silver Shield", "can_mutate": false }
+    { "id": "mythril_shield", "category": "shield", "shieldSize": "large", "source": "chest", "jp": "ミスリルシールド", "en": "Mythril Shield", "can_mutate": false },
+    { "id": "silver_shield", "category": "shield", "shieldSize": "large", "source": "chest", "jp": "白銀の盾", "en": "Silver Shield", "can_mutate": false }
   ],
   "mutation_prefixes": [
     { "id": "twin", "jp": "双", "en": "Twin" },

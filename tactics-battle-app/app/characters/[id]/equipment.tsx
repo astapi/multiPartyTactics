@@ -1,9 +1,16 @@
-import { useState } from "react";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Shield, Sword } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TranslationKey, useI18n } from "@/i18n";
+import { ArrowLeft, Shield, Sword } from "lucide-react-native";
+import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
+import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
+import { canCharacterEquipItem, getEquipSlotForCategory } from "@/game/equipment/equipmentRules";
+import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
+import { useI18n } from "@/i18n";
+import type { EquipmentSlot, EquipmentStackRecord } from "@/types/equipment";
+import type { CharacterRecord } from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -12,50 +19,144 @@ const colors = {
   textSecondary: "#666666",
   textTertiary: "#888888",
   borderDefault: "#e0e0e0",
+  borderAccent: "#93C5FD",
+  bgAccent: "#F0F7FF",
+  accent: "#2563EB",
 } as const;
 
 type EquipTab = "weapon" | "armor" | "accessory";
 
-const INVENTORY_ITEM_KEYS: Record<EquipTab, TranslationKey[]> = {
-  weapon: [
-    "equip.item.weapon.ironSword",
-    "equip.item.weapon.steelSword",
-    "equip.item.weapon.moonBlade",
-    "equip.item.weapon.guardianSpear",
-  ],
-  armor: [
-    "equip.item.armor.knightPlate",
-    "equip.item.armor.chainMail",
-    "equip.item.armor.mageRobe",
-    "equip.item.armor.shadowCloak",
-  ],
-  accessory: [
-    "equip.item.accessory.rubyRing",
-    "equip.item.accessory.wolfFang",
-    "equip.item.accessory.luckyCharm",
-    "equip.item.accessory.ancientCoin",
-  ],
+type EquippedBySlot = Awaited<ReturnType<typeof characterEquipmentRepository.getByCharacterId>>;
+
+type InventoryViewRow = EquipmentStackRecord & {
+  displayName: { jp: string; en: string };
+  slotType: EquipmentSlot | null;
 };
 
-const CURRENT_EQUIP_NAME_KEY: Record<EquipTab, TranslationKey> = {
-  weapon: "equip.item.weapon.steelSword",
-  armor: "equip.item.armor.knightPlate",
-  accessory: "equip.item.accessory.rubyRing",
+const getSlotIcon = (slot: EquipTab) => {
+  if (slot === "armor") return <Shield size={18} stroke="#ffffff" />;
+  return <Sword size={18} stroke="#ffffff" />;
 };
 
-const CURRENT_EQUIP_STAT_KEY: Record<EquipTab, TranslationKey> = {
-  weapon: "equip.current.stat.weapon",
-  armor: "equip.current.stat.armor",
-  accessory: "equip.current.stat.accessory",
+const getInventoryIcon = (slot: EquipTab) => {
+  if (slot === "armor") return <Shield size={16} stroke={colors.textSecondary} />;
+  return <Sword size={16} stroke={colors.textSecondary} />;
 };
 
 export default function EquipmentChangeScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [tab, setTab] = useState<EquipTab>("weapon");
+  const [character, setCharacter] = useState<CharacterRecord | null>(null);
+  const [equippedBySlot, setEquippedBySlot] = useState<EquippedBySlot>({});
+  const [inventoryStacks, setInventoryStacks] = useState<EquipmentStackRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
-  const inventory = INVENTORY_ITEM_KEYS[tab];
+  const load = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const [nextCharacter, nextEquipped, nextStacks] = await Promise.all([
+        charactersRepository.getById(id),
+        characterEquipmentRepository.getByCharacterId(id),
+        equipmentInventoryRepository.listStacks(),
+      ]);
+      setCharacter(nextCharacter);
+      setEquippedBySlot(nextEquipped);
+      setInventoryStacks(nextStacks);
+    } catch (error) {
+      console.error("Failed to load equipment screen:", error);
+      Alert.alert(
+        locale === "ja" ? "読込失敗" : "Load Failed",
+        locale === "ja" ? "装備情報の読み込みに失敗しました。" : "Failed to load equipment data."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [id, locale]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
+
+  const inventoryRows = useMemo<InventoryViewRow[]>(() => {
+    return inventoryStacks.map((stack) => ({
+      ...stack,
+      displayName: buildEquipmentDisplayName(stack.baseItemId, stack.mutationPrefixId),
+      slotType: getEquipSlotForCategory(getEquipmentById(stack.baseItemId).category),
+    }));
+  }, [inventoryStacks]);
+
+  const filteredInventory = useMemo(() => {
+    if (!character) return [] as InventoryViewRow[];
+    if (tab === "accessory") return [] as InventoryViewRow[];
+    return inventoryRows
+      .filter((row) => {
+        const item = getEquipmentById(row.baseItemId);
+        return row.slotType === tab && canCharacterEquipItem(character.classId, item);
+      })
+      .sort((a, b) => {
+        const aName = locale === "ja" ? a.displayName.jp : a.displayName.en;
+        const bName = locale === "ja" ? b.displayName.jp : b.displayName.en;
+        return aName.localeCompare(bName);
+      });
+  }, [character, inventoryRows, locale, tab]);
+
+  const currentEquipped = tab === "accessory" ? null : equippedBySlot[tab];
+  const currentEquippedName = useMemo(() => {
+    if (!currentEquipped) return locale === "ja" ? "未装備" : "Unequipped";
+    const name = buildEquipmentDisplayName(currentEquipped.baseItemId, currentEquipped.mutationPrefixId);
+    return locale === "ja" ? name.jp : name.en;
+  }, [currentEquipped, locale]);
+
+  const onEquip = useCallback(
+    async (row: InventoryViewRow) => {
+      if (!id || tab === "accessory" || busy) return;
+      setBusy(true);
+      try {
+        await characterEquipmentRepository.equip({
+          characterId: id,
+          slotType: tab,
+          baseItemId: row.baseItemId,
+          mutationPrefixId: row.mutationPrefixId,
+        });
+        await load();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        Alert.alert(
+          locale === "ja" ? "装備失敗" : "Equip Failed",
+          locale === "ja" ? `装備に失敗しました。\n${message}` : `Failed to equip item.\n${message}`
+        );
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, id, load, locale, tab]
+  );
+
+  const onUnequip = useCallback(async () => {
+    if (!id || tab === "accessory" || busy) return;
+    setBusy(true);
+    try {
+      await characterEquipmentRepository.unequip({ characterId: id, slotType: tab });
+      await load();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      Alert.alert(
+        locale === "ja" ? "解除失敗" : "Unequip Failed",
+        locale === "ja" ? `装備解除に失敗しました。\n${message}` : `Failed to unequip item.\n${message}`
+      );
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, id, load, locale, tab]);
+
+  const accessoryMessage = locale === "ja" ? "アクセサリは未実装です。" : "Accessory slot is not implemented yet.";
+  const emptyInventoryMessage = locale === "ja" ? "装備可能な所持装備がありません。" : "No compatible equipment in inventory.";
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -87,13 +188,10 @@ export default function EquipmentChangeScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionLabel}>{t("equip.current")}</Text>
         <View style={styles.currentCard}>
-          <View style={styles.currentIcon}>{tab === "weapon" ? <Sword size={18} stroke="#ffffff" /> : <Shield size={18} stroke="#ffffff" />}</View>
+          <View style={styles.currentIcon}>{getSlotIcon(tab)}</View>
           <View style={styles.currentTextWrap}>
-            <Text style={styles.currentName}>{t(CURRENT_EQUIP_NAME_KEY[tab])}</Text>
-            <Text style={styles.currentSub}>{t("equip.equipped")}</Text>
-          </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{t(CURRENT_EQUIP_STAT_KEY[tab])}</Text>
+            <Text style={styles.currentName}>{currentEquippedName}</Text>
+            <Text style={styles.currentSub}>{currentEquipped ? t("equip.equipped") : (locale === "ja" ? "未装備" : "Unequipped")}</Text>
           </View>
         </View>
 
@@ -101,20 +199,34 @@ export default function EquipmentChangeScreen() {
 
         <Text style={styles.sectionLabel}>{t("equip.inventory")}</Text>
         <View style={styles.listWrap}>
-          {inventory.map((nameKey) => (
-            <Pressable key={nameKey} style={styles.itemCard}>
-              <View style={styles.itemIcon}>{tab === "weapon" ? <Sword size={16} stroke={colors.textSecondary} /> : <Shield size={16} stroke={colors.textSecondary} />}</View>
-              <View style={styles.currentTextWrap}>
-                <Text style={styles.itemName}>{t(nameKey)}</Text>
-                <Text style={styles.itemSub}>{t("equip.tap")}</Text>
-              </View>
-            </Pressable>
-          ))}
-          <View style={styles.unequipRow}>
-            <Pressable>
-              <Text style={styles.unequipText}>{t("equip.unequip")}</Text>
-            </Pressable>
-          </View>
+          {loading ? (
+            <Text style={styles.helperText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+          ) : tab === "accessory" ? (
+            <Text style={styles.helperText}>{accessoryMessage}</Text>
+          ) : filteredInventory.length === 0 ? (
+            <Text style={styles.helperText}>{emptyInventoryMessage}</Text>
+          ) : (
+            filteredInventory.map((row) => {
+              const itemName = locale === "ja" ? row.displayName.jp : row.displayName.en;
+              return (
+                <Pressable key={`${row.baseItemId}:${row.mutationPrefixId ?? ""}`} style={styles.itemCard} onPress={() => void onEquip(row)} disabled={busy}>
+                  <View style={styles.itemIcon}>{getInventoryIcon(tab)}</View>
+                  <View style={styles.currentTextWrap}>
+                    <Text style={styles.itemName}>{itemName}</Text>
+                    <Text style={styles.itemSub}>{`${t("equip.tap")} ×${row.quantity}`}</Text>
+                  </View>
+                </Pressable>
+              );
+            })
+          )}
+
+          {tab !== "accessory" ? (
+            <View style={styles.unequipRow}>
+              <Pressable onPress={() => void onUnequip()} disabled={busy || !currentEquipped}>
+                <Text style={[styles.unequipText, !currentEquipped ? styles.unequipDisabled : null]}>{t("equip.unequip")}</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -136,19 +248,19 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20, gap: 10 },
   sectionLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: "500", letterSpacing: 1 },
-  currentCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1.5, borderColor: "#93C5FD", backgroundColor: "#F0F7FF", gap: 12, padding: 14 },
+  currentCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1.5, borderColor: colors.borderAccent, backgroundColor: colors.bgAccent, gap: 12, padding: 14 },
   currentIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: colors.textPrimary },
   currentTextWrap: { flex: 1, gap: 2 },
   currentName: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
   currentSub: { color: colors.textTertiary, fontSize: 10 },
-  badge: { borderRadius: 8, backgroundColor: "#2563EB", paddingHorizontal: 8, paddingVertical: 4 },
-  badgeText: { color: "#ffffff", fontSize: 10, fontWeight: "600" },
   divider: { height: 1, backgroundColor: colors.borderDefault, marginVertical: 2 },
   listWrap: { gap: 8 },
+  helperText: { color: colors.textTertiary, fontSize: 12, paddingVertical: 8 },
   itemCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, gap: 12, padding: 12 },
   itemIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: colors.bgPrimary },
   itemName: { color: colors.textPrimary, fontSize: 14, fontWeight: "600" },
   itemSub: { color: colors.textTertiary, fontSize: 10 },
   unequipRow: { alignItems: "center", paddingVertical: 8 },
   unequipText: { color: colors.textSecondary, fontSize: 12, textDecorationLine: "underline" },
+  unequipDisabled: { color: colors.borderDefault, textDecorationLine: "none" },
 });
