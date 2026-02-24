@@ -25,6 +25,11 @@ const DUNGEON_NAME_I18N_KEY = {
   crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
   crestoria_dungeon_5_9: "dungeon.name.crestoria_dungeon_5_9",
 } as const;
+const BATTLE_RESULT_I18N_KEY = {
+  WIN: "battle.result.win",
+  LOSE: "battle.result.lose",
+  DRAW: "battle.result.draw",
+} as const;
 
 const getEnemyImage = (enemyId: string): ImageSourcePropType => {
   const id = enemyId.toLowerCase();
@@ -72,12 +77,17 @@ export default function BattleScreen() {
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
+  const status = useBattleStore((s) => s.status);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
     DUNGEON_NAME_I18N_KEY[resolvedDungeonId as keyof typeof DUNGEON_NAME_I18N_KEY] ??
       "dungeon.name.crestoria_dungeon_1_4"
   );
+  const resultLabel =
+    phase === "RESULT" && (status === "WIN" || status === "LOSE" || status === "DRAW")
+      ? t(BATTLE_RESULT_I18N_KEY[status])
+      : null;
 
   const skillMap = useMemo(() => createSkillMap(DEFAULT_SKILLS), []);
 
@@ -239,6 +249,8 @@ export default function BattleScreen() {
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
+          hp: enemy.stats.maxHp,
+          maxHp: enemy.stats.maxHp,
         })),
         party,
         logs: [],
@@ -259,6 +271,8 @@ export default function BattleScreen() {
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
+          hp: enemy.stats.maxHp,
+          maxHp: enemy.stats.maxHp,
         })),
         party,
         logs: [],
@@ -289,6 +303,8 @@ export default function BattleScreen() {
         id: `${enemy.enemyId}-${idx}`,
         name: enemy.name,
         image: getEnemyImage(enemy.enemyId),
+        hp: enemy.stats.maxHp,
+        maxHp: enemy.stats.maxHp,
       })),
       party,
       logs,
@@ -306,6 +322,8 @@ export default function BattleScreen() {
       id: enemy.id,
       name: enemy.name,
       image: getEnemyImage(enemy.id),
+      hp: enemy.hp,
+      maxHp: enemy.stats.maxHp,
     })),
     party,
     logs: visibleLogs,
@@ -317,7 +335,7 @@ export default function BattleScreen() {
   function renderBattleLayout(params: {
     floor: number;
     title: string;
-    enemies: Array<{ id: string; name: string; image: ImageSourcePropType }>;
+    enemies: Array<{ id: string; name: string; image: ImageSourcePropType; hp: number; maxHp: number }>;
     party: Unit[];
     logs: typeof logs;
     turnText: string;
@@ -334,6 +352,18 @@ export default function BattleScreen() {
               <Text style={styles.floorBadgeText}>{`B${params.floor}F`}</Text>
             </View>
             <Text style={styles.headerTitle}>{params.title}</Text>
+            {resultLabel ? (
+              <View
+                style={[
+                  styles.resultBadge,
+                  status === "WIN" && styles.resultBadgeWin,
+                  status === "LOSE" && styles.resultBadgeLose,
+                  status === "DRAW" && styles.resultBadgeDraw,
+                ]}
+              >
+                <Text style={styles.resultBadgeText}>{resultLabel}</Text>
+              </View>
+            ) : null}
             <Pressable
               onPress={params.onPausePress}
               style={[styles.autoBadge, params.isPaused && styles.autoBadgePaused]}
@@ -376,6 +406,15 @@ export default function BattleScreen() {
                     <Text style={styles.enemyLabel} numberOfLines={1}>
                       {enemy.name}
                     </Text>
+                    <View style={styles.enemyHpBar}>
+                      <View
+                        style={[
+                          styles.enemyHpFill,
+                          { width: `${Math.max(0, Math.min(100, (enemy.hp / Math.max(1, enemy.maxHp)) * 100))}%` },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.enemyHpText}>{t("battle.ui.enemyHp", { hp: enemy.hp, maxHp: enemy.maxHp })}</Text>
                   </View>
                 ))}
               </View>
@@ -491,6 +530,28 @@ const styles = StyleSheet.create({
   },
   floorBadgeText: { color: "#efefef", fontWeight: "700", fontSize: 11 },
   headerTitle: { flex: 1, color: "#1a1a1a", fontSize: 18, fontWeight: "700" },
+  resultBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginRight: 6,
+    backgroundColor: "#e5e7eb",
+  },
+  resultBadgeWin: {
+    backgroundColor: "#dcfce7",
+  },
+  resultBadgeLose: {
+    backgroundColor: "#fee2e2",
+  },
+  resultBadgeDraw: {
+    backgroundColor: "#e0e7ff",
+  },
+  resultBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#111827",
+    letterSpacing: 0.4,
+  },
   autoBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -540,12 +601,12 @@ const styles = StyleSheet.create({
   },
   logLine: {
     color: "#666666",
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 19,
   },
   logLineMuted: {
     color: "#9b9b9b",
-    fontSize: 11,
+    fontSize: 13,
   },
   enemyArea: {
     height: 220,
@@ -579,6 +640,25 @@ const styles = StyleSheet.create({
     textShadowColor: "#000000",
     textShadowRadius: 3,
     fontSize: 10,
+  },
+  enemyHpBar: {
+    marginTop: 4,
+    width: 72,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.28)",
+    overflow: "hidden",
+  },
+  enemyHpFill: {
+    height: "100%",
+    backgroundColor: "#22c55e",
+  },
+  enemyHpText: {
+    marginTop: 2,
+    color: "#f5f5f5",
+    textShadowColor: "#000000",
+    textShadowRadius: 3,
+    fontSize: 9,
   },
   skeletonBlock: {
     backgroundColor: "#e7e7e7",
