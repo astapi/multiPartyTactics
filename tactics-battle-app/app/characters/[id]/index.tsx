@@ -11,9 +11,9 @@ import {
   summarizeConditionParams,
   summarizeTargetParams,
 } from "@/game/tactics/labels";
-import { useI18n } from "@/i18n";
+import { TranslationKey, useI18n } from "@/i18n";
 import { useTactics } from "@/hooks/useTactics";
-import { CharacterRecord } from "@/types/models";
+import { CharacterRecord, ClassId } from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -26,6 +26,15 @@ const colors = {
   iconSecondary: "#999999",
   borderDefault: "#e0e0e0",
 } as const;
+
+const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
+  GUARDIAN: "class.name.guardian",
+  SWORDMAN: "class.name.swordman",
+  BERSERKER: "class.name.berserker",
+  CLERIC: "class.name.cleric",
+  WITCH: "class.name.witch",
+  THIEF: "class.name.thief",
+};
 
 export default function CharacterDetailScreen() {
   const router = useRouter();
@@ -47,6 +56,7 @@ export default function CharacterDetailScreen() {
   );
 
   const topRules = useMemo(() => [...rules].sort((a, b) => a.priority - b.priority).slice(0, 3), [rules]);
+  const classLabel = t(CLASS_NAME_KEYS[character?.classId ?? "SWORDMAN"]);
 
   if (!character) {
     return (
@@ -78,7 +88,7 @@ export default function CharacterDetailScreen() {
             <Shield size={36} stroke={colors.textStrong} />
           </View>
           <Text style={styles.profileName}>{character.name}</Text>
-          <Text style={styles.profileSub}>{`${character.classId}  Lv.${character.level}`}</Text>
+          <Text style={styles.profileSub}>{`${classLabel}  Lv.${character.level}`}</Text>
 
           <View style={styles.statRow}>
             <View style={styles.statCard}>
@@ -113,7 +123,7 @@ export default function CharacterDetailScreen() {
           <View style={styles.itemCard}>
             <Sword size={18} stroke={colors.textSecondary} />
             <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>Iron Sword</Text>
+              <Text style={styles.itemName}>{t("character.detail.equip.weapon.ironSword")}</Text>
               <Text style={styles.itemSub}>ATK +22</Text>
             </View>
             <ChevronRight size={18} stroke={colors.iconSecondary} />
@@ -121,7 +131,7 @@ export default function CharacterDetailScreen() {
           <View style={styles.itemCard}>
             <Shield size={18} stroke={colors.textSecondary} />
             <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>Knight Plate</Text>
+              <Text style={styles.itemName}>{t("character.detail.equip.armor.knightPlate")}</Text>
               <Text style={styles.itemSub}>DEF +18</Text>
             </View>
             <ChevronRight size={18} stroke={colors.iconSecondary} />
