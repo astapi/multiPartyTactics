@@ -8,6 +8,7 @@ import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { Unit } from "@/game/battle";
+import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
 import { simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
@@ -345,7 +346,7 @@ export default function BattleScreen() {
 
           <View style={styles.logSection}>
             <View style={styles.logHeader}>
-              <Text style={styles.logTitle}>Battle Log</Text>
+              <Text style={styles.logTitle}>{t("battle.ui.logTitle")}</Text>
               <Text style={styles.turnText}>{params.turnText}</Text>
             </View>
             <ScrollView
@@ -355,11 +356,11 @@ export default function BattleScreen() {
               showsVerticalScrollIndicator={false}
             >
               {logRows.length === 0 ? (
-                <Text style={styles.logLineMuted}>Waiting for command...</Text>
+                <Text style={styles.logLineMuted}>{t("battle.ui.logWaiting")}</Text>
               ) : (
                 logRows.map((log, idx) => (
                   <Text key={`${log.turn}-${idx}`} style={styles.logLine}>
-                    {log.logMessage}
+                    {formatBattleLogMessage(log, t)}
                   </Text>
                 ))
               )}

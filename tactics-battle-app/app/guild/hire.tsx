@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CLASS_MASTER, ClassInfo } from "@/constants/classes";
 import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { tacticsRepository } from "@/db/repositories/tacticsRepository";
+import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import { generateId } from "@/utils/id";
 
 const colors = {
@@ -51,6 +53,10 @@ export default function HireScreen() {
         currentHp: base.maxHp,
         currentMp: base.maxMp,
       });
+      const defaultTactics = buildDefaultTacticsForClass(id, selectedClass.id);
+      if (defaultTactics.length > 0) {
+        await tacticsRepository.replaceForCharacter(id, defaultTactics);
+      }
       router.back();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";

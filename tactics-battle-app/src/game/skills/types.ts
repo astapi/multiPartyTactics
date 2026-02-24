@@ -10,7 +10,20 @@ export type SkillType =
   | "debuff"
   | "status"
   | "cleanse"
-  | "utility";
+  | "utility"
+  | "item";
+
+export type SkillArea =
+  | "SINGLE"
+  | "ALLY_ALL"
+  | "ALL_ENEMIES"
+  | "ENEMY_ROW"
+  | "RANDOM_ENEMY";
+
+export type SkillItemCost = {
+  itemId: string;
+  amount: number;
+};
 
 export type SkillEffect =
   | {
@@ -41,8 +54,33 @@ export type SkillEffect =
       duration: number;
     }
   | {
+      kind: "OUTGOING_DAMAGE_MULTIPLIER";
+      id: string;
+      multiplier: number;
+      duration: number;
+    }
+  | {
+      kind: "NEXT_ATTACK_MULTIPLIER";
+      id: string;
+      multiplier: number;
+    }
+  | {
+      kind: "TAUNT";
+      id: string;
+      duration: number;
+    }
+  | {
+      kind: "COVER_ALL";
+      id: string;
+      duration: number;
+    }
+  | {
       kind: "HEAL";
       amount: number;
+    }
+  | {
+      kind: "HEAL_MULTIPLIER";
+      multiplier: number;
     }
   | {
       kind: "CLEANSE";
@@ -69,24 +107,28 @@ export type Skill = {
   name: string;
   type: SkillType;
   target: SkillTarget;
+  area?: SkillArea;
   mpCost: number;
   cooldown: number;
   multiplier?: number;
+  hitCount?: number;
+  hitMultiplier?: number;
+  randomizeTargetPerHit?: boolean;
+  itemCosts?: SkillItemCost[];
   effects?: SkillEffect[];
   tags: string[];
+};
+
+export type SkillExecutionContext = {
+  itemStock?: Record<string, number>;
+  allies?: Unit[];
+  opponents?: Unit[];
 };
 
 export type ClassDefinition = {
   id: ClassId;
   name: string;
   role: "TANK" | "HEALER" | "DPS" | "SUPPORT";
-  skills: Skill[];
-};
-
-export type BossDefinition = {
-  id: string;
-  name: string;
-  stats: Unit["stats"];
   skills: Skill[];
 };
 
@@ -97,4 +139,7 @@ export type SkillUseResult = {
   appliedStatuses: StatusEffect[];
   cleansedStatuses: StatusType[];
   appliedEffects: Effect[];
+  hitCount: number;
+  consumedItems: SkillItemCost[];
+  resolvedTargetIds: string[];
 };

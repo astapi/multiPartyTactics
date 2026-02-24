@@ -99,6 +99,99 @@ describe("game/tactics/evaluator", () => {
       1
     );
     expect(enemyLowest.target?.id).toBe("enemyB");
+
+    const allyMpLow = makeUnit({
+      id: "allyMpLow",
+      mp: 2,
+      stats: { maxHp: 100, maxMp: 10 },
+      order: 3,
+    });
+    const allyMpHigh = makeUnit({
+      id: "allyMpHigh",
+      mp: 9,
+      stats: { maxHp: 100, maxMp: 10 },
+      order: 2,
+    });
+    const actorOrdered = makeUnit({ id: "actorOrdered", mp: 10, stats: { maxHp: 100, maxMp: 10 }, order: 1 });
+
+    const mpCondition = evaluateTactics(
+      actorOrdered,
+      [actorOrdered, allyMpHigh, allyMpLow],
+      [enemyA, enemyB],
+      [
+        makeRule({
+          id: "mp",
+          skillId: "s",
+          conditionType: "ALLY_MP_BELOW",
+          conditionParams: "{\"threshold\":0.3}",
+          targetType: "ALLY_POSITION",
+          targetParams: "{\"position\":3}",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(mpCondition.target?.id).toBe("allyMpLow");
+
+    const enemyByPosition = evaluateTactics(
+      actor,
+      [actor, allyLow],
+      [enemyA, enemyB],
+      [
+        makeRule({
+          id: "enemy-pos",
+          skillId: "s",
+          conditionType: "ALWAYS",
+          targetType: "ENEMY_POSITION",
+          targetParams: "{\"position\":2}",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(enemyByPosition.target?.id).toBe("enemyB");
+  });
+
+  it("supports multiple conditions via ALL_OF", () => {
+    const actor = makeUnit({
+      id: "actor",
+      hp: 100,
+      mp: 10,
+      stats: { maxHp: 100, maxMp: 10 },
+      order: 1,
+    });
+    const ally = makeUnit({
+      id: "ally",
+      hp: 20,
+      mp: 1,
+      stats: { maxHp: 100, maxMp: 10 },
+      order: 2,
+    });
+    const enemy = makeUnit({ id: "enemy", order: 100 });
+    const skill = makeSkill({ id: "s", mpCost: 0 });
+
+    const rule = makeRule({
+      id: "all-of",
+      skillId: "s",
+      conditionType: "ALL_OF",
+      conditionParams: JSON.stringify({
+        conditions: [
+          { type: "ALLY_HP_BELOW", params: { threshold: 0.3 } },
+          { type: "ALLY_MP_BELOW", params: { threshold: 0.2 } },
+          { type: "TURN_EQUALS", params: { turn: 2 } },
+        ],
+      }),
+      targetType: "ALLY_POSITION",
+      targetParams: JSON.stringify({ position: 2 }),
+    });
+
+    const hit = evaluateTactics(actor, [actor, ally], [enemy], [rule], new Map([[skill.id, skill]]), 2);
+    expect(hit.skill?.id).toBe("s");
+    expect(hit.target?.id).toBe("ally");
+
+    const miss = evaluateTactics(actor, [actor, ally], [enemy], [rule], new Map([[skill.id, skill]]), 3);
+    expect(miss.skill).toBeNull();
+    expect(miss.target).toBeNull();
   });
 
   it("handles invalid params JSON and returns null when target selection fails", () => {

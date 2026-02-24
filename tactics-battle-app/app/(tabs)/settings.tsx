@@ -14,6 +14,8 @@ import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { resetDatabase } from "@/db/database";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
+import { tacticsRepository } from "@/db/repositories/tacticsRepository";
+import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import { useI18n } from "@/i18n";
 import { Locale } from "@/i18n/locale";
 import { useLocaleStore } from "@/stores/localeStore";
@@ -161,6 +163,10 @@ export default function SettingsScreen() {
             currentHp: base.maxHp,
             currentMp: base.maxMp,
           });
+          const defaultTactics = buildDefaultTacticsForClass(id, preset.classId);
+          if (defaultTactics.length > 0) {
+            await tacticsRepository.replaceForCharacter(id, defaultTactics);
+          }
           characterId = id;
           createdCount += 1;
         }

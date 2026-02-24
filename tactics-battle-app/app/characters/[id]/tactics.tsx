@@ -9,10 +9,12 @@ import { RuleItem } from "@/components/tactics/RuleItem";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useTactics } from "@/hooks/useTactics";
 import { CLASS_DEFINITIONS } from "@/game/skills";
+import { useI18n } from "@/i18n";
 import { TacticsRuleRecord } from "@/types/models";
 
 export default function TacticsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useI18n();
   const { characters } = useCharacters();
   const { rules, saveRules } = useTactics(id);
   const [editing, setEditing] = useState<TacticsRuleRecord | undefined>(undefined);
@@ -30,7 +32,7 @@ export default function TacticsScreen() {
   if (!character) {
     return (
       <View style={styles.notFoundContainer}>
-        <Text style={styles.notFoundText}>Character not found</Text>
+        <Text style={styles.notFoundText}>{t("character.empty")}</Text>
       </View>
     );
   }
@@ -38,7 +40,7 @@ export default function TacticsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {character.name} Tactics
+        {t("tactics.screen.title", { name: character.name })}
       </Text>
       <Pressable
         onPress={() => {
@@ -46,7 +48,7 @@ export default function TacticsScreen() {
           setModalVisible(true);
         }}
       >
-        <Text style={styles.addRuleButton}>ルール追加</Text>
+        <Text style={styles.addRuleButton}>{t("character.addRule")}</Text>
       </Pressable>
 
       <DraggableFlatList
@@ -58,7 +60,7 @@ export default function TacticsScreen() {
         renderItem={({ item, drag, isActive }: RenderItemParams<TacticsRuleRecord>) => (
           <View style={{ opacity: isActive ? 0.6 : 1 }}>
             <Text onLongPress={drag} style={styles.dragHint}>
-              長押しで並べ替え
+              {t("tactics.ui.dragToReorder")}
             </Text>
             <RuleItem
               rule={item}

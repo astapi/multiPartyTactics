@@ -1,5 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/common/Card";
+import { useI18n } from "@/i18n";
+import {
+  getConditionTypeLabel,
+  getSkillIdDisplayName,
+  getTargetTypeLabel,
+  summarizeConditionParams,
+  summarizeTargetParams,
+} from "@/game/tactics/labels";
 import { TacticsRuleRecord } from "@/types/models";
 
 type Props = {
@@ -8,25 +16,33 @@ type Props = {
   onDelete: () => void;
 };
 
-export const RuleItem = ({ rule, onEdit, onDelete }: Props) => (
-  <Card style={styles.card}>
-    <View style={styles.headerRow}>
-      <Text style={styles.priority}>#{rule.priority}</Text>
-      <Text style={styles.skill}>{rule.skillId}</Text>
-    </View>
-    <Text style={styles.meta}>
-      {rule.conditionType} / {rule.targetType}
-    </Text>
-    <View style={styles.buttons}>
-      <Pressable onPress={onEdit} style={[styles.button, styles.editButton]}>
-        <Text style={styles.buttonLabel}>編集</Text>
-      </Pressable>
-      <Pressable onPress={onDelete} style={[styles.button, styles.deleteButton]}>
-        <Text style={styles.buttonLabel}>削除</Text>
-      </Pressable>
-    </View>
-  </Card>
-);
+export const RuleItem = ({ rule, onEdit, onDelete }: Props) => {
+  const { t } = useI18n();
+  const conditionSummary = summarizeConditionParams(rule, t);
+  const targetSummary = summarizeTargetParams(rule, t);
+
+  return (
+    <Card style={styles.card}>
+      <View style={styles.headerRow}>
+        <Text style={styles.priority}>#{rule.priority}</Text>
+        <Text style={styles.skill}>{getSkillIdDisplayName(rule.skillId, t)}</Text>
+      </View>
+      <Text style={styles.meta}>
+        {getConditionTypeLabel(rule.conditionType, t)}
+        {conditionSummary ? ` (${conditionSummary})` : ""} / {getTargetTypeLabel(rule.targetType, t)}
+        {targetSummary ? ` (${targetSummary})` : ""}
+      </Text>
+      <View style={styles.buttons}>
+        <Pressable onPress={onEdit} style={[styles.button, styles.editButton]}>
+          <Text style={styles.buttonLabel}>{t("tactics.ui.edit")}</Text>
+        </Pressable>
+        <Pressable onPress={onDelete} style={[styles.button, styles.deleteButton]}>
+          <Text style={styles.buttonLabel}>{t("tactics.ui.delete")}</Text>
+        </Pressable>
+      </View>
+    </Card>
+  );
+};
 
 const styles = StyleSheet.create({
   card: { marginBottom: 8 },

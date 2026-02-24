@@ -4,6 +4,13 @@ import { ArrowLeft, ChevronRight, GripVertical, Plus, Shield, Sword } from "luci
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import {
+  getConditionTypeLabel,
+  getSkillIdDisplayName,
+  getTargetTypeLabel,
+  summarizeConditionParams,
+  summarizeTargetParams,
+} from "@/game/tactics/labels";
 import { useI18n } from "@/i18n";
 import { useTactics } from "@/hooks/useTactics";
 import { CharacterRecord } from "@/types/models";
@@ -144,8 +151,18 @@ export default function CharacterDetailScreen() {
                   <Text style={styles.priorityText}>{rule.priority}</Text>
                 </View>
                 <View style={styles.ruleTextWrap}>
-                  <Text style={styles.ruleTitle}>{rule.skillId}</Text>
-                  <Text style={styles.ruleSub}>{`${rule.conditionType} -> ${rule.targetType}`}</Text>
+                  <Text style={styles.ruleTitle}>{getSkillIdDisplayName(rule.skillId, t)}</Text>
+                  <Text style={styles.ruleSub}>
+                    {`${getConditionTypeLabel(rule.conditionType, t)}${
+                      summarizeConditionParams(rule, t)
+                        ? ` (${summarizeConditionParams(rule, t)})`
+                        : ""
+                    } -> ${getTargetTypeLabel(rule.targetType, t)}${
+                      summarizeTargetParams(rule, t)
+                        ? ` (${summarizeTargetParams(rule, t)})`
+                        : ""
+                    }`}
+                  </Text>
                 </View>
                 <GripVertical size={16} stroke={colors.iconSecondary} />
               </View>

@@ -26,15 +26,19 @@ export type ConditionType =
   | "TURN_EQUALS"
   | "SELF_HP_BELOW"
   | "ALLY_HP_BELOW"
+  | "ALLY_MP_BELOW"
   | "ENEMY_HP_BELOW"
   | "ANY_ALLY_HAS_STATUS"
+  | "ALL_OF"
   | "ALWAYS";
 
 export type TargetType =
   | "SELF"
   | "ALLY_LOWEST_HP"
   | "ALLY_WITH_STATUS_LOWEST_HP"
+  | "ALLY_POSITION"
   | "ENEMY_FIRST"
+  | "ENEMY_POSITION"
   | "ENEMY_LOWEST_HP";
 
 export type TacticsRuleRecord = {

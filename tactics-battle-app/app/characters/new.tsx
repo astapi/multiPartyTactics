@@ -4,6 +4,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { ClassSelectModal } from "@/components/party/ClassSelectModal";
 import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { tacticsRepository } from "@/db/repositories/tacticsRepository";
+import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import { ClassId } from "@/types/models";
 import { generateId } from "@/utils/id";
 
@@ -32,6 +34,10 @@ export default function NewCharacterScreen() {
         currentHp: base.maxHp,
         currentMp: base.maxMp,
       });
+      const defaultTactics = buildDefaultTacticsForClass(id, classId);
+      if (defaultTactics.length > 0) {
+        await tacticsRepository.replaceForCharacter(id, defaultTactics);
+      }
       router.back();
     } catch (error) {
       const message = error instanceof Error ? error.message : "不明なエラー";
