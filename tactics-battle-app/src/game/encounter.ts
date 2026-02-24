@@ -33,9 +33,12 @@ export type GenerateEncounterParams = {
 
 type FloorTable = {
   floor: number;
+  tableId?: string;
+  isBossFloor?: boolean;
   encounters: Array<{
     enemyId: string;
     weight: number;
+    statScale?: number;
   }>;
 };
 
@@ -50,10 +53,30 @@ const ENEMY_MASTER = new Map(
 
 const DUNGEON_TABLE = dungeonEnemyTableData.dungeons as DungeonTable[];
 
-const pickWeightedEnemyId = (
-  entries: Array<{ enemyId: string; weight: number }>,
+type WeightedEncounterEntry = {
+  enemyId: string;
+  weight: number;
+  statScale?: number;
+};
+
+const scaleStats = (stats: Stats, scale = 1): Stats => {
+  if (!Number.isFinite(scale) || scale <= 0 || scale === 1) {
+    return { ...stats };
+  }
+  return {
+    maxHp: Math.max(1, Math.round(stats.maxHp * scale)),
+    atk: Math.max(1, Math.round(stats.atk * scale)),
+    def: Math.max(0, Math.round(stats.def * scale)),
+    spd: Math.max(1, Math.round(stats.spd * scale)),
+    maxMp: Math.max(0, Math.round(stats.maxMp * scale)),
+    mpRegen: stats.maxMp <= 0 ? 0 : Math.max(1, Math.round(stats.mpRegen * scale)),
+  };
+};
+
+const pickWeightedEnemy = (
+  entries: WeightedEncounterEntry[],
   rng: () => number
-): string => {
+): WeightedEncounterEntry => {
   const totalWeight = entries.reduce((sum, entry) => sum + Math.max(0, entry.weight), 0);
   if (totalWeight <= 0) {
     throw new Error("Encounter table has no positive weights.");
@@ -62,10 +85,10 @@ const pickWeightedEnemyId = (
   for (const entry of entries) {
     roll -= Math.max(0, entry.weight);
     if (roll <= 0) {
-      return entry.enemyId;
+      return entry;
     }
   }
-  return entries[entries.length - 1].enemyId;
+  return entries[entries.length - 1];
 };
 
 export const generateEncounter = (params: GenerateEncounterParams): EncounterResult => {
@@ -83,15 +106,15 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
   const enemyCount = 1 + Math.floor(rng() * 3);
   const enemies: EncounterEnemy[] = [];
   for (let i = 0; i < enemyCount; i += 1) {
-    const enemyId = pickWeightedEnemyId(floorTable.encounters, rng);
-    const enemyMaster = ENEMY_MASTER.get(enemyId);
+    const picked = pickWeightedEnemy(floorTable.encounters, rng);
+    const enemyMaster = ENEMY_MASTER.get(picked.enemyId);
     if (!enemyMaster) {
-      throw new Error(`Unknown enemy id in table: ${enemyId}`);
+      throw new Error(`Unknown enemy id in table: ${picked.enemyId}`);
     }
     enemies.push({
-      enemyId,
+      enemyId: picked.enemyId,
       name: enemyMaster.name,
-      stats: { ...enemyMaster.stats },
+      stats: scaleStats(enemyMaster.stats, picked.statScale ?? 1),
     });
   }
 
