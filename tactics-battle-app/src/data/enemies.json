@@ -4,7 +4,7 @@
       "id": "goblin",
       "name": "Goblin",
       "stats": {
-        "maxHp": 64,
+        "maxHp": 7,
         "atk": 18,
         "def": 8,
         "spd": 14,
@@ -16,7 +16,7 @@
       "id": "slime",
       "name": "Slime",
       "stats": {
-        "maxHp": 92,
+        "maxHp": 5,
         "atk": 12,
         "def": 14,
         "spd": 7,

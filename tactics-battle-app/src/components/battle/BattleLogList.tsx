@@ -46,5 +46,5 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   turn: { fontSize: 12, color: "#a1a1aa" },
-  message: { fontSize: 14, color: "#f4f4f5" },
+  message: { fontSize: 15, lineHeight: 21, color: "#f4f4f5" },
 });
