@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Pause, Play } from "lucide-react-native";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { Unit } from "@/game/battle";
@@ -12,6 +13,7 @@ import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
 import { simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
+import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { toUnit } from "@/game/partyMapper";
 import { useI18n } from "@/i18n";
 import { TacticsRuleRecord } from "@/types/models";
@@ -49,7 +51,7 @@ const parseEncounter = (raw: string | undefined): EncounterResult | null => {
 
 export default function BattleScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const { dungeonId, floor, explorationSeed, encounter } = useLocalSearchParams<{
     dungeonId?: string;
     floor?: string;
@@ -181,11 +183,54 @@ export default function BattleScreen() {
       await battleRepository.appendLogs(result.logs);
       await battleRepository.updateSessionStatus(nextSessionId, result.outcome);
 
+      let combinedLogs = result.logs;
+      if (result.outcome === "WIN") {
+        const dropResults = rollMonsterDrops({
+          dungeonId: resolvedDungeonId,
+          floor: resolvedFloor,
+          battleSessionId: nextSessionId,
+          encounter: encounterData,
+          seed: (resolvedSeed ?? Date.now()) >>> 0,
+        });
+        const lootLogRecords: typeof result.logs = [];
+        for (const drop of dropResults) {
+          if (!drop.reward) continue;
+          const applyResult = await equipmentInventoryRepository.applyGrantIfAbsent({
+            grant: {
+              grantKey: drop.reward.grantKey,
+              sourceType: drop.reward.sourceType,
+              baseItemId: drop.reward.baseItemId,
+              mutationPrefixId: drop.reward.mutationPrefixId,
+              quantity: 1,
+              contextJson: JSON.stringify({
+                dungeonId: resolvedDungeonId,
+                floor: resolvedFloor,
+                battleSessionId: nextSessionId,
+                enemyIndex: drop.enemyIndex,
+              }),
+            },
+          });
+          if (!applyResult.applied) continue;
+          const itemName = locale === "ja" ? drop.reward.displayName.jp : drop.reward.displayName.en;
+          lootLogRecords.push({
+            battleSessionId: nextSessionId,
+            turn: result.turns,
+            actorName: "LOOT",
+            actionType: "loot",
+            targetName: null,
+            damage: 0,
+            healing: 0,
+            logMessage: locale === "ja" ? `獲得: ${itemName}` : `Loot: ${itemName}`,
+          });
+        }
+        combinedLogs = [...result.logs, ...lootLogRecords];
+      }
+
       setParty(result.finalParty);
       setEnemies(result.finalEnemies);
       setSessionId(nextSessionId);
       setStatus(result.outcome);
-      setLogs(result.logs);
+      setLogs(combinedLogs);
       setTurns(result.turns);
       setRevealedLogCount(0);
       setBattleCompleted(true);

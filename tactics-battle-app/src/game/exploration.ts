@@ -2,6 +2,8 @@ import { DungeonOption } from "@/constants/dungeons";
 import difficultyConfig from "@/data/difficultyConfig.json";
 import { Unit } from "@/game/battle";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
+import { rollTreasureChestEquipment } from "@/game/loot/equipmentLootRoller";
+import type { EquipmentReward } from "@/types/equipment";
 import { createSeededRng } from "@/utils/rng";
 
 const cfg = difficultyConfig.exploration;
@@ -21,7 +23,7 @@ export type ExplorationEvent = {
   type: ExplorationEventType;
   messageId: ExplorationMessageId;
   payload?: {
-    itemId?: string;
+    reward?: EquipmentReward;
     damage?: number;
     debuffType?: string;
   };
@@ -53,7 +55,6 @@ const LOG_MESSAGE_IDS: ExplorationMessageId[] = [
 ];
 
 const TRAP_DEBUFFS = ["POISON", "SLOW", "WEAKEN"] as const;
-const TREASURE_ITEMS = ["potion_small", "ether_small", "gold_cache"] as const;
 
 export const generateExplorationResult = (
   params: ExplorationParams
@@ -116,12 +117,17 @@ export const generateExplorationResult = (
     }
 
     if (rng() < treasureChance) {
-      const itemId = TREASURE_ITEMS[Math.floor(rng() * TREASURE_ITEMS.length)];
+      const reward = rollTreasureChestEquipment({
+        dungeonId: params.dungeon.id,
+        floor,
+        explorationSeed: params.seed,
+        tick,
+      });
       events.push({
         tick,
         type: "TREASURE",
         messageId: "exploration.event.treasure.found_chest",
-        payload: { itemId },
+        payload: { reward },
       });
       continue;
     }

@@ -7,12 +7,14 @@ import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/Pa
 import { DUNGEONS } from "@/constants/dungeons";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
+import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import {
   ExplorationEvent,
   ExplorationResult,
   generateExplorationResult,
 } from "@/game/exploration";
 import { useI18n } from "@/i18n";
+import type { EquipmentReward } from "@/types/equipment";
 import { toUnit } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
 
@@ -27,19 +29,12 @@ const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
 };
 
 const getTreasureItemLabel = (
-  itemId: string | undefined,
+  reward: EquipmentReward | undefined,
+  locale: ReturnType<typeof useI18n>["locale"],
   t: ReturnType<typeof useI18n>["t"]
 ): string => {
-  switch (itemId) {
-    case "potion_small":
-      return t("exploration.item.potion_small");
-    case "ether_small":
-      return t("exploration.item.ether_small");
-    case "gold_cache":
-      return t("exploration.item.gold_cache");
-    default:
-      return t("exploration.item.unknown");
-  }
+  if (!reward) return t("exploration.item.unknown");
+  return locale === "ja" ? reward.displayName.jp : reward.displayName.en;
 };
 
 const getTrapDebuffLabel = (
@@ -58,10 +53,14 @@ const getTrapDebuffLabel = (
   }
 };
 
-const formatEvent = (event: ExplorationEvent, t: ReturnType<typeof useI18n>["t"]): string => {
+const formatEvent = (
+  event: ExplorationEvent,
+  locale: ReturnType<typeof useI18n>["locale"],
+  t: ReturnType<typeof useI18n>["t"]
+): string => {
   if (event.type === "TREASURE") {
     return t(event.messageId, {
-      itemId: getTreasureItemLabel(event.payload?.itemId, t),
+      itemId: getTreasureItemLabel(event.payload?.reward, locale, t),
     });
   }
   if (event.type === "TRAP") {
@@ -87,7 +86,7 @@ type ExplorationPartySnapshotMember = PartyStatusStripMember & {
 
 export default function ExplorationScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const params = useLocalSearchParams<{ dungeonId?: string; floor?: string }>();
 
   const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_4";
@@ -100,6 +99,7 @@ export default function ExplorationScreen() {
   const [isFocused, setIsFocused] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const logScrollRef = useRef<ScrollView | null>(null);
+  const appliedRewardGrantKeysRef = useRef<Set<string>>(new Set());
   const [partySnapshot, setPartySnapshot] = useState<ExplorationPartySnapshotMember[]>([]);
 
   const [error, setError] = useState<string | null>(null);
@@ -151,6 +151,7 @@ export default function ExplorationScreen() {
         });
 
         if (!mounted) return;
+        appliedRewardGrantKeysRef.current = new Set();
         setResult(nextResult);
         setPartySnapshot(nextPartySnapshot);
         setCurrentTick(0);
@@ -195,6 +196,50 @@ export default function ExplorationScreen() {
 
     return () => clearInterval(timer);
   }, [currentTick, isFocused, isNavigating, isPaused, result]);
+
+  useEffect(() => {
+    if (!result) return;
+    const dueTreasureEvents = result.events.filter(
+      (event) => event.tick <= currentTick && event.type === "TREASURE" && event.payload?.reward
+    );
+    if (dueTreasureEvents.length === 0) return;
+
+    let cancelled = false;
+    const persist = async () => {
+      for (const event of dueTreasureEvents) {
+        const reward = event.payload?.reward;
+        if (!reward) continue;
+        if (appliedRewardGrantKeysRef.current.has(reward.grantKey)) continue;
+        try {
+          await equipmentInventoryRepository.applyGrantIfAbsent({
+            grant: {
+              grantKey: reward.grantKey,
+              sourceType: reward.sourceType,
+              baseItemId: reward.baseItemId,
+              mutationPrefixId: reward.mutationPrefixId,
+              quantity: 1,
+              contextJson: JSON.stringify({
+                dungeonId: resolvedDungeonId,
+                floor,
+                explorationSeed: result.seed,
+                tick: event.tick,
+              }),
+            },
+          });
+          if (cancelled) return;
+          appliedRewardGrantKeysRef.current.add(reward.grantKey);
+        } catch (persistError) {
+          console.error("Failed to persist treasure reward:", persistError);
+        }
+      }
+    };
+
+    void persist();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentTick, floor, resolvedDungeonId, result]);
 
   useEffect(() => {
     if (!result || isNavigating) return;
@@ -326,7 +371,7 @@ export default function ExplorationScreen() {
           >
             {displayedEvents.map((event, index) => (
               <Text key={`${event.tick}-${event.type}-${index}`} style={styles.logLine}>
-                {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, t)}`}
+                {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, locale, t)}`}
               </Text>
             ))}
           </ScrollView>

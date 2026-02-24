@@ -55,7 +55,9 @@ describe("game/exploration", () => {
       if (trap && treasure) {
         expect(trap.payload?.damage).toBeGreaterThanOrEqual(1);
         expect(typeof trap.payload?.debuffType).toBe("string");
-        expect(typeof treasure.payload?.itemId).toBe("string");
+        expect(typeof treasure.payload?.reward?.baseItemId).toBe("string");
+        expect(treasure.payload?.reward?.sourceType).toBe("TREASURE_CHEST");
+        expect(typeof treasure.payload?.reward?.grantKey).toBe("string");
         return;
       }
     }

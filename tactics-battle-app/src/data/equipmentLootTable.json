@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "monster": {
+      "perEnemyDropChance": 0.18,
+      "mutationChance": 0.08,
+      "categoryWeights": {
+        "one_handed_sword": 14,
+        "dagger": 14,
+        "throwing_knife": 10,
+        "two_handed_axe": 12,
+        "two_handed_hammer": 10,
+        "bow": 12,
+        "staff": 14,
+        "shield": 14
+      }
+    },
+    "chest": {
+      "categoryWeights": {
+        "one_handed_sword": 14,
+        "dagger": 12,
+        "throwing_knife": 10,
+        "two_handed_axe": 12,
+        "two_handed_hammer": 10,
+        "bow": 12,
+        "staff": 14,
+        "shield": 16
+      }
+    }
+  },
+  "floorBands": [
+    {
+      "id": "f1_4",
+      "minFloor": 1,
+      "maxFloor": 4,
+      "monster": {
+        "perEnemyDropChance": 0.12,
+        "mutationChance": 0.04
+      },
+      "chest": {}
+    },
+    {
+      "id": "f5_9",
+      "minFloor": 5,
+      "maxFloor": 9,
+      "monster": {
+        "perEnemyDropChance": 0.2,
+        "mutationChance": 0.1
+      },
+      "chest": {}
+    }
+  ],
+  "dungeonOverrides": [
+    {
+      "dungeonId": "crestoria_dungeon_1_4",
+      "monster": {},
+      "chest": {}
+    },
+    {
+      "dungeonId": "crestoria_dungeon_5_9",
+      "monster": {
+        "mutationChance": 0.12
+      },
+      "chest": {}
+    }
+  ]
+}
