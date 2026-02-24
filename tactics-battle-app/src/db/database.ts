@@ -1,5 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import { MIGRATION_001 } from "./migrations/001_initial";
+import { MIGRATION_002 } from "./migrations/002_equipment_loot";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -15,6 +16,7 @@ export const initializeDatabase = async (): Promise<void> => {
   const db = await getDb();
   await db.execAsync("PRAGMA foreign_keys = ON;");
   await db.execAsync(MIGRATION_001);
+  await db.execAsync(MIGRATION_002);
   const migrateBattleSessionStatusToDraw = async (): Promise<void> => {
     const schema = await db.getFirstAsync<{ sql: string }>(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'battle_sessions'"
@@ -45,8 +47,52 @@ export const initializeDatabase = async (): Promise<void> => {
     `);
   };
 
+  const migrateEquipmentInventoryStacksSchema = async (): Promise<void> => {
+    const schema = await db.getFirstAsync<{ sql: string | null }>(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'equipment_inventory_stacks'"
+    );
+    if (!schema?.sql) return;
+    if (schema.sql.includes("mutation_prefix_key")) {
+      // Ensure index exists even if table is already up to date.
+      await db.execAsync(
+        "CREATE INDEX IF NOT EXISTS idx_equipment_stacks_base_item ON equipment_inventory_stacks(base_item_id);"
+      );
+      return;
+    }
+
+    await db.execAsync(`
+      BEGIN;
+      ALTER TABLE equipment_inventory_stacks RENAME TO equipment_inventory_stacks_old;
+      CREATE TABLE equipment_inventory_stacks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        base_item_id TEXT NOT NULL,
+        mutation_prefix_id TEXT,
+        mutation_prefix_key TEXT NOT NULL,
+        quantity INTEGER NOT NULL CHECK (quantity >= 0),
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (base_item_id, mutation_prefix_key)
+      );
+      INSERT INTO equipment_inventory_stacks
+        (base_item_id, mutation_prefix_id, mutation_prefix_key, quantity, created_at, updated_at)
+      SELECT
+        base_item_id,
+        mutation_prefix_id,
+        COALESCE(mutation_prefix_id, '') AS mutation_prefix_key,
+        SUM(quantity) AS quantity,
+        MIN(created_at) AS created_at,
+        MAX(updated_at) AS updated_at
+      FROM equipment_inventory_stacks_old
+      GROUP BY base_item_id, mutation_prefix_id, COALESCE(mutation_prefix_id, '');
+      DROP TABLE equipment_inventory_stacks_old;
+      CREATE INDEX IF NOT EXISTS idx_equipment_stacks_base_item ON equipment_inventory_stacks(base_item_id);
+      COMMIT;
+    `);
+  };
+
   try {
     await migrateBattleSessionStatusToDraw();
+    await migrateEquipmentInventoryStacksSchema();
 
     const invalidClass = await db.getFirstAsync<{ class_id: string }>(
       `SELECT class_id
