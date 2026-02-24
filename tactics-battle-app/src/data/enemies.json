@@ -1,6 +1,234 @@
 {
   "enemies": [
     {
+      "id": "abyss_dragon",
+      "name": "Abyss Dragon",
+      "stats": {
+        "maxHp": 673,
+        "atk": 159,
+        "def": 111,
+        "spd": 24,
+        "maxMp": 170,
+        "mpRegen": 9
+      }
+    },
+    {
+      "id": "acid_slime",
+      "name": "Acid Slime",
+      "stats": {
+        "maxHp": 9,
+        "atk": 15,
+        "def": 16,
+        "spd": 8,
+        "maxMp": 7,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "adult_dragon",
+      "name": "Adult Dragon",
+      "stats": {
+        "maxHp": 528,
+        "atk": 121,
+        "def": 77,
+        "spd": 17,
+        "maxMp": 81,
+        "mpRegen": 5
+      }
+    },
+    {
+      "id": "ancient_giant",
+      "name": "Ancient Giant",
+      "stats": {
+        "maxHp": 404,
+        "atk": 102,
+        "def": 62,
+        "spd": 12,
+        "maxMp": 21,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "archlich",
+      "name": "Archlich",
+      "stats": {
+        "maxHp": 215,
+        "atk": 41,
+        "def": 30,
+        "spd": 13,
+        "maxMp": 130,
+        "mpRegen": 7
+      }
+    },
+    {
+      "id": "cave_troll",
+      "name": "Cave Troll",
+      "stats": {
+        "maxHp": 98,
+        "atk": 39,
+        "def": 24,
+        "spd": 10,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "construct_artillery",
+      "name": "Artillery Magitech",
+      "stats": {
+        "maxHp": 171,
+        "atk": 57,
+        "def": 32,
+        "spd": 9,
+        "maxMp": 70,
+        "mpRegen": 5
+      }
+    },
+    {
+      "id": "construct_core",
+      "name": "Core Magitech",
+      "stats": {
+        "maxHp": 257,
+        "atk": 71,
+        "def": 51,
+        "spd": 12,
+        "maxMp": 98,
+        "mpRegen": 7
+      }
+    },
+    {
+      "id": "construct_proto",
+      "name": "Prototype Magitech",
+      "stats": {
+        "maxHp": 162,
+        "atk": 47,
+        "def": 32,
+        "spd": 9,
+        "maxMp": 50,
+        "mpRegen": 4
+      }
+    },
+    {
+      "id": "construct_shield",
+      "name": "Shield Magitech",
+      "stats": {
+        "maxHp": 216,
+        "atk": 49,
+        "def": 49,
+        "spd": 8,
+        "maxMp": 56,
+        "mpRegen": 4
+      }
+    },
+    {
+      "id": "construct_warp",
+      "name": "Warp Magitech",
+      "stats": {
+        "maxHp": 228,
+        "atk": 63,
+        "def": 46,
+        "spd": 11,
+        "maxMp": 87,
+        "mpRegen": 6
+      }
+    },
+    {
+      "id": "demon_knight",
+      "name": "Demon Knight",
+      "stats": {
+        "maxHp": 316,
+        "atk": 84,
+        "def": 48,
+        "spd": 17,
+        "maxMp": 55,
+        "mpRegen": 3
+      }
+    },
+    {
+      "id": "demon_mage",
+      "name": "Demon Mage",
+      "stats": {
+        "maxHp": 187,
+        "atk": 46,
+        "def": 28,
+        "spd": 15,
+        "maxMp": 70,
+        "mpRegen": 4
+      }
+    },
+    {
+      "id": "demon_soldier",
+      "name": "Demon Soldier",
+      "stats": {
+        "maxHp": 242,
+        "atk": 70,
+        "def": 39,
+        "spd": 14,
+        "maxMp": 43,
+        "mpRegen": 3
+      }
+    },
+    {
+      "id": "demon_warlord",
+      "name": "Demon Warlord",
+      "stats": {
+        "maxHp": 446,
+        "atk": 114,
+        "def": 63,
+        "spd": 24,
+        "maxMp": 72,
+        "mpRegen": 5
+      }
+    },
+    {
+      "id": "dragon_whelp",
+      "name": "Dragon Whelp",
+      "stats": {
+        "maxHp": 306,
+        "atk": 76,
+        "def": 50,
+        "spd": 13,
+        "maxMp": 63,
+        "mpRegen": 4
+      }
+    },
+    {
+      "id": "elder_dragon",
+      "name": "Elder Dragon",
+      "stats": {
+        "maxHp": 597,
+        "atk": 137,
+        "def": 87,
+        "spd": 19,
+        "maxMp": 91,
+        "mpRegen": 5
+      }
+    },
+    {
+      "id": "feral_rat",
+      "name": "Feral Rat",
+      "stats": {
+        "maxHp": 12,
+        "atk": 18,
+        "def": 5,
+        "spd": 15,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "giant_rat",
+      "name": "Giant Rat",
+      "stats": {
+        "maxHp": 10,
+        "atk": 14,
+        "def": 6,
+        "spd": 14,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
       "id": "goblin",
       "name": "Goblin",
       "stats": {
@@ -10,6 +238,558 @@
         "spd": 14,
         "maxMp": 10,
         "mpRegen": 1
+      }
+    },
+    {
+      "id": "goblin_archer",
+      "name": "Goblin Archer",
+      "stats": {
+        "maxHp": 15,
+        "atk": 19,
+        "def": 7,
+        "spd": 16,
+        "maxMp": 7,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "goblin_mage",
+      "name": "Goblin Mage",
+      "stats": {
+        "maxHp": 14,
+        "atk": 14,
+        "def": 6,
+        "spd": 14,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "goblin_scout",
+      "name": "Goblin Scout",
+      "stats": {
+        "maxHp": 14,
+        "atk": 16,
+        "def": 6,
+        "spd": 18,
+        "maxMp": 6,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "goblin_shaman",
+      "name": "Goblin Shaman",
+      "stats": {
+        "maxHp": 17,
+        "atk": 18,
+        "def": 9,
+        "spd": 15,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "goblin_warrior",
+      "name": "Goblin Warrior",
+      "stats": {
+        "maxHp": 18,
+        "atk": 21,
+        "def": 9,
+        "spd": 13,
+        "maxMp": 7,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "greater_demon",
+      "name": "Greater Demon",
+      "stats": {
+        "maxHp": 386,
+        "atk": 99,
+        "def": 55,
+        "spd": 20,
+        "maxMp": 62,
+        "mpRegen": 4
+      }
+    },
+    {
+      "id": "hill_giant",
+      "name": "Hill Giant",
+      "stats": {
+        "maxHp": 230,
+        "atk": 63,
+        "def": 40,
+        "spd": 9,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "hobgoblin",
+      "name": "Hobgoblin",
+      "stats": {
+        "maxHp": 20,
+        "atk": 24,
+        "def": 10,
+        "spd": 15,
+        "maxMp": 8,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "iron_gargoyle",
+      "name": "Iron Gargoyle",
+      "stats": {
+        "maxHp": 124,
+        "atk": 44,
+        "def": 43,
+        "spd": 11,
+        "maxMp": 17,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "kobold_captain",
+      "name": "Kobold Captain",
+      "stats": {
+        "maxHp": 21,
+        "atk": 22,
+        "def": 10,
+        "spd": 15,
+        "maxMp": 8,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "kobold_mage",
+      "name": "Kobold Mage",
+      "stats": {
+        "maxHp": 13,
+        "atk": 13,
+        "def": 6,
+        "spd": 15,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "kobold_scout",
+      "name": "Kobold Scout",
+      "stats": {
+        "maxHp": 14,
+        "atk": 15,
+        "def": 6,
+        "spd": 19,
+        "maxMp": 6,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "kobold_spearman",
+      "name": "Kobold Spearman",
+      "stats": {
+        "maxHp": 17,
+        "atk": 20,
+        "def": 8,
+        "spd": 14,
+        "maxMp": 7,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "kobold_trapper",
+      "name": "Kobold Trapper",
+      "stats": {
+        "maxHp": 14,
+        "atk": 14,
+        "def": 7,
+        "spd": 15,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lesser_demon",
+      "name": "Lesser Demon",
+      "stats": {
+        "maxHp": 198,
+        "atk": 55,
+        "def": 32,
+        "spd": 14,
+        "maxMp": 43,
+        "mpRegen": 3
+      }
+    },
+    {
+      "id": "lesser_lich",
+      "name": "Lesser Lich",
+      "stats": {
+        "maxHp": 130,
+        "atk": 23,
+        "def": 17,
+        "spd": 11,
+        "maxMp": 110,
+        "mpRegen": 6
+      }
+    },
+    {
+      "id": "lich_lord",
+      "name": "Lich Lord",
+      "stats": {
+        "maxHp": 243,
+        "atk": 46,
+        "def": 34,
+        "spd": 15,
+        "maxMp": 147,
+        "mpRegen": 8
+      }
+    },
+    {
+      "id": "lich_mage",
+      "name": "Lich Mage",
+      "stats": {
+        "maxHp": 145,
+        "atk": 26,
+        "def": 19,
+        "spd": 12,
+        "maxMp": 122,
+        "mpRegen": 7
+      }
+    },
+    {
+      "id": "lizardman_champion",
+      "name": "Lizardman Champion",
+      "stats": {
+        "maxHp": 95,
+        "atk": 50,
+        "def": 28,
+        "spd": 18,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman_guard",
+      "name": "Lizardman Royal Guard",
+      "stats": {
+        "maxHp": 75,
+        "atk": 39,
+        "def": 27,
+        "spd": 13,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman_hunter",
+      "name": "Lizardman Hunter",
+      "stats": {
+        "maxHp": 51,
+        "atk": 33,
+        "def": 16,
+        "spd": 15,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman_shaman",
+      "name": "Lizardman Shaman",
+      "stats": {
+        "maxHp": 59,
+        "atk": 30,
+        "def": 20,
+        "spd": 14,
+        "maxMp": 18,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman_spearman",
+      "name": "Lizardman Spearman",
+      "stats": {
+        "maxHp": 68,
+        "atk": 41,
+        "def": 23,
+        "spd": 14,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman_warrior",
+      "name": "Lizardman Warrior",
+      "stats": {
+        "maxHp": 59,
+        "atk": 36,
+        "def": 20,
+        "spd": 12,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_axeman",
+      "name": "Minotaur Axeman",
+      "stats": {
+        "maxHp": 175,
+        "atk": 62,
+        "def": 39,
+        "spd": 13,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_berserker",
+      "name": "Minotaur Berserker",
+      "stats": {
+        "maxHp": 183,
+        "atk": 70,
+        "def": 32,
+        "spd": 14,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_champion",
+      "name": "Minotaur Champion",
+      "stats": {
+        "maxHp": 242,
+        "atk": 76,
+        "def": 48,
+        "spd": 16,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_guard",
+      "name": "Minotaur Guard",
+      "stats": {
+        "maxHp": 166,
+        "atk": 52,
+        "def": 40,
+        "spd": 10,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_priest",
+      "name": "Minotaur Priest",
+      "stats": {
+        "maxHp": 151,
+        "atk": 46,
+        "def": 34,
+        "spd": 13,
+        "maxMp": 17,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "minotaur_raider",
+      "name": "Minotaur Raider",
+      "stats": {
+        "maxHp": 152,
+        "atk": 54,
+        "def": 34,
+        "spd": 11,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "obsidian_gargoyle",
+      "name": "Obsidian Gargoyle",
+      "stats": {
+        "maxHp": 140,
+        "atk": 50,
+        "def": 49,
+        "spd": 12,
+        "maxMp": 19,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_berserker",
+      "name": "Orc Berserker",
+      "stats": {
+        "maxHp": 58,
+        "atk": 42,
+        "def": 17,
+        "spd": 14,
+        "maxMp": 9,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_blackguard",
+      "name": "Orc Blackguard",
+      "stats": {
+        "maxHp": 69,
+        "atk": 40,
+        "def": 27,
+        "spd": 13,
+        "maxMp": 12,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_hunter",
+      "name": "Orc Hunter",
+      "stats": {
+        "maxHp": 42,
+        "atk": 29,
+        "def": 14,
+        "spd": 14,
+        "maxMp": 9,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_mage",
+      "name": "Orc Mage",
+      "stats": {
+        "maxHp": 37,
+        "atk": 21,
+        "def": 13,
+        "spd": 12,
+        "maxMp": 15,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_shaman",
+      "name": "Orc Shaman",
+      "stats": {
+        "maxHp": 48,
+        "atk": 27,
+        "def": 17,
+        "spd": 13,
+        "maxMp": 15,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_veteran",
+      "name": "Orc Veteran",
+      "stats": {
+        "maxHp": 61,
+        "atk": 35,
+        "def": 24,
+        "spd": 12,
+        "maxMp": 10,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "orc_warrior",
+      "name": "Orc Warrior",
+      "stats": {
+        "maxHp": 48,
+        "atk": 32,
+        "def": 18,
+        "spd": 11,
+        "maxMp": 9,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "plague_rat",
+      "name": "Plague Rat",
+      "stats": {
+        "maxHp": 10,
+        "atk": 12,
+        "def": 6,
+        "spd": 13,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "poison_toad",
+      "name": "Poison Toad",
+      "stats": {
+        "maxHp": 118,
+        "atk": 21,
+        "def": 12,
+        "spd": 11,
+        "maxMp": 16,
+        "mpRegen": 2
+      }
+    },
+    {
+      "id": "rock_troll",
+      "name": "Rock Troll",
+      "stats": {
+        "maxHp": 135,
+        "atk": 49,
+        "def": 36,
+        "spd": 10,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "shadow_rat",
+      "name": "Shadow Rat",
+      "stats": {
+        "maxHp": 10,
+        "atk": 14,
+        "def": 6,
+        "spd": 20,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "skeleton_archer",
+      "name": "Skeleton Archer",
+      "stats": {
+        "maxHp": 21,
+        "atk": 21,
+        "def": 11,
+        "spd": 10,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "skeleton_knight",
+      "name": "Skeleton Knight",
+      "stats": {
+        "maxHp": 30,
+        "atk": 25,
+        "def": 18,
+        "spd": 9,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "skeleton_mage",
+      "name": "Skeleton Mage",
+      "stats": {
+        "maxHp": 22,
+        "atk": 17,
+        "def": 11,
+        "spd": 10,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "skeleton_soldier",
+      "name": "Skeleton Soldier",
+      "stats": {
+        "maxHp": 24,
+        "atk": 23,
+        "def": 13,
+        "spd": 9,
+        "maxMp": 0,
+        "mpRegen": 0
       }
     },
     {
@@ -25,15 +805,75 @@
       }
     },
     {
-      "id": "poison_toad",
-      "name": "Poison Toad",
+      "id": "stone_gargoyle",
+      "name": "Stone Gargoyle",
       "stats": {
-        "maxHp": 118,
-        "atk": 21,
-        "def": 12,
+        "maxHp": 108,
+        "atk": 39,
+        "def": 38,
+        "spd": 9,
+        "maxMp": 14,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "stone_giant",
+      "name": "Stone Giant",
+      "stats": {
+        "maxHp": 317,
+        "atk": 80,
+        "def": 60,
+        "spd": 9,
+        "maxMp": 17,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "toxic_slime",
+      "name": "Toxic Mire Slime",
+      "stats": {
+        "maxHp": 9,
+        "atk": 12,
+        "def": 14,
+        "spd": 8,
+        "maxMp": 9,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "war_giant",
+      "name": "War Giant",
+      "stats": {
+        "maxHp": 291,
+        "atk": 83,
+        "def": 51,
+        "spd": 10,
+        "maxMp": 17,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "war_troll",
+      "name": "War Troll",
+      "stats": {
+        "maxHp": 124,
+        "atk": 52,
+        "def": 30,
         "spd": 11,
-        "maxMp": 16,
-        "mpRegen": 2
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "young_dragon",
+      "name": "Young Dragon",
+      "stats": {
+        "maxHp": 340,
+        "atk": 84,
+        "def": 56,
+        "spd": 14,
+        "maxMp": 70,
+        "mpRegen": 4
       }
     }
   ]

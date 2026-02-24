@@ -129,6 +129,7 @@
   "dungeon.selectParty": "SELECT PARTY",
   "dungeon.selectDungeon": "SELECT DUNGEON",
   "dungeon.selectFloor": "SELECT FLOOR",
+  "dungeon.name.hakusla_dungeon_1_200": "Hakusla Trial Dungeon 1-200F",
   "dungeon.name.crestoria_dungeon_1_4": "Crestoria Dungeon 1-4F",
   "dungeon.name.crestoria_dungeon_5_9": "Crestoria Dungeon 5-9F",
   "dungeon.progress": "Progress: Floor {floor} / {max}",

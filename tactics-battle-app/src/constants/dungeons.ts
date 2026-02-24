@@ -7,6 +7,12 @@ export type DungeonOption = {
 
 export const DUNGEONS: DungeonOption[] = [
   {
+    id: "hakusla_dungeon_1_200",
+    floorLabel: "1-200F",
+    minFloor: 1,
+    floors: 200,
+  },
+  {
     id: "crestoria_dungeon_1_4",
     floorLabel: "1-4F",
     minFloor: 1,

@@ -22,6 +22,7 @@ const colors = {
 } as const;
 
 const DUNGEON_NAME_I18N_KEY = {
+  hakusla_dungeon_1_200: "dungeon.name.hakusla_dungeon_1_200",
   crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
   crestoria_dungeon_5_9: "dungeon.name.crestoria_dungeon_5_9",
 } as const;
