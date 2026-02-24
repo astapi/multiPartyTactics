@@ -4,8 +4,9 @@ export * from "./guardian";
 export * from "./cleric";
 export * from "./blade";
 export * from "./arcane";
-export * from "./boss";
+export * from "./thief";
 export * from "./classes";
+export * from "./labels";
 
 import { Skill } from "./types";
 

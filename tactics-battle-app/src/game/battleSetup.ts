@@ -1,10 +1,11 @@
 import {
   ARCANE_SKILLS,
-  BLADE_SKILLS,
+  BERSERKER_SKILLS,
   CLERIC_SKILLS,
   GUARDIAN_SKILLS,
   Skill,
-  VENOM_TYRANT,
+  SWORDMAN_SKILLS,
+  THIEF_SKILLS,
 } from "@/game/skills";
 import { generateId } from "@/utils/id";
 
@@ -15,10 +16,11 @@ const buildSkillMap = (skills: Skill[]): Map<string, Skill> => {
 };
 
 const ALL_SKILLS = [
-  ...VENOM_TYRANT.skills,
   ...GUARDIAN_SKILLS,
   ...CLERIC_SKILLS,
-  ...BLADE_SKILLS,
+  ...SWORDMAN_SKILLS,
+  ...BERSERKER_SKILLS,
+  ...THIEF_SKILLS,
   ...ARCANE_SKILLS,
 ];
 

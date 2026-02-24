@@ -1,26 +1,32 @@
 import { FlashList } from "@shopify/flash-list";
 import { StyleSheet, Text, View } from "react-native";
+import { formatBattleLogMessage } from "@/game/battleLog";
+import { useI18n } from "@/i18n";
 import { BattleLogRecord } from "@/types/models";
 
 type Props = {
   logs: BattleLogRecord[];
 };
 
-export const BattleLogList = ({ logs }: Props) => (
-  <View style={styles.container}>
-    <FlashList
-      data={logs}
-      estimatedItemSize={42}
-      keyExtractor={(item, index) => `${item.id ?? index}-${item.turn}`}
-      renderItem={({ item }) => (
-        <View style={styles.item}>
-          <Text style={styles.turn}>Turn {item.turn}</Text>
-          <Text style={styles.message}>{item.logMessage}</Text>
-        </View>
-      )}
-    />
-  </View>
-);
+export const BattleLogList = ({ logs }: Props) => {
+  const { t } = useI18n();
+
+  return (
+    <View style={styles.container}>
+      <FlashList
+        data={logs}
+        estimatedItemSize={42}
+        keyExtractor={(item, index) => `${item.id ?? index}-${item.turn}`}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Text style={styles.turn}>{t("battle.log.turn", { turn: item.turn })}</Text>
+            <Text style={styles.message}>{formatBattleLogMessage(item, t)}</Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

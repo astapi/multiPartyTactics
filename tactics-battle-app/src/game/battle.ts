@@ -32,7 +32,43 @@ export type DamageReductionEffect = {
   source: string;
 };
 
-export type Effect = StatEffect | DamageReductionEffect;
+export type OutgoingDamageMultiplierEffect = {
+  kind: "OUTGOING_DAMAGE_MULTIPLIER";
+  id: string;
+  multiplier: number;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type NextAttackMultiplierEffect = {
+  kind: "NEXT_ATTACK_MULTIPLIER";
+  id: string;
+  multiplier: number;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type TauntEffect = {
+  kind: "TAUNT";
+  id: string;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type CoverAllEffect = {
+  kind: "COVER_ALL";
+  id: string;
+  remainingTurns: number | null;
+  source: string;
+};
+
+export type Effect =
+  | StatEffect
+  | DamageReductionEffect
+  | OutgoingDamageMultiplierEffect
+  | NextAttackMultiplierEffect
+  | TauntEffect
+  | CoverAllEffect;
 
 export type Unit = {
   id: string;
@@ -156,6 +192,15 @@ export const getDamageTakenMultiplier = (unit: Unit): number => {
     .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
 };
 
+export const getOutgoingDamageMultiplier = (unit: Unit): number => {
+  return unit.effects
+    .filter(
+      (effect): effect is OutgoingDamageMultiplierEffect =>
+        effect.kind === "OUTGOING_DAMAGE_MULTIPLIER"
+    )
+    .reduce((multiplier, effect) => multiplier * effect.multiplier, 1);
+};
+
 export const applyEffect = (unit: Unit, effect: Effect): void => {
   const existing = unit.effects.find(
     (entry) =>
@@ -184,7 +229,25 @@ export const applyEffect = (unit: Unit, effect: Effect): void => {
   }
 
   if (existing.kind === "DAMAGE_REDUCTION" && effect.kind === "DAMAGE_REDUCTION") {
-    existing.multiplier = Math.min(existing.multiplier, effect.multiplier);
+    if (Math.abs(effect.multiplier - 1) >= Math.abs(existing.multiplier - 1)) {
+      existing.multiplier = effect.multiplier;
+    }
+  }
+
+  if (
+    existing.kind === "OUTGOING_DAMAGE_MULTIPLIER" &&
+    effect.kind === "OUTGOING_DAMAGE_MULTIPLIER"
+  ) {
+    if (Math.abs(effect.multiplier - 1) >= Math.abs(existing.multiplier - 1)) {
+      existing.multiplier = effect.multiplier;
+    }
+  }
+
+  if (
+    existing.kind === "NEXT_ATTACK_MULTIPLIER" &&
+    effect.kind === "NEXT_ATTACK_MULTIPLIER"
+  ) {
+    existing.multiplier = Math.max(existing.multiplier, effect.multiplier);
   }
 };
 

@@ -1,37 +1,79 @@
 import { Skill } from "./types";
 
-export const BLADE_SKILLS: Skill[] = [
+export const SWORDMAN_SKILLS: Skill[] = [
   {
-    id: "berserk",
-    name: "Berserk",
+    id: "focus",
+    name: "Focus",
     type: "buff",
     target: "SELF",
-    mpCost: 6,
-    cooldown: 5,
-    effects: [
-      { kind: "BUFF", id: "ATK_UP", stat: "atk", amount: 6, duration: 3 },
-      { kind: "DEBUFF", id: "DEF_DOWN", stat: "def", amount: -2, duration: 3 },
-    ],
+    mpCost: 5,
+    cooldown: 3,
+    effects: [{ kind: "NEXT_ATTACK_MULTIPLIER", id: "FOCUS_NEXT_ATTACK", multiplier: 2.5 }],
     tags: ["buff", "damage"],
   },
   {
-    id: "power_strike",
-    name: "Power Strike",
-    type: "attack",
-    target: "ENEMY",
-    mpCost: 5,
-    cooldown: 1,
-    multiplier: 1.4,
-    tags: ["damage"],
-  },
-  {
-    id: "execute",
-    name: "Execute",
+    id: "sword_dance",
+    name: "Sword Dance",
     type: "attack",
     target: "ENEMY",
     mpCost: 8,
-    cooldown: 4,
+    cooldown: 3,
+    hitCount: 4,
+    hitMultiplier: 0.5,
+    tags: ["damage", "multi_hit"],
+  },
+  {
+    id: "rift_slash",
+    name: "Rift Slash",
+    type: "attack",
+    target: "ENEMY",
+    mpCost: 6,
+    cooldown: 2,
+    multiplier: 1.0,
+    effects: [
+      { kind: "DAMAGE_REDUCTION", id: "RIFT_SLASH_DMG_TAKEN_UP", multiplier: 1.15, duration: 3 },
+    ],
+    tags: ["damage", "debuff"],
+  },
+];
+
+export const BERSERKER_SKILLS: Skill[] = [
+  {
+    id: "sweep",
+    name: "Sweep",
+    type: "attack",
+    target: "ENEMY",
+    area: "ENEMY_ROW",
+    mpCost: 6,
+    cooldown: 2,
+    multiplier: 1.0,
+    tags: ["damage", "aoe"],
+  },
+  {
+    id: "crushing_swing",
+    name: "Crushing Swing",
+    type: "attack",
+    target: "ENEMY",
+    mpCost: 8,
+    cooldown: 3,
     multiplier: 2.0,
-    tags: ["damage", "finisher"],
+    tags: ["damage", "burst"],
+  },
+  {
+    id: "pump_up",
+    name: "Pump Up",
+    type: "buff",
+    target: "SELF",
+    mpCost: 5,
+    cooldown: 4,
+    effects: [
+      {
+        kind: "OUTGOING_DAMAGE_MULTIPLIER",
+        id: "PUMP_UP_DAMAGE",
+        multiplier: 1.2,
+        duration: 3,
+      },
+    ],
+    tags: ["buff", "damage"],
   },
 ];

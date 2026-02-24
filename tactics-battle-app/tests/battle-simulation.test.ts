@@ -33,7 +33,7 @@ describe("game/battleSimulation", () => {
 
     expect(result.outcome).toBe("WIN");
     expect(result.logs.length).toBeGreaterThan(0);
-    expect(result.logs.some((log) => log.actionType === "Attack")).toBe(true);
+    expect(result.logs.some((log) => log.actionType === "basic_attack")).toBe(true);
     expect(result.finalEnemies[0].hp).toBe(0);
     expect(result.finalParty[0]).not.toBe(party[0]);
   });
@@ -144,7 +144,7 @@ describe("game/battleSimulation", () => {
       maxTurns: 1,
     });
 
-    expect(result.logs.some((log) => log.actionType === "Heal Self")).toBe(true);
+    expect(result.logs.some((log) => log.actionType === "heal_self")).toBe(true);
   });
 
   it("returns LOSE from enemy branch when party is wiped by poison before enemy acts", () => {
@@ -173,5 +173,150 @@ describe("game/battleSimulation", () => {
 
     expect(result.outcome).toBe("LOSE");
     expect(result.logs.some((log) => log.actionType === "POISON_TICK")).toBe(true);
+  });
+
+  it("redirects enemy single-target attacks with taunt", () => {
+    const guardian = makeUnit({
+      id: "g1",
+      name: "Guardian",
+      hp: 60,
+      mp: 10,
+      stats: { maxHp: 60, atk: 5, def: 4, spd: 20, maxMp: 10, mpRegen: 0 },
+    });
+    const rogue = makeUnit({
+      id: "r1",
+      name: "Rogue",
+      hp: 20,
+      stats: { maxHp: 20, atk: 4, def: 0, spd: 10, maxMp: 0, mpRegen: 0 },
+    });
+    const enemies = [
+      toEncounter("wolf", "Wolf", { maxHp: 30, atk: 12, def: 0, spd: 5, maxMp: 0, mpRegen: 0 }),
+    ];
+    const taunt = makeSkill({
+      id: "taunt",
+      name: "Taunt",
+      type: "utility",
+      target: "SELF",
+      mpCost: 0,
+      cooldown: 0,
+      effects: [{ kind: "TAUNT", id: "TAUNT", duration: 1 }],
+    });
+    const rules = [
+      makeRule({
+        id: "taunt-rule",
+        characterId: "g1",
+        skillId: "taunt",
+        conditionType: "ALWAYS",
+        targetType: "SELF",
+      }),
+    ];
+
+    const result = simulateBattle({
+      sessionId: "s7",
+      seed: 7,
+      party: [guardian, rogue],
+      enemies,
+      tacticsByCharacter: { g1: rules },
+      skillMap: new Map([[taunt.id, taunt]]),
+      maxTurns: 1,
+    });
+
+    const finalGuardian = result.finalParty.find((u) => u.id === "g1")!;
+    const finalRogue = result.finalParty.find((u) => u.id === "r1")!;
+    expect(finalGuardian.hp).toBeLessThan(guardian.hp);
+    expect(finalRogue.hp).toBe(rogue.hp);
+  });
+
+  it("applies all-enemy attacks to every enemy in battle simulation", () => {
+    const caster = makeUnit({
+      id: "w1",
+      name: "Witch",
+      mp: 20,
+      stats: { maxHp: 30, atk: 20, def: 1, spd: 20, maxMp: 20, mpRegen: 0 },
+    });
+    const enemies = [
+      toEncounter("s1", "Slime A", { maxHp: 30, atk: 1, def: 0, spd: 3, maxMp: 0, mpRegen: 0 }),
+      toEncounter("s2", "Slime B", { maxHp: 30, atk: 1, def: 0, spd: 2, maxMp: 0, mpRegen: 0 }),
+    ];
+    const lightning = makeSkill({
+      id: "lightning",
+      name: "Lightning",
+      type: "attack",
+      target: "ENEMY",
+      area: "ALL_ENEMIES",
+      mpCost: 0,
+      cooldown: 0,
+      multiplier: 1.3,
+    });
+    const rules = [
+      makeRule({
+        id: "lightning-rule",
+        characterId: "w1",
+        skillId: "lightning",
+        conditionType: "ALWAYS",
+        targetType: "ENEMY_FIRST",
+      }),
+    ];
+
+    const result = simulateBattle({
+      sessionId: "s8",
+      seed: 8,
+      party: [caster],
+      enemies,
+      tacticsByCharacter: { w1: rules },
+      skillMap: new Map([[lightning.id, lightning]]),
+      maxTurns: 1,
+    });
+
+    expect(result.finalEnemies.every((enemy) => enemy.hp < enemy.stats.maxHp)).toBe(true);
+    expect(result.logs.some((log) => log.actionType === "lightning" && log.targetName === null)).toBe(
+      true
+    );
+  });
+
+  it("makes front party slots more likely targets than back slots", () => {
+    const counts = new Map<string, number>();
+
+    for (let seed = 1; seed <= 240; seed += 1) {
+      const party = Array.from({ length: 6 }, (_, idx) =>
+        makeUnit({
+          id: `p${idx + 1}`,
+          name: `P${idx + 1}`,
+          hp: 100,
+          stats: { maxHp: 100, atk: 0, def: 0, spd: 1, maxMp: 0, mpRegen: 0 },
+          order: idx + 1,
+        })
+      );
+      const enemies = [
+        toEncounter("wolf", "Wolf", {
+          maxHp: 999,
+          atk: 1,
+          def: 0,
+          spd: 50,
+          maxMp: 0,
+          mpRegen: 0,
+        }),
+      ];
+
+      const result = simulateBattle({
+        sessionId: `weighted-${seed}`,
+        seed,
+        party,
+        enemies,
+        tacticsByCharacter: {},
+        skillMap: new Map(),
+        maxTurns: 1,
+      });
+
+      for (const unit of result.finalParty) {
+        if (unit.hp < 100) {
+          counts.set(unit.id, (counts.get(unit.id) ?? 0) + 1);
+        }
+      }
+    }
+
+    const front = counts.get("p1") ?? 0;
+    const back = counts.get("p6") ?? 0;
+    expect(front).toBeGreaterThan(back);
   });
 });

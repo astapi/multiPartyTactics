@@ -49,7 +49,8 @@ describe("misc testable logic", () => {
     vi.spyOn(Math, "random").mockReturnValue(0.123456789);
 
     expect(DEFAULT_SKILLS.length).toBeGreaterThan(0);
-    expect(DEFAULT_SKILLS.some((skill) => skill.id === "claw")).toBe(true);
+    expect(DEFAULT_SKILLS.some((skill) => skill.id === "claw")).toBe(false);
+    expect(DEFAULT_SKILLS.some((skill) => skill.id === "defend")).toBe(true);
     expect(generateId("test")).toBe("test-1700000000000-4fzzzx");
     expect(createBattleSessionId()).toBe("battle-1700000000000-4fzzzx");
   });

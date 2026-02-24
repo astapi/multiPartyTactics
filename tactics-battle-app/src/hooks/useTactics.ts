@@ -3,9 +3,13 @@ import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { TacticsRuleRecord } from "@/types/models";
 import { usePartyStore } from "@/stores/partyStore";
 
+const EMPTY_RULES: TacticsRuleRecord[] = [];
+
 export const useTactics = (characterId: string) => {
   const [loading, setLoading] = useState(true);
-  const rules = usePartyStore((state) => state.tacticsMap[characterId] ?? []);
+  const rules = usePartyStore((state) =>
+    characterId ? (state.tacticsMap[characterId] ?? EMPTY_RULES) : EMPTY_RULES
+  );
   const setTactics = usePartyStore((state) => state.setTactics);
 
   const reload = useCallback(async () => {

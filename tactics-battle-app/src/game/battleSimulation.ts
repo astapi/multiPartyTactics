@@ -74,6 +74,11 @@ const createEncounterUnits = (enemies: EncounterEnemy[]): Unit[] => {
 };
 
 const getAlive = (units: Unit[]): Unit[] => units.filter((unit) => unit.hp > 0);
+const isAreaSkill = (skill: Skill): boolean =>
+  skill.area === "ALLY_ALL" ||
+  skill.area === "ALL_ENEMIES" ||
+  skill.area === "ENEMY_ROW" ||
+  skill.area === "RANDOM_ENEMY";
 
 const getLowestHpPercent = (units: Unit[]): Unit =>
   units.reduce((lowest, unit) =>
@@ -81,6 +86,27 @@ const getLowestHpPercent = (units: Unit[]): Unit =>
       ? unit
       : lowest
   );
+
+const getEnemyTargetWeight = (unit: Unit): number => {
+  // Party units use `order = slotIndex + 1` (1..6). Front slots are easier to target.
+  const position = Math.max(1, Math.min(6, unit.order));
+  return 7 - position;
+};
+
+const pickWeightedPartyTarget = (units: Unit[], rng: () => number): Unit => {
+  const weights = units.map(getEnemyTargetWeight);
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  if (total <= 0) return units[0];
+
+  let roll = rng() * total;
+  for (let i = 0; i < units.length; i += 1) {
+    roll -= weights[i];
+    if (roll < 0) {
+      return units[i];
+    }
+  }
+  return units[units.length - 1];
+};
 
 const createBattleLog = (
   sessionId: string,
@@ -133,7 +159,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             actor.name,
             statusResult.poisonedDamage,
             0,
-            `${actor.name} took ${statusResult.poisonedDamage} poison damage`
+            "battle.log.poison_tick"
           )
         );
       }
@@ -149,7 +175,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             null,
             0,
             0,
-            `${actor.name} is stunned and cannot act`
+            "battle.log.skip_stun"
           )
         );
         continue;
@@ -174,32 +200,39 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
         if (!resolution.skill || !resolution.target) {
           // ルールがマッチしない場合は通常攻撃
           const target = getLowestHpPercent(aliveEnemies);
-          const result = executeSkill(actor, target, BASIC_ATTACK, rng);
+          const result = executeSkill(actor, target, BASIC_ATTACK, rng, {
+            allies: aliveParty,
+            opponents: aliveEnemies,
+          });
           logs.push(
             createBattleLog(
               params.sessionId,
               turn,
               actor.name,
-              BASIC_ATTACK.name,
-              target.name,
+              BASIC_ATTACK.id,
+              result.resolvedTargetIds.length > 1 ? null : target.name,
               result.damage,
               0,
-              `${actor.name} attacked ${target.name}`
+              "battle.log.basic_attack"
             )
           );
           continue;
         }
-        const result = executeSkill(actor, resolution.target, resolution.skill, rng);
+        const result = executeSkill(actor, resolution.target, resolution.skill, rng, {
+          allies: aliveParty,
+          opponents: aliveEnemies,
+        });
+        const isArea = isAreaSkill(resolution.skill) || result.resolvedTargetIds.length > 1;
         logs.push(
           createBattleLog(
             params.sessionId,
             turn,
             actor.name,
-            resolution.skill.name,
-            resolution.target.name,
+            resolution.skill.id,
+            isArea ? null : resolution.target.name,
             result.damage,
             result.healing,
-            `${actor.name} used ${resolution.skill.name} on ${resolution.target.name}`
+            isArea ? "battle.log.skill_use" : "battle.log.skill_use_target"
           )
         );
       } else {
@@ -207,18 +240,22 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
         if (aliveParty.length === 0) {
           return { outcome: "LOSE", turns: turn, logs, finalParty: party, finalEnemies: enemies };
         }
-        const target = getLowestHpPercent(aliveParty);
-        const result = executeSkill(actor, target, BASIC_ATTACK, rng);
+        const target = pickWeightedPartyTarget(aliveParty, rng);
+        const aliveEnemies = getAlive(enemies);
+        const result = executeSkill(actor, target, BASIC_ATTACK, rng, {
+          allies: aliveEnemies,
+          opponents: aliveParty,
+        });
         logs.push(
           createBattleLog(
             params.sessionId,
             turn,
             actor.name,
-            BASIC_ATTACK.name,
-            target.name,
+            BASIC_ATTACK.id,
+            result.resolvedTargetIds.length > 1 ? null : target.name,
             result.damage,
             0,
-            `${actor.name} attacked ${target.name}`
+            "battle.log.basic_attack"
           )
         );
       }

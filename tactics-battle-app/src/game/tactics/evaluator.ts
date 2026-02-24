@@ -16,13 +16,33 @@ const parseParams = (params: string | null): RuleParams => {
 const hpPercent = (unit: Unit): number =>
   unit.stats.maxHp > 0 ? unit.hp / unit.stats.maxHp : 0;
 
+const mpPercent = (unit: Unit): number =>
+  unit.stats.maxMp > 0 ? unit.mp / unit.stats.maxMp : 0;
+
 const pickLowestHp = (units: Unit[]): Unit | null => {
   if (units.length === 0) return null;
   return units.reduce((prev, cur) => (hpPercent(cur) < hpPercent(prev) ? cur : prev));
 };
 
+const pickLowestMp = (units: Unit[]): Unit | null => {
+  if (units.length === 0) return null;
+  return units.reduce((prev, cur) => (mpPercent(cur) < mpPercent(prev) ? cur : prev));
+};
+
+const pickByFormationPosition = (units: Unit[], position: number): Unit | null => {
+  if (units.length === 0) return null;
+  const sorted = [...units].sort((a, b) => a.order - b.order);
+  const index = Math.max(0, Math.floor(position) - 1);
+  return sorted[index] ?? null;
+};
+
 const hasStatus = (unit: Unit, status: StatusType): boolean =>
   unit.statusEffects.some((effect) => effect.type === status);
+
+type NestedCondition = {
+  type?: unknown;
+  params?: unknown;
+};
 
 const evaluateCondition = (
   actor: Unit,
@@ -41,12 +61,30 @@ const evaluateCondition = (
       const lowest = pickLowestHp(allies);
       return lowest ? hpPercent(lowest) < Number(params.threshold ?? 0) : false;
     }
+    case "ALLY_MP_BELOW": {
+      const lowest = pickLowestMp(allies);
+      return lowest ? mpPercent(lowest) < Number(params.threshold ?? 0) : false;
+    }
     case "ENEMY_HP_BELOW": {
       const target = pickLowestHp(enemies);
       return target ? hpPercent(target) < Number(params.threshold ?? 0) : false;
     }
     case "ANY_ALLY_HAS_STATUS":
       return allies.some((ally) => hasStatus(ally, String(params.status ?? "POISON") as StatusType));
+    case "ALL_OF": {
+      const raw = Array.isArray(params.conditions) ? (params.conditions as NestedCondition[]) : [];
+      if (raw.length === 0) return false;
+      return raw.every((entry) =>
+        evaluateCondition(
+          actor,
+          allies,
+          enemies,
+          turn,
+          String(entry.type ?? "") as ConditionType,
+          (entry.params ?? {}) as RuleParams
+        )
+      );
+    }
     case "ALWAYS":
       return true;
     default:
@@ -71,8 +109,12 @@ const selectTarget = (
       const candidates = allies.filter((ally) => hasStatus(ally, status));
       return pickLowestHp(candidates);
     }
+    case "ALLY_POSITION":
+      return pickByFormationPosition(allies, Number(params.position ?? 1));
     case "ENEMY_FIRST":
       return enemies[0] ?? null;
+    case "ENEMY_POSITION":
+      return pickByFormationPosition(enemies, Number(params.position ?? 1));
     case "ENEMY_LOWEST_HP":
       return pickLowestHp(enemies);
     default:
