@@ -3,7 +3,7 @@ import { Stack, useRouter } from "expo-router";
 import { ArrowLeft, Coins, Shield, Sword } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useI18n } from "@/i18n";
+import { TranslationKey, useI18n } from "@/i18n";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -15,17 +15,18 @@ const colors = {
 } as const;
 
 type ShopTab = "weapons" | "armor" | "accessories";
+type ShopItem = { nameKey: TranslationKey; statKey: TranslationKey; price: number };
 
 export default function EquipmentShopScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const [tab, setTab] = useState<ShopTab>("weapons");
 
-  const items = [
-    { name: "Silver Blade", stat: "+24 ATK", price: 3200 },
-    { name: "Knight Guard", stat: "+18 DEF", price: 2600 },
-    { name: "Rune Dagger", stat: "+12 SPD", price: 1900 },
-    { name: "War Axe", stat: "+28 ATK", price: 3900 },
+  const items: ShopItem[] = [
+    { nameKey: "shop.equip.item.silverBlade.name", statKey: "shop.equip.item.silverBlade.stat", price: 3200 },
+    { nameKey: "shop.equip.item.knightGuard.name", statKey: "shop.equip.item.knightGuard.stat", price: 2600 },
+    { nameKey: "shop.equip.item.runeDagger.name", statKey: "shop.equip.item.runeDagger.stat", price: 1900 },
+    { nameKey: "shop.equip.item.warAxe.name", statKey: "shop.equip.item.warAxe.stat", price: 3900 },
   ];
 
   return (
@@ -49,14 +50,14 @@ export default function EquipmentShopScreen() {
         <Pressable style={styles.tabItem} onPress={() => setTab("accessories")}><Text style={[styles.tabText, tab === "accessories" ? styles.tabTextActive : null]}>{t("shop.equip.tab.accessories")}</Text><View style={[styles.tabBorder, tab === "accessories" ? styles.tabBorderActive : null]} /></Pressable>
       </View>
 
-      <View style={styles.goldBar}><View style={styles.goldPill}><Coins size={14} stroke={colors.textSecondary} /><Text style={styles.goldText}>12,450 G</Text></View></View>
+      <View style={styles.goldBar}><View style={styles.goldPill}><Coins size={14} stroke={colors.textSecondary} /><Text style={styles.goldText}>{t("shop.equip.gold", { amount: (12450).toLocaleString() })}</Text></View></View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {items.map((item) => (
-          <Pressable key={item.name} style={styles.itemCard}>
+          <Pressable key={item.nameKey} style={styles.itemCard}>
             <View style={styles.itemIcon}>{tab === "armor" ? <Shield size={18} stroke="#ffffff" /> : <Sword size={18} stroke="#ffffff" />}</View>
-            <View style={styles.itemTextWrap}><Text style={styles.itemName}>{item.name}</Text><Text style={styles.itemSub}>{item.stat}</Text></View>
-            <View style={styles.priceWrap}><Text style={styles.price}>{`${item.price.toLocaleString()} G`}</Text><Text style={styles.buy}>{t("shop.equip.buy")}</Text></View>
+            <View style={styles.itemTextWrap}><Text style={styles.itemName}>{t(item.nameKey)}</Text><Text style={styles.itemSub}>{t(item.statKey)}</Text></View>
+            <View style={styles.priceWrap}><Text style={styles.price}>{t("shop.equip.gold", { amount: item.price.toLocaleString() })}</Text><Text style={styles.buy}>{t("shop.equip.buy")}</Text></View>
           </Pressable>
         ))}
         <View style={styles.sellSection}><Pressable style={styles.sellBtn}><Text style={styles.sellText}>{t("shop.equip.sell")}</Text></Pressable></View>

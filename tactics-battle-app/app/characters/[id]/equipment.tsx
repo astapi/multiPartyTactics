@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Shield, Sword } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useI18n } from "@/i18n";
+import { TranslationKey, useI18n } from "@/i18n";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -16,18 +16,46 @@ const colors = {
 
 type EquipTab = "weapon" | "armor" | "accessory";
 
+const INVENTORY_ITEM_KEYS: Record<EquipTab, TranslationKey[]> = {
+  weapon: [
+    "equip.item.weapon.ironSword",
+    "equip.item.weapon.steelSword",
+    "equip.item.weapon.moonBlade",
+    "equip.item.weapon.guardianSpear",
+  ],
+  armor: [
+    "equip.item.armor.knightPlate",
+    "equip.item.armor.chainMail",
+    "equip.item.armor.mageRobe",
+    "equip.item.armor.shadowCloak",
+  ],
+  accessory: [
+    "equip.item.accessory.rubyRing",
+    "equip.item.accessory.wolfFang",
+    "equip.item.accessory.luckyCharm",
+    "equip.item.accessory.ancientCoin",
+  ],
+};
+
+const CURRENT_EQUIP_NAME_KEY: Record<EquipTab, TranslationKey> = {
+  weapon: "equip.item.weapon.steelSword",
+  armor: "equip.item.armor.knightPlate",
+  accessory: "equip.item.accessory.rubyRing",
+};
+
+const CURRENT_EQUIP_STAT_KEY: Record<EquipTab, TranslationKey> = {
+  weapon: "equip.current.stat.weapon",
+  armor: "equip.current.stat.armor",
+  accessory: "equip.current.stat.accessory",
+};
+
 export default function EquipmentChangeScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useI18n();
   const [tab, setTab] = useState<EquipTab>("weapon");
 
-  const inventory =
-    tab === "weapon"
-      ? ["Iron Sword", "Steel Sword", "Moon Blade", "Guardian Spear"]
-      : tab === "armor"
-      ? ["Knight Plate", "Chain Mail", "Mage Robe", "Shadow Cloak"]
-      : ["Ruby Ring", "Wolf Fang", "Lucky Charm", "Ancient Coin"];
+  const inventory = INVENTORY_ITEM_KEYS[tab];
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -61,11 +89,11 @@ export default function EquipmentChangeScreen() {
         <View style={styles.currentCard}>
           <View style={styles.currentIcon}>{tab === "weapon" ? <Sword size={18} stroke="#ffffff" /> : <Shield size={18} stroke="#ffffff" />}</View>
           <View style={styles.currentTextWrap}>
-            <Text style={styles.currentName}>{tab === "weapon" ? "Steel Sword" : tab === "armor" ? "Knight Plate" : "Ruby Ring"}</Text>
+            <Text style={styles.currentName}>{t(CURRENT_EQUIP_NAME_KEY[tab])}</Text>
             <Text style={styles.currentSub}>{t("equip.equipped")}</Text>
           </View>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{tab === "weapon" ? "+22 ATK" : tab === "armor" ? "+18 DEF" : "+12 HP"}</Text>
+            <Text style={styles.badgeText}>{t(CURRENT_EQUIP_STAT_KEY[tab])}</Text>
           </View>
         </View>
 
@@ -73,11 +101,11 @@ export default function EquipmentChangeScreen() {
 
         <Text style={styles.sectionLabel}>{t("equip.inventory")}</Text>
         <View style={styles.listWrap}>
-          {inventory.map((name) => (
-            <Pressable key={name} style={styles.itemCard}>
+          {inventory.map((nameKey) => (
+            <Pressable key={nameKey} style={styles.itemCard}>
               <View style={styles.itemIcon}>{tab === "weapon" ? <Sword size={16} stroke={colors.textSecondary} /> : <Shield size={16} stroke={colors.textSecondary} />}</View>
               <View style={styles.currentTextWrap}>
-                <Text style={styles.itemName}>{name}</Text>
+                <Text style={styles.itemName}>{t(nameKey)}</Text>
                 <Text style={styles.itemSub}>{t("equip.tap")}</Text>
               </View>
             </Pressable>
