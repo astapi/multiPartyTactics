@@ -5,7 +5,6 @@ import {
   Plus,
   User,
   UserPlus,
-  Users,
 } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -71,7 +70,7 @@ export default function GuildScreen() {
       ? `Lv.${minLevel}-${maxLevel} • ${assigned.length}/6`
       : `0/6`;
     return {
-      title: t("party.header.title"),
+      title: "パーティ1",
       sub,
       members,
     };
@@ -139,21 +138,17 @@ export default function GuildScreen() {
             </Pressable>
           </>
         ) : (
-          <>
+          <View style={styles.partyTabContent}>
             <Text style={styles.sectionLabel}>{t("guild.section.party")}</Text>
             <Pressable
               style={({ pressed }) => [styles.partyCard, pressed ? styles.listCardPressed : null]}
               onPress={() => router.push("/party")}
             >
               <View style={styles.partyTopRow}>
-                <View style={styles.partyLeftWrap}>
-                  <View style={styles.partyIconWrap}>
-                    <Users size={18} stroke={colors.textSecondary} />
-                  </View>
-                  <View>
-                    <Text style={styles.partyTitle}>{mainParty.title}</Text>
-                    <Text style={styles.partySub}>{mainParty.sub}</Text>
-                  </View>
+                <View style={styles.partyTitleWrap}>
+                  <Text style={styles.partyTitle} numberOfLines={1}>
+                    {mainParty.title}
+                  </Text>
                 </View>
                 <ChevronRight size={18} stroke={colors.iconSecondary} />
               </View>
@@ -166,7 +161,7 @@ export default function GuildScreen() {
                         {empty ? (
                           <Plus size={12} stroke={colors.borderStrong} />
                         ) : (
-                          <Image source={getClassById(member.classId).image} style={styles.memberAvatarImage} />
+                          <Image source={getClassById(member.classId).image} style={styles.memberAvatarImage} resizeMode="contain" />
                         )}
                       </View>
                       <Text style={empty ? styles.memberLevelEmpty : styles.memberLevel}>
@@ -187,7 +182,7 @@ export default function GuildScreen() {
               <Plus size={18} stroke={colors.iconSecondary} />
               <Text style={styles.createButtonText}>{t("guild.party.create")}</Text>
             </Pressable>
-          </>
+          </View>
         )}
       </ScrollView>
 
@@ -275,38 +270,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   createButtonText: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
+  partyTabContent: { gap: 16 },
   partyCard: {
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.borderDefault,
     backgroundColor: colors.bgSurface,
     gap: 12,
-    padding: 16,
+    paddingTop: 14,
+    paddingRight: 12,
+    paddingBottom: 12,
+    paddingLeft: 12,
   },
   partyTopRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  partyLeftWrap: { alignItems: "center", flexDirection: "row", gap: 10 },
-  partyIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.bgElevated,
-  },
+  partyTitleWrap: { flex: 1, marginRight: 8 },
   partyTitle: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
-  partySub: { color: colors.textTertiary, fontSize: 10, fontWeight: "500" },
-  membersRow: { flexDirection: "row", gap: 6 },
-  memberItem: { flex: 1, alignItems: "center", gap: 2, paddingVertical: 6 },
+  membersRow: { flexDirection: "row", gap: 4 },
+  memberItem: { flex: 1, minWidth: 0, alignItems: "center", gap: 2, paddingVertical: 4 },
   memberAvatar: {
-    width: 32,
-    height: 32,
+    width: 54,
+    height: 54,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.bgElevated,
+    backgroundColor: "transparent",
     overflow: "hidden",
   },
-  memberAvatarImage: { width: "100%", height: "100%" },
+  memberAvatarImage: { width: "122%", height: "122%" },
   memberAvatarEmpty: { backgroundColor: colors.bgPrimary, borderWidth: 1, borderColor: colors.borderStrong },
   memberLevel: { color: colors.textTertiary, fontSize: 8, fontWeight: "500" },
   memberLevelEmpty: { color: colors.textDisabled, fontSize: 8, fontWeight: "500", minHeight: 10 },
