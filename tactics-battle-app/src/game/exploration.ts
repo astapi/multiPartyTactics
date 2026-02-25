@@ -8,7 +8,17 @@ import { createSeededRng } from "@/utils/rng";
 
 const cfg = difficultyConfig.exploration;
 
-export type ExplorationEventType = "LOG" | "ENCOUNTER" | "TREASURE" | "TRAP";
+export type ExplorationEventType =
+  | "LOG"
+  | "ENCOUNTER"
+  | "TREASURE"
+  | "TRAP"
+  | "STAIRS_DISCOVERED"
+  | "STAIRS_REACHED"
+  | "SHORTCUT"
+  | "FLOOR_DESCEND"
+  | "FLOOR_COMPLETE"
+  | "BUNDLE_CLEAR";
 export type ExplorationMessageId =
   | "exploration.event.log.cautious_advance"
   | "exploration.event.log.advance_in_silence"
@@ -16,16 +26,27 @@ export type ExplorationMessageId =
   | "exploration.event.log.distant_noise"
   | "exploration.event.encounter.spotted_enemy"
   | "exploration.event.treasure.found_chest"
-  | "exploration.event.trap.triggered";
+  | "exploration.event.trap.triggered"
+  | "exploration.event.stairs.discovered"
+  | "exploration.event.stairs.reached"
+  | "exploration.event.shortcut.used"
+  | "exploration.event.floor.descend"
+  | "exploration.event.floor.complete"
+  | "exploration.event.bundle.clear";
 
 export type ExplorationEvent = {
   tick: number;
   type: ExplorationEventType;
   messageId: ExplorationMessageId;
+  floor?: number;
   payload?: {
     reward?: EquipmentReward;
     damage?: number;
     debuffType?: string;
+    fromFloor?: number;
+    toFloor?: number;
+    explorationPercent?: number;
+    stepCost?: number;
   };
 };
 
@@ -44,6 +65,20 @@ export type ExplorationParams = {
   seed: number;
 };
 
+export type ExplorationEventRollParams = {
+  party: Unit[];
+  dungeon: DungeonOption;
+  floor: number;
+  seed: number;
+  tick: number;
+  rng: () => number;
+};
+
+export type ExplorationEventRollResult = {
+  event: ExplorationEvent;
+  encounter?: EncounterResult;
+};
+
 const clamp = (value: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, value));
 
@@ -56,18 +91,13 @@ const LOG_MESSAGE_IDS: ExplorationMessageId[] = [
 
 const TRAP_DEBUFFS = ["POISON", "SLOW", "WEAKEN"] as const;
 
-export const generateExplorationResult = (
-  params: ExplorationParams
-): ExplorationResult => {
-  const rng = createSeededRng(params.seed);
-  const events: ExplorationEvent[] = [];
-  const floor = Math.max(1, params.floor);
-  const dungeonDepthFactor = clamp(params.dungeon.floors / 10, 0.8, 2);
-  const partySize = params.party.length;
+const buildEncounterChanceContext = (party: Unit[], dungeon: DungeonOption, floor: number) => {
+  const safeFloor = Math.max(1, floor);
+  const dungeonDepthFactor = clamp(dungeon.floors / 10, 0.8, 2);
+  const partySize = party.length;
   const avgPower =
     partySize > 0
-      ? params.party.reduce((sum, unit) => sum + unit.stats.atk + unit.stats.def + unit.stats.spd, 0) /
-        partySize
+      ? party.reduce((sum, unit) => sum + unit.stats.atk + unit.stats.def + unit.stats.spd, 0) / partySize
       : 0;
 
   const partyPenalty = (6 - Math.min(6, partySize)) * cfg.partyPenaltyPerMissing;
@@ -77,80 +107,122 @@ export const generateExplorationResult = (
     cfg.powerFactorMax
   );
   const baseEncounter = clamp(
-    (cfg.baseEncounterChance + floor * cfg.floorEncounterMultiplier * dungeonDepthFactor + partyPenalty) * powerFactor,
+    (cfg.baseEncounterChance + safeFloor * cfg.floorEncounterMultiplier * dungeonDepthFactor + partyPenalty) *
+      powerFactor,
     cfg.encounterChanceMin,
     cfg.encounterChanceMax
   );
   const treasureChance = clamp(
-    cfg.treasureChanceBase - floor * cfg.treasureChanceFloorReduction,
+    cfg.treasureChanceBase - safeFloor * cfg.treasureChanceFloorReduction,
     cfg.treasureChanceMin,
     cfg.treasureChanceMax
   );
   const trapChance = clamp(
-    cfg.trapChanceBase + floor * cfg.trapChanceFloorIncrease,
+    cfg.trapChanceBase + safeFloor * cfg.trapChanceFloorIncrease,
     cfg.trapChanceMin,
     cfg.trapChanceMax
   );
-  const maxTicks = cfg.maxTicks;
 
-  const encounterTicks: number[] = [];
-  const encounters: EncounterResult[] = [];
+  return { floor: safeFloor, baseEncounter, treasureChance, trapChance };
+};
 
-  for (let tick = 1; tick <= maxTicks; tick += 1) {
-    const ramp = Math.min(cfg.encounterRampMax, tick * cfg.encounterRampPerTick);
-    const encounterChance = clamp(baseEncounter + ramp, cfg.encounterChanceMin, cfg.finalEncounterMax);
+export const rollExplorationEvent = (
+  params: ExplorationEventRollParams
+): ExplorationEventRollResult => {
+  const { floor, baseEncounter, treasureChance, trapChance } = buildEncounterChanceContext(
+    params.party,
+    params.dungeon,
+    params.floor
+  );
+  const ramp = Math.min(cfg.encounterRampMax, params.tick * cfg.encounterRampPerTick);
+  const encounterChance = clamp(baseEncounter + ramp, cfg.encounterChanceMin, cfg.finalEncounterMax);
 
-    if (rng() < encounterChance) {
-      encounterTicks.push(tick);
-      const enc = generateEncounter({
-        dungeonId: params.dungeon.id,
+  if (params.rng() < encounterChance) {
+    const encounter = generateEncounter({
+      dungeonId: params.dungeon.id,
+      floor,
+      seed: (params.seed + params.tick * 1009) >>> 0,
+    });
+    return {
+      event: {
+        tick: params.tick,
         floor,
-        seed: (params.seed + tick * 1009) >>> 0,
-      });
-      encounters.push(enc);
-      events.push({
-        tick,
         type: "ENCOUNTER",
         messageId: "exploration.event.encounter.spotted_enemy",
-      });
-      continue;
-    }
+      },
+      encounter,
+    };
+  }
 
-    if (rng() < treasureChance) {
-      const reward = rollTreasureChestEquipment({
-        dungeonId: params.dungeon.id,
+  if (params.rng() < treasureChance) {
+    const reward = rollTreasureChestEquipment({
+      dungeonId: params.dungeon.id,
+      floor,
+      explorationSeed: params.seed,
+      tick: params.tick,
+    });
+    return {
+      event: {
+        tick: params.tick,
         floor,
-        explorationSeed: params.seed,
-        tick,
-      });
-      events.push({
-        tick,
         type: "TREASURE",
         messageId: "exploration.event.treasure.found_chest",
         payload: { reward },
-      });
-      continue;
-    }
+      },
+    };
+  }
 
-    if (rng() < trapChance) {
-      const damage = Math.max(
-        1,
-        Math.floor(cfg.trapBaseDamage + floor * cfg.trapFloorDamageMultiplier + rng() * cfg.trapRandomDamageRange)
-      );
-      const debuffType = TRAP_DEBUFFS[Math.floor(rng() * TRAP_DEBUFFS.length)];
-      events.push({
-        tick,
+  if (params.rng() < trapChance) {
+    const damage = Math.max(
+      1,
+      Math.floor(cfg.trapBaseDamage + floor * cfg.trapFloorDamageMultiplier + params.rng() * cfg.trapRandomDamageRange)
+    );
+    const debuffType = TRAP_DEBUFFS[Math.floor(params.rng() * TRAP_DEBUFFS.length)];
+    return {
+      event: {
+        tick: params.tick,
+        floor,
         type: "TRAP",
         messageId: "exploration.event.trap.triggered",
         payload: { damage, debuffType },
-      });
-      continue;
-    }
-
-    const messageId = LOG_MESSAGE_IDS[Math.floor(rng() * LOG_MESSAGE_IDS.length)];
-    events.push({ tick, type: "LOG", messageId });
+      },
+    };
   }
 
-  const totalTicks = maxTicks;
+  const messageId = LOG_MESSAGE_IDS[Math.floor(params.rng() * LOG_MESSAGE_IDS.length)];
+  return {
+    event: {
+      tick: params.tick,
+      floor,
+      type: "LOG",
+      messageId,
+    },
+  };
+};
+
+export const generateExplorationResult = (params: ExplorationParams): ExplorationResult => {
+  const rng = createSeededRng(params.seed);
+  const events: ExplorationEvent[] = [];
+  const encounterTicks: number[] = [];
+  const encounters: EncounterResult[] = [];
+  const totalTicks = cfg.maxTicks;
+  const floor = Math.max(1, params.floor);
+
+  for (let tick = 1; tick <= totalTicks; tick += 1) {
+    const rolled = rollExplorationEvent({
+      party: params.party,
+      dungeon: params.dungeon,
+      floor,
+      seed: params.seed,
+      tick,
+      rng,
+    });
+    events.push(rolled.event);
+    if (rolled.encounter) {
+      encounterTicks.push(tick);
+      encounters.push(rolled.encounter);
+    }
+  }
+
   return { seed: params.seed, events, encounterTicks, encounters, totalTicks };
 };

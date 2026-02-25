@@ -5,6 +5,7 @@ import { MIGRATION_003 } from "./migrations/003_character_equipment";
 import { MIGRATION_004 } from "./migrations/004_hakusla_dungeon";
 import { MIGRATION_005 } from "./migrations/005_character_exp";
 import { MIGRATION_006 } from "./migrations/006_dungeon_party_ui_state";
+import { MIGRATION_007 } from "./migrations/007_dungeon_floor_exploration_progress";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -24,6 +25,7 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync(MIGRATION_003);
   await db.execAsync(MIGRATION_004);
   await db.execAsync(MIGRATION_006);
+  await db.execAsync(MIGRATION_007);
   const migrateCharacterExpColumn = async (): Promise<void> => {
     const characterColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(characters)");
     const characterColumnSet = new Set(characterColumns.map((column) => column.name));
