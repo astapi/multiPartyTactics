@@ -11,7 +11,7 @@ import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { Unit } from "@/game/battle";
 import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
-import { simulateBattle } from "@/game/battleSimulation";
+import { BattleOutcome, BattleReplayState, simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { toUnit } from "@/game/partyMapper";
@@ -66,6 +66,20 @@ const parseEncounter = (raw: string | undefined): EncounterResult | null => {
   }
 };
 
+const cloneReplayUnit = (unit: Unit): Unit => ({
+  ...unit,
+  stats: { ...unit.stats },
+  statusEffects: unit.statusEffects.map((status) => ({ ...status })),
+  effects: unit.effects.map((effect) => ({ ...effect })),
+  cooldowns: { ...unit.cooldowns },
+});
+
+const cloneReplayState = (state: BattleReplayState): BattleReplayState => ({
+  turn: state.turn,
+  party: state.party.map(cloneReplayUnit),
+  enemies: state.enemies.map(cloneReplayUnit),
+});
+
 const buildLevelUpStatDiffs = (
   previous: CharacterRecord,
   next: CharacterRecord
@@ -113,21 +127,26 @@ export default function BattleScreen() {
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
   const [partyUiMetaById, setPartyUiMetaById] = useState<Record<string, { level: number }>>({});
+  const [replayStates, setReplayStates] = useState<BattleReplayState[]>([]);
+  const [combatOutcomeRevealLogCount, setCombatOutcomeRevealLogCount] = useState<number | null>(null);
+  const [finalOutcome, setFinalOutcome] = useState<BattleOutcome | null>(null);
   const logScrollRef = useRef<ScrollView | null>(null);
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
-  const status = useBattleStore((s) => s.status);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
     DUNGEON_NAME_I18N_KEY[resolvedDungeonId as keyof typeof DUNGEON_NAME_I18N_KEY] ??
       "dungeon.name.crestoria_dungeon_1_4"
   );
+  const isOutcomeBadgeVisible =
+    phase === "RESULT" &&
+    finalOutcome !== null &&
+    combatOutcomeRevealLogCount !== null &&
+    revealedLogCount >= combatOutcomeRevealLogCount;
   const resultLabel =
-    phase === "RESULT" && (status === "WIN" || status === "LOSE" || status === "DRAW")
-      ? t(BATTLE_RESULT_I18N_KEY[status])
-      : null;
+    isOutcomeBadgeVisible && finalOutcome ? t(BATTLE_RESULT_I18N_KEY[finalOutcome]) : null;
 
   const skillMap = useMemo(() => createSkillMap(DEFAULT_SKILLS), []);
 
@@ -180,6 +199,9 @@ export default function BattleScreen() {
         setRevealedLogCount(0);
         setIsPaused(false);
         setBattleResultSummary(null);
+        setReplayStates([]);
+        setCombatOutcomeRevealLogCount(null);
+        setFinalOutcome(null);
         setPhase("ENCOUNTER");
       } catch (error) {
         console.error("Failed to load battle:", error);
@@ -222,6 +244,7 @@ export default function BattleScreen() {
       await battleRepository.updateSessionStatus(nextSessionId, result.outcome);
 
       let combinedLogs = result.logs;
+      let combinedReplayStates = result.replayStates;
       const nextResultSummary: BattleResultSummary = {
         expGained: 0,
         expRecipientCount: 0,
@@ -301,6 +324,19 @@ export default function BattleScreen() {
           });
         }
         combinedLogs = [...result.logs, ...lootLogRecords];
+        if (lootLogRecords.length > 0) {
+          const lastReplayState =
+            combinedReplayStates[combinedReplayStates.length - 1] ??
+            ({
+              turn: result.turns,
+              party: result.finalParty,
+              enemies: result.finalEnemies,
+            } satisfies BattleReplayState);
+          combinedReplayStates = [
+            ...combinedReplayStates,
+            ...lootLogRecords.map(() => cloneReplayState(lastReplayState)),
+          ];
+        }
       }
 
       setParty(result.finalParty);
@@ -308,6 +344,9 @@ export default function BattleScreen() {
       setSessionId(nextSessionId);
       setStatus(result.outcome);
       setLogs(combinedLogs);
+      setReplayStates(combinedReplayStates);
+      setCombatOutcomeRevealLogCount(result.outcomeRevealLogCount);
+      setFinalOutcome(result.outcome);
       setTurns(result.turns);
       setRevealedLogCount(0);
       setBattleResultSummary(nextResultSummary);
@@ -438,19 +477,25 @@ export default function BattleScreen() {
   }
 
   const visibleLogs = logs.slice(0, revealedLogCount);
+  const replayStateIndex =
+    replayStates.length > 0 ? Math.max(0, Math.min(revealedLogCount, replayStates.length - 1)) : null;
+  const activeReplayState = replayStateIndex !== null ? replayStates[replayStateIndex] : null;
+  const displayParty = activeReplayState?.party ?? party;
+  const displayEnemies = activeReplayState?.enemies ?? enemies;
+  const displayTurn = activeReplayState?.turn ?? turns;
   return renderBattleLayout({
     floor: resolvedFloor,
     title: dungeonTitle,
-    enemies: enemies.map((enemy) => ({
+    enemies: displayEnemies.map((enemy) => ({
       id: enemy.id,
       name: enemy.name,
       image: getEnemyImage(enemy.id),
       hp: enemy.hp,
       maxHp: enemy.stats.maxHp,
     })),
-    party,
+    party: displayParty,
     logs: visibleLogs,
-    turnText: `Turn ${turns}`,
+    turnText: displayTurn > 0 ? `Turn ${displayTurn}` : "Turn --",
     isPaused,
     onPausePress: () => setIsPaused((prev) => !prev),
   });
@@ -479,9 +524,9 @@ export default function BattleScreen() {
               <View
                 style={[
                   styles.resultBadge,
-                  status === "WIN" && styles.resultBadgeWin,
-                  status === "LOSE" && styles.resultBadgeLose,
-                  status === "DRAW" && styles.resultBadgeDraw,
+                  finalOutcome === "WIN" && styles.resultBadgeWin,
+                  finalOutcome === "LOSE" && styles.resultBadgeLose,
+                  finalOutcome === "DRAW" && styles.resultBadgeDraw,
                 ]}
               >
                 <Text style={styles.resultBadgeText}>{resultLabel}</Text>
