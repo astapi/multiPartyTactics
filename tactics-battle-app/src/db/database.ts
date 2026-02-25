@@ -3,6 +3,7 @@ import { MIGRATION_001 } from "./migrations/001_initial";
 import { MIGRATION_002 } from "./migrations/002_equipment_loot";
 import { MIGRATION_003 } from "./migrations/003_character_equipment";
 import { MIGRATION_004 } from "./migrations/004_hakusla_dungeon";
+import { MIGRATION_005 } from "./migrations/005_character_exp";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -21,6 +22,14 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync(MIGRATION_002);
   await db.execAsync(MIGRATION_003);
   await db.execAsync(MIGRATION_004);
+  const migrateCharacterExpColumn = async (): Promise<void> => {
+    const characterColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(characters)");
+    const characterColumnSet = new Set(characterColumns.map((column) => column.name));
+    if (characterColumnSet.has("exp")) {
+      return;
+    }
+    await db.execAsync(MIGRATION_005);
+  };
   const migrateBattleSessionStatusToDraw = async (): Promise<void> => {
     const schema = await db.getFirstAsync<{ sql: string }>(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'battle_sessions'"
@@ -95,6 +104,7 @@ export const initializeDatabase = async (): Promise<void> => {
   };
 
   try {
+    await migrateCharacterExpColumn();
     await migrateBattleSessionStatusToDraw();
     await migrateEquipmentInventoryStacksSchema();
 

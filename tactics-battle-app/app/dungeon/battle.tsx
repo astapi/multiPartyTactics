@@ -15,6 +15,7 @@ import { simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { toUnit } from "@/game/partyMapper";
+import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
 import { useI18n } from "@/i18n";
 import { TacticsRuleRecord } from "@/types/models";
 import { useBattleStore } from "@/stores/battleStore";
@@ -186,6 +187,27 @@ export default function BattleScreen() {
 
       let combinedLogs = result.logs;
       if (result.outcome === "WIN") {
+        const alivePartyIds = new Set(
+          result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
+        );
+        if (alivePartyIds.size > 0) {
+          const partyRecords = await charactersRepository.listPartyMembers();
+          const expGain = calculateBattleExp({
+            floor: resolvedFloor,
+            enemyCount: encounterData.enemies.length,
+          });
+          const leveledPartyUiMetaById: Record<string, { level: number }> = {
+            ...partyUiMetaById,
+          };
+          for (const record of partyRecords) {
+            if (!alivePartyIds.has(record.id)) continue;
+            const progression = applyExperienceToCharacter(record, expGain);
+            await charactersRepository.upsert(progression.character);
+            leveledPartyUiMetaById[record.id] = { level: progression.newLevel };
+          }
+          setPartyUiMetaById(leveledPartyUiMetaById);
+        }
+
         const dropResults = rollMonsterDrops({
           dungeonId: resolvedDungeonId,
           floor: resolvedFloor,

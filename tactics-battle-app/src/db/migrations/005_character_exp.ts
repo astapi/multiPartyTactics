@@ -1,0 +1,3 @@
+export const MIGRATION_005 = `
+ALTER TABLE characters ADD COLUMN exp INTEGER NOT NULL DEFAULT 0;
+`;

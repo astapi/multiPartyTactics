@@ -4,8 +4,8 @@ import { ArrowLeft, Coins, PenLine, UserPlus } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CLASS_MASTER, ClassInfo } from "@/constants/classes";
-import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { getBaseStatsForClassLevel } from "@/game/progression";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import { generateId } from "@/utils/id";
@@ -36,7 +36,7 @@ export default function HireScreen() {
     }
 
     try {
-      const base = BASE_STATS_BY_CLASS[selectedClass.id];
+      const base = getBaseStatsForClassLevel(selectedClass.id, 1);
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
@@ -44,6 +44,7 @@ export default function HireScreen() {
         name: trimmedName,
         classId: selectedClass.id,
         level: 1,
+        exp: 0,
         baseMaxHp: base.maxHp,
         baseAtk: base.atk,
         baseDef: base.def,

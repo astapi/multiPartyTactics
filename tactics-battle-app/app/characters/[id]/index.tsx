@@ -7,6 +7,12 @@ import { characterEquipmentRepository } from "@/db/repositories/characterEquipme
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { buildEquipmentDisplayName } from "@/game/loot/equipmentMasterService";
 import {
+  MAX_CHARACTER_LEVEL,
+  getExpIntoCurrentLevel,
+  getExpRequiredForNextLevel,
+  getExpToNextLevel,
+} from "@/game/progression";
+import {
   getConditionTypeLabel,
   getSkillIdDisplayName,
   getTargetTypeLabel,
@@ -79,6 +85,10 @@ export default function CharacterDetailScreen() {
     const name = buildEquipmentDisplayName(armor.baseItemId, armor.mutationPrefixId);
     return locale === "ja" ? name.jp : name.en;
   }, [equippedBySlot.armor, locale, unequippedLabel]);
+  const expIntoLevel = character ? getExpIntoCurrentLevel(character.exp, character.level) : 0;
+  const expNeededForLevel = character ? getExpRequiredForNextLevel(character.level) : 0;
+  const expToNextLevel = character ? getExpToNextLevel(character.exp, character.level) : 0;
+  const isLevelCapped = !!character && character.level >= MAX_CHARACTER_LEVEL;
 
   if (!character) {
     return (
@@ -128,6 +138,21 @@ export default function CharacterDetailScreen() {
             <View style={styles.statCard}>
               <Text style={styles.statLabel}>DEF</Text>
               <Text style={styles.statValue}>{character.baseDef}</Text>
+            </View>
+          </View>
+
+          <View style={styles.expCard}>
+            <View style={styles.expRow}>
+              <Text style={styles.expLabel}>{t("character.exp.progress")}</Text>
+              <Text style={styles.expValue}>
+                {isLevelCapped ? t("character.exp.max") : `${expIntoLevel} / ${expNeededForLevel}`}
+              </Text>
+            </View>
+            <View style={styles.expRow}>
+              <Text style={styles.expLabel}>{t("character.exp.nextLevel")}</Text>
+              <Text style={styles.expValue}>
+                {isLevelCapped ? t("character.exp.max") : String(expToNextLevel)}
+              </Text>
             </View>
           </View>
         </View>
@@ -223,6 +248,18 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, alignItems: "center", borderWidth: 1, borderColor: colors.borderDefault, borderRadius: 12, backgroundColor: colors.bgSurface, padding: 12, gap: 4 },
   statLabel: { color: colors.textSecondary, fontSize: 10, fontWeight: "500" },
   statValue: { color: colors.textPrimary, fontSize: 15, fontWeight: "700" },
+  expCard: {
+    width: "100%",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    borderRadius: 12,
+    backgroundColor: colors.bgSurface,
+    padding: 12,
+  },
+  expRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  expLabel: { color: colors.textSecondary, fontSize: 12, fontWeight: "500" },
+  expValue: { color: colors.textPrimary, fontSize: 13, fontWeight: "700" },
   section: { paddingHorizontal: 20, paddingTop: 12, gap: 8 },
   sectionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   sectionLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: "500", letterSpacing: 1 },
