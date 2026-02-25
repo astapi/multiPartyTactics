@@ -1,3 +1,5 @@
+import type { ConstellationId } from "@/constants/constellations";
+
 export type ClassId =
   | "GUARDIAN"
   | "SWORDMAN"
@@ -11,6 +13,7 @@ export type CharacterRecord = {
   slotIndex: number | null;
   name: string;
   classId: ClassId;
+  constellationId: ConstellationId;
   level: number;
   exp: number;
   baseMaxHp: number;

@@ -17,6 +17,7 @@ const makeCharacter = (overrides: Partial<CharacterRecord> = {}): CharacterRecor
   slotIndex: 0,
   name: "Test",
   classId: "SWORDMAN",
+  constellationId: "ARIES",
   level: 1,
   exp: 0,
   baseMaxHp: 100,
@@ -75,6 +76,17 @@ describe("game/progression", () => {
     expect(lv2.maxHp - lv1.maxHp).toBe(6);
     expect(lv2.def - lv1.def).toBe(1);
     expect(lv10).toEqual(getBaseStatsForClassLevel("GUARDIAN", 10));
+  });
+
+  it("applies constellation bonus only to level-up growth", () => {
+    const lv1Base = getBaseStatsForClassLevel("THIEF", 1, "ARIES");
+    const lv1Pegasus = getBaseStatsForClassLevel("THIEF", 1, "PEGASUS");
+    const lv20Base = getBaseStatsForClassLevel("THIEF", 20, "ARIES");
+    const lv20Pegasus = getBaseStatsForClassLevel("THIEF", 20, "PEGASUS");
+
+    expect(lv1Pegasus).toEqual(lv1Base);
+    expect(lv20Pegasus).not.toEqual(lv20Base);
+    expect(lv20Pegasus.spd).toBeGreaterThanOrEqual(lv20Base.spd);
   });
 
   it("applies EXP and levels up a character", () => {

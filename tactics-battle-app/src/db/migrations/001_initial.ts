@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS characters (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   class_id TEXT NOT NULL CHECK (class_id IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')),
+  constellation_id TEXT NOT NULL DEFAULT 'ARIES',
   level INTEGER DEFAULT 1,
   base_max_hp INTEGER,
   base_atk INTEGER,

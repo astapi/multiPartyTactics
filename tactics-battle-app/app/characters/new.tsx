@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { ClassSelectModal } from "@/components/party/ClassSelectModal";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { getRandomConstellationId } from "@/constants/constellations";
 import { getBaseStatsForClassLevel } from "@/game/progression";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
@@ -17,13 +18,15 @@ export default function NewCharacterScreen() {
 
   const onSave = async () => {
     try {
-      const base = getBaseStatsForClassLevel(classId, 1);
+      const constellationId = getRandomConstellationId();
+      const base = getBaseStatsForClassLevel(classId, 1, constellationId);
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
         slotIndex: null,
         name: name.trim() || "New Character",
         classId,
+        constellationId,
         level: 1,
         exp: 0,
         baseMaxHp: base.maxHp,

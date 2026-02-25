@@ -1,5 +1,9 @@
 import { getDb } from "@/db/database";
 import { isClassId } from "@/constants/classes";
+import {
+  DEFAULT_CONSTELLATION_ID,
+  isConstellationId,
+} from "@/constants/constellations";
 import { CharacterRecord, ClassId, PartyMemberRecord } from "@/types/models";
 
 export const DEFAULT_PARTY_ID = "party_default";
@@ -10,11 +14,15 @@ const mapCharacter = (row: any): CharacterRecord => {
     throw new Error(`Invalid class id found in DB: ${rawClassId}`);
   }
   const classId: ClassId = rawClassId;
+  const rawConstellationId = String(row.constellation_id ?? DEFAULT_CONSTELLATION_ID);
   return {
     id: row.id,
     slotIndex: row.slot_index ?? null,
     name: row.name,
     classId,
+    constellationId: isConstellationId(rawConstellationId)
+      ? rawConstellationId
+      : DEFAULT_CONSTELLATION_ID,
     level: row.level,
     exp: row.exp ?? 0,
     baseMaxHp: row.base_max_hp,
@@ -49,11 +57,12 @@ export const charactersRepository = {
     const db = await getDb();
     await db.runAsync(
       `INSERT INTO characters
-      (id, name, class_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, name, class_id, constellation_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         class_id = excluded.class_id,
+        constellation_id = excluded.constellation_id,
         level = excluded.level,
         exp = excluded.exp,
         base_max_hp = excluded.base_max_hp,
@@ -68,6 +77,7 @@ export const charactersRepository = {
         record.id,
         record.name,
         record.classId,
+        record.constellationId,
         record.level,
         record.exp,
         record.baseMaxHp,

@@ -4,6 +4,7 @@ import { ArrowLeft, Coins, PenLine, UserPlus } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CLASS_MASTER, ClassInfo } from "@/constants/classes";
+import { getRandomConstellationId } from "@/constants/constellations";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { getBaseStatsForClassLevel } from "@/game/progression";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
@@ -36,13 +37,15 @@ export default function HireScreen() {
     }
 
     try {
-      const base = getBaseStatsForClassLevel(selectedClass.id, 1);
+      const constellationId = getRandomConstellationId();
+      const base = getBaseStatsForClassLevel(selectedClass.id, 1, constellationId);
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
         slotIndex: null,
         name: trimmedName,
         classId: selectedClass.id,
+        constellationId,
         level: 1,
         exp: 0,
         baseMaxHp: base.maxHp,

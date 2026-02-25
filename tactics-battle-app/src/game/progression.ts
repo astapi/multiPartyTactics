@@ -1,4 +1,5 @@
 import type { CharacterRecord, ClassId } from "@/types/models";
+import { ConstellationId, getConstellationGrowthBonus } from "@/constants/constellations";
 
 export const MAX_CHARACTER_LEVEL = 999;
 
@@ -115,19 +116,24 @@ export const calculateBattleExp = ({
   return Math.max(1, base + (safeEnemyCount - 1) * 4);
 };
 
-export const getBaseStatsForClassLevel = (classId: ClassId, level: number): StatBlock => {
+export const getBaseStatsForClassLevel = (
+  classId: ClassId,
+  level: number,
+  constellationId?: ConstellationId
+): StatBlock => {
   const lv = clamp(safeInt(level), 1, MAX_CHARACTER_LEVEL);
   const levelOffset = lv - 1;
   const base = BASE_LEVEL_STATS_BY_CLASS[classId];
   const growth = GROWTH_RATE_BY_CLASS[classId];
+  const constellationBonus = getConstellationGrowthBonus(constellationId);
 
   return {
-    maxHp: base.maxHp + Math.floor(levelOffset * growth.maxHp),
-    atk: base.atk + Math.floor(levelOffset * growth.atk),
-    def: base.def + Math.floor(levelOffset * growth.def),
-    spd: base.spd + Math.floor(levelOffset * growth.spd),
-    maxMp: base.maxMp + Math.floor(levelOffset * growth.maxMp),
-    mpRegen: base.mpRegen + Math.floor(levelOffset * growth.mpRegen),
+    maxHp: base.maxHp + Math.floor(levelOffset * (growth.maxHp + constellationBonus.maxHp)),
+    atk: base.atk + Math.floor(levelOffset * (growth.atk + constellationBonus.atk)),
+    def: base.def + Math.floor(levelOffset * (growth.def + constellationBonus.def)),
+    spd: base.spd + Math.floor(levelOffset * (growth.spd + constellationBonus.spd)),
+    maxMp: base.maxMp + Math.floor(levelOffset * (growth.maxMp + constellationBonus.maxMp)),
+    mpRegen: base.mpRegen + Math.floor(levelOffset * (growth.mpRegen + constellationBonus.mpRegen)),
   };
 };
 
@@ -148,7 +154,7 @@ export const applyExperienceToCharacter = (
     getTotalExpForLevel(MAX_CHARACTER_LEVEL)
   );
   const newLevel = getLevelFromTotalExp(nextExp);
-  const nextStats = getBaseStatsForClassLevel(record.classId, newLevel);
+  const nextStats = getBaseStatsForClassLevel(record.classId, newLevel, record.constellationId);
 
   const nextCharacter: CharacterRecord = {
     ...record,

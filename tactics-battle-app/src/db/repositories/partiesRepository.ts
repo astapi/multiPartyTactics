@@ -1,5 +1,9 @@
 import { getDb } from "@/db/database";
 import { isClassId } from "@/constants/classes";
+import {
+  DEFAULT_CONSTELLATION_ID,
+  isConstellationId,
+} from "@/constants/constellations";
 import { ClassId, PartyMemberRecord, PartyRecord, PartyWithMembers } from "@/types/models";
 
 type PartyRow = {
@@ -14,6 +18,7 @@ type PartyMemberRow = {
   id: string;
   name: string;
   class_id: string;
+  constellation_id: string | null;
   level: number;
   exp: number;
   base_max_hp: number;
@@ -37,11 +42,15 @@ const mapPartyMember = (row: PartyMemberRow): PartyMemberRecord => {
     throw new Error(`Invalid class id found in DB: ${String(row.class_id ?? "")}`);
   }
   const classId = row.class_id as ClassId;
+  const rawConstellationId = String(row.constellation_id ?? DEFAULT_CONSTELLATION_ID);
   return {
     id: row.id,
     slotIndex: row.slot_index,
     name: row.name,
     classId,
+    constellationId: isConstellationId(rawConstellationId)
+      ? rawConstellationId
+      : DEFAULT_CONSTELLATION_ID,
     level: row.level,
     exp: row.exp ?? 0,
     baseMaxHp: row.base_max_hp,
@@ -75,6 +84,7 @@ export const partiesRepository = {
            c.id,
            c.name,
            c.class_id,
+           c.constellation_id,
            c.level,
            c.exp,
            c.base_max_hp,
