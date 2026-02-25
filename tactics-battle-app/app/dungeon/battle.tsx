@@ -4,7 +4,7 @@ import { Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, Sty
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Pause, Play } from "lucide-react-native";
 import { battleRepository } from "@/db/repositories/battleRepository";
-import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
@@ -104,11 +104,12 @@ const buildLevelUpStatDiffs = (
 export default function BattleScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const { dungeonId, floor, explorationSeed, encounter } = useLocalSearchParams<{
+  const { dungeonId, floor, explorationSeed, encounter, partyId } = useLocalSearchParams<{
     dungeonId?: string;
     floor?: string;
     explorationSeed?: string;
     encounter?: string;
+    partyId?: string;
   }>();
 
   const [phase, setPhase] = useState<BattlePhase>("LOADING");
@@ -158,13 +159,14 @@ export default function BattleScreen() {
       const parsedFloor = Math.max(1, Number.parseInt(floor ?? "1", 10) || 1);
       const parsedSeed = explorationSeed ? Number.parseInt(explorationSeed, 10) : Date.now();
       const nextDungeonId = dungeonId ?? "crestoria_dungeon_1_4";
+      const nextPartyId = partyId ?? DEFAULT_PARTY_ID;
       const parsedEncounter = parseEncounter(encounter);
       setResolvedDungeonId(nextDungeonId);
       setResolvedFloor(parsedFloor);
       setResolvedSeed(Number.isFinite(parsedSeed) ? parsedSeed : null);
       setEncounterData(parsedEncounter);
       try {
-        const selected = await charactersRepository.listPartyMembers();
+        const selected = await charactersRepository.listPartyMembers(nextPartyId);
         if (selected.length === 0) {
           setError("パーティメンバーがいないため戦闘を開始できません。");
           setStatus("IDLE");
@@ -211,7 +213,7 @@ export default function BattleScreen() {
       }
     };
     void load();
-  }, [dungeonId, encounter, explorationSeed, floor, reset, setLogs, setSessionId, setStatus, skillMap]);
+  }, [dungeonId, encounter, explorationSeed, floor, partyId, reset, setLogs, setSessionId, setStatus, skillMap]);
 
   const onStartBattle = async () => {
     if (!encounterData || phase !== "ENCOUNTER") return;
@@ -256,7 +258,7 @@ export default function BattleScreen() {
           result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
         );
         if (alivePartyIds.size > 0) {
-          const partyRecords = await charactersRepository.listPartyMembers();
+          const partyRecords = await charactersRepository.listPartyMembers(partyId ?? DEFAULT_PARTY_ID);
           const expGain = calculateBattleExp({
             floor: resolvedFloor,
             enemyCount: encounterData.enemies.length,

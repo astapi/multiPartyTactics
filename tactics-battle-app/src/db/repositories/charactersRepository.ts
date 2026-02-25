@@ -1,9 +1,8 @@
 import { getDb } from "@/db/database";
 import { isClassId } from "@/constants/classes";
-import { CharacterRecord, ClassId } from "@/types/models";
+import { CharacterRecord, ClassId, PartyMemberRecord } from "@/types/models";
 
-type PartyMemberRecord = CharacterRecord & { slotIndex: number };
-const DEFAULT_PARTY_ID = "party_default";
+export const DEFAULT_PARTY_ID = "party_default";
 
 const mapCharacter = (row: any): CharacterRecord => {
   const rawClassId = String(row.class_id ?? "");
@@ -30,7 +29,7 @@ const mapCharacter = (row: any): CharacterRecord => {
 };
 
 export const charactersRepository = {
-  async list(): Promise<CharacterRecord[]> {
+  async list(partyId: string = DEFAULT_PARTY_ID): Promise<CharacterRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
       `SELECT c.*, pm.slot_index
@@ -41,7 +40,7 @@ export const charactersRepository = {
          CASE WHEN pm.slot_index IS NULL THEN 1 ELSE 0 END ASC,
          pm.slot_index ASC,
          c.name ASC`,
-      [DEFAULT_PARTY_ID]
+      [partyId]
     );
     return rows.map(mapCharacter);
   },
@@ -88,7 +87,7 @@ export const charactersRepository = {
     await db.runAsync("DELETE FROM characters WHERE id = ?", [id]);
   },
 
-  async getById(id: string): Promise<CharacterRecord | null> {
+  async getById(id: string, partyId: string = DEFAULT_PARTY_ID): Promise<CharacterRecord | null> {
     const db = await getDb();
     const row = await db.getFirstAsync<any>(
       `SELECT c.*, pm.slot_index
@@ -96,12 +95,12 @@ export const charactersRepository = {
        LEFT JOIN party_members pm
          ON pm.character_id = c.id AND pm.party_id = ?
        WHERE c.id = ?`,
-      [DEFAULT_PARTY_ID, id]
+      [partyId, id]
     );
     return row ? mapCharacter(row) : null;
   },
 
-  async listPartyMembers(): Promise<PartyMemberRecord[]> {
+  async listPartyMembers(partyId: string = DEFAULT_PARTY_ID): Promise<PartyMemberRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
       `SELECT c.*, pm.slot_index
@@ -109,12 +108,12 @@ export const charactersRepository = {
        INNER JOIN characters c ON c.id = pm.character_id
        WHERE pm.party_id = ?
        ORDER BY pm.slot_index ASC`,
-      [DEFAULT_PARTY_ID]
+      [partyId]
     );
     return rows.map(mapCharacter).filter((record): record is PartyMemberRecord => record.slotIndex !== null);
   },
 
-  async listUnassigned(): Promise<CharacterRecord[]> {
+  async listUnassigned(partyId: string = DEFAULT_PARTY_ID): Promise<CharacterRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
       `SELECT c.*, pm.slot_index
@@ -123,32 +122,32 @@ export const charactersRepository = {
          ON pm.character_id = c.id AND pm.party_id = ?
        WHERE pm.character_id IS NULL
        ORDER BY c.name ASC`,
-      [DEFAULT_PARTY_ID]
+      [partyId]
     );
     return rows.map(mapCharacter);
   },
 
-  async assignToSlot(characterId: string, slotIndex: number): Promise<void> {
+  async assignToSlot(characterId: string, slotIndex: number, partyId: string = DEFAULT_PARTY_ID): Promise<void> {
     const db = await getDb();
     await db.runAsync(
       "DELETE FROM party_members WHERE party_id = ? AND slot_index = ?",
-      [DEFAULT_PARTY_ID, slotIndex]
+      [partyId, slotIndex]
     );
     await db.runAsync(
       "DELETE FROM party_members WHERE party_id = ? AND character_id = ?",
-      [DEFAULT_PARTY_ID, characterId]
+      [partyId, characterId]
     );
     await db.runAsync(
       "INSERT INTO party_members (party_id, character_id, slot_index) VALUES (?, ?, ?)",
-      [DEFAULT_PARTY_ID, characterId, slotIndex]
+      [partyId, characterId, slotIndex]
     );
   },
 
-  async removeFromSlot(characterId: string): Promise<void> {
+  async removeFromSlot(characterId: string, partyId: string = DEFAULT_PARTY_ID): Promise<void> {
     const db = await getDb();
     await db.runAsync(
       "DELETE FROM party_members WHERE party_id = ? AND character_id = ?",
-      [DEFAULT_PARTY_ID, characterId]
+      [partyId, characterId]
     );
   },
 };
