@@ -6,6 +6,7 @@ import { MIGRATION_004 } from "./migrations/004_hakusla_dungeon";
 import { MIGRATION_005 } from "./migrations/005_character_exp";
 import { MIGRATION_006 } from "./migrations/006_dungeon_party_ui_state";
 import { MIGRATION_007 } from "./migrations/007_dungeon_floor_exploration_progress";
+import { MIGRATION_008 } from "./migrations/008_dungeon_party_ui_step_count";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -106,11 +107,18 @@ export const initializeDatabase = async (): Promise<void> => {
       COMMIT;
     `);
   };
+  const migrateDungeonPartyUiStepCountColumn = async (): Promise<void> => {
+    const columns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(dungeon_party_ui_state)");
+    const columnSet = new Set(columns.map((column) => column.name));
+    if (columnSet.has("step_count")) return;
+    await db.execAsync(MIGRATION_008);
+  };
 
   try {
     await migrateCharacterExpColumn();
     await migrateBattleSessionStatusToDraw();
     await migrateEquipmentInventoryStacksSchema();
+    await migrateDungeonPartyUiStepCountColumn();
 
     const invalidClass = await db.getFirstAsync<{ class_id: string }>(
       `SELECT class_id

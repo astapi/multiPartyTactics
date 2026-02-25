@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { Pause, Play } from "lucide-react-native";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
@@ -38,6 +40,9 @@ type BattleResultSummary = {
 
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
+const RESULT_SHEET_COLLAPSED_PEEK_HEIGHT = 44;
+const RESULT_SHEET_ANIMATION_MS = 220;
+const RESULT_SHEET_PARTY_STRIP_OFFSET = 10;
 
 const DUNGEON_NAME_I18N_KEY = {
   hakusla_dungeon_1_200: "dungeon.name.hakusla_dungeon_1_200",
@@ -104,6 +109,7 @@ const buildLevelUpStatDiffs = (
 export default function BattleScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const insets = useSafeAreaInsets();
   const { dungeonId, floor, explorationSeed, encounter, partyId } = useLocalSearchParams<{
     dungeonId?: string;
     floor?: string;
@@ -131,7 +137,12 @@ export default function BattleScreen() {
   const [replayStates, setReplayStates] = useState<BattleReplayState[]>([]);
   const [combatOutcomeRevealLogCount, setCombatOutcomeRevealLogCount] = useState<number | null>(null);
   const [finalOutcome, setFinalOutcome] = useState<BattleOutcome | null>(null);
+  const [resultSheetHeight, setResultSheetHeight] = useState(0);
   const logScrollRef = useRef<ScrollView | null>(null);
+  const prevCanOpenResultSummaryRef = useRef(false);
+  const resultSheetTranslateY = useSharedValue(0);
+  const resultSheetMaxTranslateY = useSharedValue(0);
+  const resultSheetDragStartY = useSharedValue(0);
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
@@ -205,6 +216,9 @@ export default function BattleScreen() {
         setReplayStates([]);
         setCombatOutcomeRevealLogCount(null);
         setFinalOutcome(null);
+        setResultSheetHeight(0);
+        resultSheetTranslateY.value = 0;
+        resultSheetMaxTranslateY.value = 0;
         setPhase("ENCOUNTER");
       } catch (error) {
         console.error("Failed to load battle:", error);
@@ -358,6 +372,9 @@ export default function BattleScreen() {
       setTurns(result.turns);
       setRevealedLogCount(0);
       setBattleResultSummary(nextResultSummary);
+      setResultSheetHeight(0);
+      resultSheetTranslateY.value = 0;
+      resultSheetMaxTranslateY.value = 0;
       setBattleCompleted(true);
       setPhase("RESULT");
     } catch (startError) {
@@ -392,8 +409,13 @@ export default function BattleScreen() {
   }, [encounterData, phase]);
 
   const renderedLogCount = phase === "RESULT" ? Math.min(revealedLogCount, logs.length) : logs.length;
-  const isResultSummaryVisible =
+  const canOpenResultSummary =
     phase === "RESULT" && battleCompleted && (logs.length === 0 || revealedLogCount >= logs.length);
+  const isResultSheetVisible = canOpenResultSummary;
+  const resultSheetTravel = Math.max(0, resultSheetHeight - RESULT_SHEET_COLLAPSED_PEEK_HEIGHT - insets.bottom);
+  const resultSheetCollapsedReservedSpace = isResultSheetVisible
+    ? Math.max(0, RESULT_SHEET_COLLAPSED_PEEK_HEIGHT + Math.max(0, insets.bottom) - RESULT_SHEET_PARTY_STRIP_OFFSET)
+    : 0;
   const resultStatLabelByKey: Record<LevelUpStatKey, string> = {
     maxHp: t("battle.result.stat.maxHp"),
     atk: t("battle.result.stat.atk"),
@@ -409,6 +431,65 @@ export default function BattleScreen() {
       logScrollRef.current?.scrollToEnd({ animated: false });
     });
   }, [renderedLogCount]);
+
+  useEffect(() => {
+    resultSheetMaxTranslateY.value = resultSheetTravel;
+    if (!isResultSheetVisible) {
+      resultSheetTranslateY.value = 0;
+      return;
+    }
+    if (resultSheetTravel <= 0) {
+      resultSheetTranslateY.value = 0;
+      return;
+    }
+    resultSheetTranslateY.value = Math.max(0, Math.min(resultSheetTranslateY.value, resultSheetTravel));
+  }, [insets.bottom, isResultSheetVisible, resultSheetTravel, resultSheetMaxTranslateY, resultSheetTranslateY]);
+
+  useEffect(() => {
+    if (isResultSheetVisible && !prevCanOpenResultSummaryRef.current) {
+      resultSheetTranslateY.value = withTiming(0, {
+        duration: RESULT_SHEET_ANIMATION_MS,
+        easing: Easing.out(Easing.cubic),
+      });
+    }
+    if (!isResultSheetVisible) {
+      resultSheetTranslateY.value = 0;
+    }
+    prevCanOpenResultSummaryRef.current = isResultSheetVisible;
+  }, [isResultSheetVisible, resultSheetTranslateY]);
+
+  const resultSheetBackdropStyle = useAnimatedStyle(() => {
+    const max = Math.max(1, resultSheetMaxTranslateY.value);
+    const opacity = interpolate(resultSheetTranslateY.value, [0, max], [1, 0]);
+    return {
+      opacity,
+    };
+  });
+
+  const resultSheetContainerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: resultSheetTranslateY.value }],
+  }));
+
+  const resultSheetPanGesture = Gesture.Pan()
+    .enabled(isResultSheetVisible)
+    .onBegin(() => {
+      resultSheetDragStartY.value = resultSheetTranslateY.value;
+    })
+    .onUpdate((event) => {
+      const max = resultSheetMaxTranslateY.value;
+      if (max <= 0) return;
+      const next = resultSheetDragStartY.value + event.translationY;
+      resultSheetTranslateY.value = Math.max(0, Math.min(max, next));
+    })
+    .onEnd((event) => {
+      const max = resultSheetMaxTranslateY.value;
+      if (max <= 0) return;
+      const shouldCollapse = event.velocityY > 700 || resultSheetTranslateY.value > max * 0.4;
+      resultSheetTranslateY.value = withTiming(shouldCollapse ? max : 0, {
+        duration: RESULT_SHEET_ANIMATION_MS,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
 
   if (phase === "LOADING") {
     if (encounterData) {
@@ -606,71 +687,92 @@ export default function BattleScreen() {
               mp: member.mp,
               level: partyUiMetaById[member.id]?.level,
             }))}
+            containerStyle={{ marginBottom: resultSheetCollapsedReservedSpace }}
           />
 
-          {isResultSummaryVisible ? (
-            <View style={styles.resultOverlayBackdrop}>
-              <View style={styles.resultPanel}>
-                <Text style={styles.resultPanelTitle}>{t("battle.result.summaryTitle")}</Text>
-                <ScrollView
-                  style={styles.resultPanelScroll}
-                  contentContainerStyle={styles.resultPanelContent}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <View style={styles.resultSection}>
-                    <Text style={styles.resultSectionTitle}>{t("battle.result.expTitle")}</Text>
-                    <Text style={styles.resultPrimaryLine}>
-                      {t("battle.result.expValue", {
-                        exp: battleResultSummary?.expGained ?? 0,
-                      })}
-                    </Text>
-                  </View>
+          {isResultSheetVisible ? (
+            <>
+              <Animated.View pointerEvents="none" style={[styles.resultSheetBackdrop, resultSheetBackdropStyle]} />
+              <Animated.View
+                style={[styles.resultSheetContainer, { bottom: -insets.bottom }, resultSheetContainerStyle]}
+                onLayout={(event) => {
+                  const height = Math.round(event.nativeEvent.layout.height);
+                  if (height > 0 && height !== resultSheetHeight) {
+                    setResultSheetHeight(height);
+                  }
+                }}
+              >
+                <View style={styles.resultPanel}>
+                  <GestureDetector gesture={resultSheetPanGesture}>
+                    <View style={styles.resultSheetHandleArea}>
+                      <View style={styles.resultSheetGrabber} />
+                    </View>
+                  </GestureDetector>
 
-                  {(battleResultSummary?.levelUps.length ?? 0) > 0 ? (
+                  <Text style={styles.resultPanelTitle}>{t("battle.result.summaryTitle")}</Text>
+                  <ScrollView
+                    style={styles.resultPanelScroll}
+                    contentContainerStyle={styles.resultPanelContent}
+                    showsVerticalScrollIndicator={false}
+                  >
                     <View style={styles.resultSection}>
-                      <Text style={styles.resultSectionTitle}>{t("battle.result.levelUpTitle")}</Text>
-                      {battleResultSummary?.levelUps.map((levelUp) => (
-                        <View key={levelUp.characterId} style={styles.levelUpCard}>
-                          <Text style={styles.levelUpName}>
-                            {t("battle.result.levelUpName", {
-                              name: levelUp.name,
-                              prev: levelUp.previousLevel,
-                              next: levelUp.newLevel,
-                            })}
-                          </Text>
-                          <View style={styles.levelUpStatsRow}>
-                            {levelUp.statUps.map((stat) => (
-                              <View key={`${levelUp.characterId}-${stat.statKey}`} style={styles.levelUpStatChip}>
-                                <Text style={styles.levelUpStatChipText}>
-                                  {resultStatLabelByKey[stat.statKey]} +{stat.amount}
-                                </Text>
-                              </View>
-                            ))}
+                      <Text style={styles.resultSectionTitle}>{t("battle.result.expTitle")}</Text>
+                      <Text style={styles.resultPrimaryLine}>
+                        {t("battle.result.expValue", {
+                          exp: battleResultSummary?.expGained ?? 0,
+                        })}
+                      </Text>
+                    </View>
+
+                    {(battleResultSummary?.levelUps.length ?? 0) > 0 ? (
+                      <View style={styles.resultSection}>
+                        <Text style={styles.resultSectionTitle}>{t("battle.result.levelUpTitle")}</Text>
+                        {battleResultSummary?.levelUps.map((levelUp) => (
+                          <View key={levelUp.characterId} style={styles.levelUpCard}>
+                            <Text style={styles.levelUpName}>
+                              {t("battle.result.levelUpName", {
+                                name: levelUp.name,
+                                prev: levelUp.previousLevel,
+                                next: levelUp.newLevel,
+                              })}
+                            </Text>
+                            <View style={styles.levelUpStatsRow}>
+                              {levelUp.statUps.map((stat) => (
+                                <View key={`${levelUp.characterId}-${stat.statKey}`} style={styles.levelUpStatChip}>
+                                  <Text style={styles.levelUpStatChipText}>
+                                    {resultStatLabelByKey[stat.statKey]} +{stat.amount}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
                           </View>
-                        </View>
-                      ))}
-                    </View>
-                  ) : null}
+                        ))}
+                      </View>
+                    ) : null}
 
-                  {(battleResultSummary?.drops.length ?? 0) > 0 ? (
-                    <View style={styles.resultSection}>
-                      <Text style={styles.resultSectionTitle}>{t("battle.result.dropTitle")}</Text>
-                      {battleResultSummary?.drops.map((dropName, idx) => (
-                        <Text key={`${dropName}-${idx}`} style={styles.resultListLine}>
-                          ・{dropName}
-                        </Text>
-                      ))}
-                    </View>
-                  ) : null}
-                </ScrollView>
+                    {(battleResultSummary?.drops.length ?? 0) > 0 ? (
+                      <View style={styles.resultSection}>
+                        <Text style={styles.resultSectionTitle}>{t("battle.result.dropTitle")}</Text>
+                        {battleResultSummary?.drops.map((dropName, idx) => (
+                          <Text key={`${dropName}-${idx}`} style={styles.resultListLine}>
+                            ・{dropName}
+                          </Text>
+                        ))}
+                      </View>
+                    ) : null}
+                  </ScrollView>
 
-                <Pressable onPress={() => router.back()} style={styles.resultContinueButton}>
-                  <Text style={styles.resultContinueButtonText}>
-                    {t("battle.result.continueExploration")}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
+                  <Pressable
+                    onPress={() => router.back()}
+                    style={[styles.resultContinueButton, { marginBottom: 16 + insets.bottom }]}
+                  >
+                    <Text style={styles.resultContinueButtonText}>
+                      {t("battle.result.continueExploration")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </Animated.View>
+            </>
           ) : null}
         </View>
       </SafeAreaView>
@@ -901,16 +1003,22 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
     fontSize: 9,
   },
-  resultOverlayBackdrop: {
+  resultSheetBackdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(17,24,39,0.38)",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+  },
+  resultSheetContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: "88%",
   },
   resultPanel: {
-    maxHeight: "88%",
-    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
@@ -921,12 +1029,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 5,
   },
+  resultSheetHandleArea: {
+    height: RESULT_SHEET_COLLAPSED_PEEK_HEIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#eef0f3",
+    backgroundColor: "#ffffff",
+  },
+  resultSheetGrabber: {
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "#d1d5db",
+  },
   resultPanelTitle: {
     fontSize: 15,
     fontWeight: "700",
     color: "#111827",
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   resultPanelScroll: {

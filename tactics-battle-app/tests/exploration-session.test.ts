@@ -33,6 +33,27 @@ describe("game/explorationSession", () => {
     expect(state.status).toBe("AWAITING_DECISION");
   });
 
+  it("emits only one event per tick even when stair discovery also triggers", () => {
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      bundle,
+      seed: 101,
+      config: {
+        explorationPercentGainPerStep: 50,
+        stairsDiscoveryThresholdPercent: 10,
+        fullExplorationPercent: 100,
+      },
+    });
+    const beforeEventCount = state.events.length;
+    state = advanceExplorationStep(state);
+    const afterEventCount = state.events.length;
+
+    expect(afterEventCount - beforeEventCount).toBe(1);
+    expect(state.status).toBe("AWAITING_DECISION");
+    expect(["STAIRS_DISCOVERED", "STAIRS_REACHED"]).toContain(state.events.at(-1)?.type);
+  });
+
   it("continues current floor when decision is CONTINUE", () => {
     let state = createExplorationSession({
       dungeon,

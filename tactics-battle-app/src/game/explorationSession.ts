@@ -242,7 +242,6 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     tick: nextTick,
     rng,
   });
-  nextState = pushStepEvent(nextState, rolled.event, rolled.encounter);
 
   const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
   const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
@@ -270,52 +269,46 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
       ? (nextState.floorStepsThisRunMap[floor] ?? 0) >=
         (discoveredArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps)
       : nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent);
+  let stairsEvent: ExplorationEvent | null = null;
   if (reachedStairs) {
     const isFirstDiscovery = !prevFloorProgress.stairsDiscovered;
     if (isFirstDiscovery) {
       nextFloorProgress = { ...nextFloorProgress, stairsDiscovered: true };
       nextState = withFloorProgress(nextState, nextFloorProgress);
-      nextState = appendEvent(nextState, {
+      stairsEvent = {
         tick: nextTick,
         type: "STAIRS_DISCOVERED",
         floor,
         messageId: "exploration.event.stairs.discovered",
         payload: { explorationPercent: nextFloorProgress.explorationPercent },
-      });
+      };
     } else {
-      nextState = appendEvent(nextState, {
+      stairsEvent = {
         tick: nextTick,
         type: "STAIRS_REACHED",
         floor,
         messageId: "exploration.event.stairs.reached",
         payload: { explorationPercent: nextFloorProgress.explorationPercent },
-      });
+      };
     }
-    nextState = {
-      ...nextState,
-      status: "AWAITING_DECISION",
-      pendingDecisionFloor: floor,
-      stairsReachedThisRunMap: {
-        ...nextState.stairsReachedThisRunMap,
-        [floor]: true,
-      },
-    };
   }
 
   const justCompletedFloor =
     prevFloorProgress.explorationPercent < state.config.fullExplorationPercent &&
     nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
-  if (justCompletedFloor) {
-    nextState = appendEvent(nextState, {
+  const floorCompleteEvent = justCompletedFloor
+    ? ({
       tick: nextTick,
       type: "FLOOR_COMPLETE",
       floor,
       messageId: "exploration.event.floor.complete",
       payload: { explorationPercent: nextFloorProgress.explorationPercent },
-    });
-  }
+    } satisfies ExplorationEvent)
+    : null;
 
-  if (floor === state.bundle.bossFloor && nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent) {
+  const shouldClearBundle =
+    floor === state.bundle.bossFloor && nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
+  if (shouldClearBundle) {
     nextState = appendEvent(nextState, {
       tick: nextTick,
       type: "BUNDLE_CLEAR",
@@ -329,6 +322,27 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     };
     return nextState;
   }
+
+  if (stairsEvent) {
+    nextState = appendEvent(nextState, stairsEvent);
+    nextState = {
+      ...nextState,
+      status: "AWAITING_DECISION",
+      pendingDecisionFloor: floor,
+      stairsReachedThisRunMap: {
+        ...nextState.stairsReachedThisRunMap,
+        [floor]: true,
+      },
+    };
+    return resolveStatusAfterStepBudget(nextState);
+  }
+
+  if (floorCompleteEvent) {
+    nextState = appendEvent(nextState, floorCompleteEvent);
+    return resolveStatusAfterStepBudget(nextState);
+  }
+
+  nextState = pushStepEvent(nextState, rolled.event, rolled.encounter);
 
   return resolveStatusAfterStepBudget(nextState);
 };

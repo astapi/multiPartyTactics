@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useDatabaseInit } from "@/hooks/useDatabaseInit";
 
 export default function RootLayout() {
@@ -7,33 +8,39 @@ export default function RootLayout() {
 
   if (error) {
     return (
-      <View style={[styles.center, styles.root, styles.padding]}>
-        <Text style={styles.errorText}>DB init error: {error}</Text>
-        <Pressable style={styles.resetButton} onPress={() => void resetAndReinitialize()}>
-          <Text style={styles.resetButtonText}>Reset Database</Text>
-        </Pressable>
-      </View>
+      <GestureHandlerRootView style={styles.root}>
+        <View style={[styles.center, styles.root, styles.padding]}>
+          <Text style={styles.errorText}>DB init error: {error}</Text>
+          <Pressable style={styles.resetButton} onPress={() => void resetAndReinitialize()}>
+            <Text style={styles.resetButtonText}>Reset Database</Text>
+          </Pressable>
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
   if (!ready) {
     return (
-      <View style={[styles.center, styles.root]}>
-        <Text style={styles.loadingText}>Loading database...</Text>
-      </View>
+      <GestureHandlerRootView style={styles.root}>
+        <View style={[styles.center, styles.root]}>
+          <Text style={styles.loadingText}>Loading database...</Text>
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: "#09090b" },
-        headerTintColor: "#f4f4f5",
-        contentStyle: { backgroundColor: "#09090b" },
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <GestureHandlerRootView style={styles.root}>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: "#09090b" },
+          headerTintColor: "#f4f4f5",
+          contentStyle: { backgroundColor: "#09090b" },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </GestureHandlerRootView>
   );
 }
 
