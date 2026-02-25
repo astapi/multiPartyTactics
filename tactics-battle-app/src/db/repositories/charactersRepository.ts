@@ -49,9 +49,22 @@ export const charactersRepository = {
   async upsert(record: CharacterRecord): Promise<void> {
     const db = await getDb();
     await db.runAsync(
-      `INSERT OR REPLACE INTO characters
+      `INSERT INTO characters
       (id, name, class_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        class_id = excluded.class_id,
+        level = excluded.level,
+        exp = excluded.exp,
+        base_max_hp = excluded.base_max_hp,
+        base_atk = excluded.base_atk,
+        base_def = excluded.base_def,
+        base_spd = excluded.base_spd,
+        base_max_mp = excluded.base_max_mp,
+        base_mp_regen = excluded.base_mp_regen,
+        current_hp = excluded.current_hp,
+        current_mp = excluded.current_mp`,
       [
         record.id,
         record.name,
