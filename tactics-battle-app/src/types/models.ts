@@ -12,6 +12,7 @@ export type CharacterRecord = {
   name: string;
   classId: ClassId;
   level: number;
+  exp: number;
   baseMaxHp: number;
   baseAtk: number;
   baseDef: number;

@@ -17,6 +17,7 @@ const mapCharacter = (row: any): CharacterRecord => {
     name: row.name,
     classId,
     level: row.level,
+    exp: row.exp ?? 0,
     baseMaxHp: row.base_max_hp,
     baseAtk: row.base_atk,
     baseDef: row.base_def,
@@ -49,13 +50,14 @@ export const charactersRepository = {
     const db = await getDb();
     await db.runAsync(
       `INSERT OR REPLACE INTO characters
-      (id, name, class_id, level, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, name, class_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.name,
         record.classId,
         record.level,
+        record.exp,
         record.baseMaxHp,
         record.baseAtk,
         record.baseDef,

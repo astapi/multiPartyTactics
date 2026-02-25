@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { ClassSelectModal } from "@/components/party/ClassSelectModal";
-import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { getBaseStatsForClassLevel } from "@/game/progression";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import { ClassId } from "@/types/models";
@@ -17,7 +17,7 @@ export default function NewCharacterScreen() {
 
   const onSave = async () => {
     try {
-      const base = BASE_STATS_BY_CLASS[classId];
+      const base = getBaseStatsForClassLevel(classId, 1);
       const id = generateId("char");
       await charactersRepository.upsert({
         id,
@@ -25,6 +25,7 @@ export default function NewCharacterScreen() {
         name: name.trim() || "New Character",
         classId,
         level: 1,
+        exp: 0,
         baseMaxHp: base.maxHp,
         baseAtk: base.atk,
         baseDef: base.def,
@@ -69,11 +70,11 @@ export default function NewCharacterScreen() {
 
         <View style={styles.statsPreview}>
           <Text style={styles.statsTitle}>ステータス（初期値）</Text>
-          <Text style={styles.statLine}>HP: {BASE_STATS_BY_CLASS[classId].maxHp}</Text>
-          <Text style={styles.statLine}>ATK: {BASE_STATS_BY_CLASS[classId].atk}</Text>
-          <Text style={styles.statLine}>DEF: {BASE_STATS_BY_CLASS[classId].def}</Text>
-          <Text style={styles.statLine}>SPD: {BASE_STATS_BY_CLASS[classId].spd}</Text>
-          <Text style={styles.statLine}>MP: {BASE_STATS_BY_CLASS[classId].maxMp}</Text>
+          <Text style={styles.statLine}>HP: {getBaseStatsForClassLevel(classId, 1).maxHp}</Text>
+          <Text style={styles.statLine}>ATK: {getBaseStatsForClassLevel(classId, 1).atk}</Text>
+          <Text style={styles.statLine}>DEF: {getBaseStatsForClassLevel(classId, 1).def}</Text>
+          <Text style={styles.statLine}>SPD: {getBaseStatsForClassLevel(classId, 1).spd}</Text>
+          <Text style={styles.statLine}>MP: {getBaseStatsForClassLevel(classId, 1).maxMp}</Text>
         </View>
 
         <View style={styles.buttons}>

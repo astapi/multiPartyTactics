@@ -17,6 +17,7 @@ describe("misc testable logic", () => {
       name: "Alicia",
       classId: "CLERIC",
       level: 1,
+      exp: 0,
       baseMaxHp: 80,
       baseAtk: 5,
       baseDef: 6,

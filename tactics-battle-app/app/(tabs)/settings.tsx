@@ -10,12 +10,12 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
-import { BASE_STATS_BY_CLASS } from "@/constants/baseStats";
 import { resetDatabase } from "@/db/database";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
+import { getBaseStatsForClassLevel } from "@/game/progression";
 import { useI18n } from "@/i18n";
 import { Locale } from "@/i18n/locale";
 import { useLocaleStore } from "@/stores/localeStore";
@@ -146,7 +146,7 @@ export default function SettingsScreen() {
       for (const preset of debugDefaults) {
         let characterId = byName.get(preset.name)?.id;
         if (!characterId) {
-          const base = BASE_STATS_BY_CLASS[preset.classId];
+          const base = getBaseStatsForClassLevel(preset.classId, preset.level);
           const id = generateId("char");
           await charactersRepository.upsert({
             id,
@@ -154,6 +154,7 @@ export default function SettingsScreen() {
             name: preset.name,
             classId: preset.classId,
             level: preset.level,
+            exp: 0,
             baseMaxHp: base.maxHp,
             baseAtk: base.atk,
             baseDef: base.def,
