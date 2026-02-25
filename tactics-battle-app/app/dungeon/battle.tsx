@@ -135,6 +135,7 @@ export default function BattleScreen() {
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
+  const setLatestBattleRewards = useBattleStore((s) => s.setLatestBattleRewards);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
@@ -346,6 +347,11 @@ export default function BattleScreen() {
       setSessionId(nextSessionId);
       setStatus(result.outcome);
       setLogs(combinedLogs);
+      setLatestBattleRewards({
+        sessionId: nextSessionId,
+        explorationSeed: resolvedSeed,
+        drops: nextResultSummary.drops,
+      });
       setReplayStates(combinedReplayStates);
       setCombatOutcomeRevealLogCount(result.outcomeRevealLogCount);
       setFinalOutcome(result.outcome);

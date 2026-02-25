@@ -74,6 +74,14 @@ export type DungeonProgressRecord = {
   updatedAt: string;
 };
 
+export type DungeonFloorExplorationProgressRecord = {
+  dungeonId: string;
+  floor: number;
+  explorationPercent: number;
+  stairsDiscovered: boolean;
+  updatedAt: string;
+};
+
 export type DungeonPartyUiMode = "IDLE" | "EXPLORE" | "AUTO";
 
 export type DungeonPartyUiStateRecord = {

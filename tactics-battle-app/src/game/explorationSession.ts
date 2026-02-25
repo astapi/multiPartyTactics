@@ -1,0 +1,384 @@
+import difficultyConfig from "@/data/difficultyConfig.json";
+import { DungeonOption } from "@/constants/dungeons";
+import { Unit } from "@/game/battle";
+import { DungeonBundleRange } from "@/game/dungeonBundles";
+import {
+  ExplorationEvent,
+  ExplorationResult,
+  rollExplorationEvent,
+} from "@/game/exploration";
+import { EncounterResult } from "@/game/encounter";
+import { createSeededRng } from "@/utils/rng";
+
+export type ExplorationFloorProgress = {
+  floor: number;
+  explorationPercent: number;
+  stairsDiscovered: boolean;
+};
+
+export type ExplorationSessionStatus =
+  | "RUNNING"
+  | "AWAITING_DECISION"
+  | "RUN_COMPLETE"
+  | "BUNDLE_CLEARED";
+
+export type FloorDecision = "DESCEND" | "CONTINUE";
+
+export type ExplorationSessionConfig = {
+  stepsPerRun: number;
+  stairsDiscoveryThresholdPercent: number;
+  fullExplorationPercent: number;
+  explorationPercentGainPerStep: number;
+  shortcutStepCostPerDiscoveredFloor: number;
+  discoveredStairsArrivalMinSteps: number;
+  discoveredStairsArrivalMaxSteps: number;
+};
+
+export type ExplorationSessionState = {
+  seed: number;
+  dungeon: DungeonOption;
+  party: Unit[];
+  bundle: DungeonBundleRange;
+  config: ExplorationSessionConfig;
+  currentFloor: number;
+  currentStep: number;
+  totalSteps: number;
+  status: ExplorationSessionStatus;
+  pendingDecisionFloor: number | null;
+  events: ExplorationEvent[];
+  encounterTicks: number[];
+  encounters: EncounterResult[];
+  floorProgressMap: Record<number, ExplorationFloorProgress>;
+  stairsReachedThisRunMap: Record<number, boolean>;
+  floorStepsThisRunMap: Record<number, number>;
+  discoveredStairsArrivalTargetMap: Record<number, number>;
+};
+
+const DEFAULT_CONFIG: ExplorationSessionConfig = {
+  stepsPerRun: difficultyConfig.exploration.maxTicks,
+  stairsDiscoveryThresholdPercent: 50,
+  fullExplorationPercent: 100,
+  explorationPercentGainPerStep: 0.25,
+  shortcutStepCostPerDiscoveredFloor: 2,
+  discoveredStairsArrivalMinSteps: 5,
+  discoveredStairsArrivalMaxSteps: 20,
+};
+
+const clampPercent = (value: number): number => {
+  const clamped = Math.max(0, Math.min(100, value));
+  return Math.round(clamped * 100) / 100;
+};
+
+const makeProgressRecord = (floor: number, partial?: Partial<ExplorationFloorProgress>): ExplorationFloorProgress => ({
+  floor,
+  explorationPercent: clampPercent(partial?.explorationPercent ?? 0),
+  stairsDiscovered: !!partial?.stairsDiscovered,
+});
+
+const getFloorProgress = (state: ExplorationSessionState, floor: number): ExplorationFloorProgress =>
+  state.floorProgressMap[floor] ?? makeProgressRecord(floor);
+
+const withFloorProgress = (
+  state: ExplorationSessionState,
+  progress: ExplorationFloorProgress
+): ExplorationSessionState => ({
+  ...state,
+  floorProgressMap: {
+    ...state.floorProgressMap,
+    [progress.floor]: progress,
+  },
+});
+
+export const isStairsDiscoveredForFloor = (progress: Pick<ExplorationFloorProgress, "stairsDiscovered">): boolean =>
+  progress.stairsDiscovered;
+
+export const isFloorFullyExplored = (
+  progress: Pick<ExplorationFloorProgress, "explorationPercent">,
+  fullPercent = DEFAULT_CONFIG.fullExplorationPercent
+): boolean => progress.explorationPercent >= fullPercent;
+
+export const buildShortcutTraversalPlan = (params: {
+  bundle: DungeonBundleRange;
+  floorProgressMap: Record<number, ExplorationFloorProgress>;
+  remainingSteps: number;
+  shortcutStepCostPerDiscoveredFloor: number;
+}): Array<{ fromFloor: number; toFloor: number; stepCost: number }> => {
+  const actions: Array<{ fromFloor: number; toFloor: number; stepCost: number }> = [];
+  let remaining = Math.max(0, Math.floor(params.remainingSteps));
+  const stepCost = Math.max(1, Math.floor(params.shortcutStepCostPerDiscoveredFloor));
+  for (let floor = params.bundle.startFloor; floor < params.bundle.bossFloor; floor += 1) {
+    const progress = params.floorProgressMap[floor];
+    if (!progress?.stairsDiscovered) break;
+    if (remaining < stepCost) break;
+    remaining -= stepCost;
+    actions.push({ fromFloor: floor, toFloor: floor + 1, stepCost });
+  }
+  return actions;
+};
+
+const appendEvent = (state: ExplorationSessionState, event: ExplorationEvent): ExplorationSessionState => ({
+  ...state,
+  events: [...state.events, event],
+});
+
+const appendEncounter = (
+  state: ExplorationSessionState,
+  tick: number,
+  encounter: EncounterResult
+): ExplorationSessionState => ({
+  ...state,
+  encounterTicks: [...state.encounterTicks, tick],
+  encounters: [...state.encounters, encounter],
+});
+
+const sampleDiscoveredStairsArrivalTarget = (
+  state: ExplorationSessionState,
+  floor: number
+): number => {
+  const minSteps = Math.max(1, Math.floor(state.config.discoveredStairsArrivalMinSteps));
+  const maxSteps = Math.max(minSteps, Math.floor(state.config.discoveredStairsArrivalMaxSteps));
+  const rng = createSeededRng(
+    (state.seed + floor * 7919 + state.bundle.startFloor * 104729 + state.bundle.bossFloor * 131071) >>> 0
+  );
+  const span = maxSteps - minSteps + 1;
+  return minSteps + Math.floor(rng() * span);
+};
+
+const resolveStatusAfterStepBudget = (state: ExplorationSessionState): ExplorationSessionState => {
+  if (state.status === "BUNDLE_CLEARED" || state.status === "AWAITING_DECISION") return state;
+  if (state.currentStep >= state.totalSteps) {
+    return { ...state, status: "RUN_COMPLETE", pendingDecisionFloor: null };
+  }
+  return state;
+};
+
+type CreateParams = {
+  dungeon: DungeonOption;
+  party: Unit[];
+  bundle: DungeonBundleRange;
+  seed: number;
+  persistedProgress?: Array<Partial<ExplorationFloorProgress> & { floor: number }>;
+  config?: Partial<ExplorationSessionConfig>;
+};
+
+export const createExplorationSession = (params: CreateParams): ExplorationSessionState => {
+  const config: ExplorationSessionConfig = {
+    ...DEFAULT_CONFIG,
+    ...(params.config ?? {}),
+  };
+  const initialFloorProgressMap: Record<number, ExplorationFloorProgress> = {};
+  for (let floor = params.bundle.startFloor; floor <= params.bundle.bossFloor; floor += 1) {
+    initialFloorProgressMap[floor] = makeProgressRecord(floor);
+  }
+  for (const row of params.persistedProgress ?? []) {
+    if (row.floor < params.bundle.startFloor || row.floor > params.bundle.bossFloor) continue;
+    initialFloorProgressMap[row.floor] = makeProgressRecord(row.floor, row);
+  }
+
+  let state: ExplorationSessionState = {
+    seed: params.seed,
+    dungeon: params.dungeon,
+    party: params.party,
+    bundle: params.bundle,
+    config,
+    currentFloor: params.bundle.startFloor,
+    currentStep: 0,
+    totalSteps: Math.max(1, Math.floor(config.stepsPerRun)),
+    status: "RUNNING",
+    pendingDecisionFloor: null,
+    events: [],
+    encounterTicks: [],
+    encounters: [],
+    floorProgressMap: initialFloorProgressMap,
+    stairsReachedThisRunMap: {},
+    floorStepsThisRunMap: {},
+    discoveredStairsArrivalTargetMap: {},
+  };
+
+  return resolveStatusAfterStepBudget(state);
+};
+
+const pushStepEvent = (
+  state: ExplorationSessionState,
+  event: ExplorationEvent,
+  encounter?: EncounterResult
+): ExplorationSessionState => {
+  let next = appendEvent(state, event);
+  if (encounter) {
+    next = appendEncounter(next, event.tick, encounter);
+  }
+  return next;
+};
+
+export const advanceExplorationStep = (state: ExplorationSessionState): ExplorationSessionState => {
+  if (state.status !== "RUNNING") return state;
+  if (state.currentStep >= state.totalSteps) {
+    return { ...state, status: "RUN_COMPLETE" };
+  }
+
+  const nextTick = state.currentStep + 1;
+  const floor = state.currentFloor;
+  const prevFloorProgress = getFloorProgress(state, floor);
+  let nextFloorProgress = {
+    ...prevFloorProgress,
+    explorationPercent: clampPercent(prevFloorProgress.explorationPercent + state.config.explorationPercentGainPerStep),
+  };
+  let nextState: ExplorationSessionState = {
+    ...state,
+    currentStep: nextTick,
+    floorStepsThisRunMap: {
+      ...state.floorStepsThisRunMap,
+      [floor]: (state.floorStepsThisRunMap[floor] ?? 0) + 1,
+    },
+  };
+  nextState = withFloorProgress(nextState, nextFloorProgress);
+
+  const rng = createSeededRng((state.seed + nextTick * 2654435761 + floor * 97) >>> 0);
+  const rolled = rollExplorationEvent({
+    party: state.party,
+    dungeon: state.dungeon,
+    floor,
+    seed: state.seed,
+    tick: nextTick,
+    rng,
+  });
+  nextState = pushStepEvent(nextState, rolled.event, rolled.encounter);
+
+  const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
+  const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
+  let nextDiscoveredArrivalTargetMap = nextState.discoveredStairsArrivalTargetMap;
+  if (
+    isDiscoveredFloor &&
+    !hasReachedStairsThisRun &&
+    floor < state.bundle.bossFloor &&
+    nextDiscoveredArrivalTargetMap[floor] === undefined
+  ) {
+    nextDiscoveredArrivalTargetMap = {
+      ...nextDiscoveredArrivalTargetMap,
+      [floor]: sampleDiscoveredStairsArrivalTarget(state, floor),
+    };
+    nextState = {
+      ...nextState,
+      discoveredStairsArrivalTargetMap: nextDiscoveredArrivalTargetMap,
+    };
+  }
+  const discoveredArrivalTarget = nextDiscoveredArrivalTargetMap[floor];
+  const reachedStairs =
+    !hasReachedStairsThisRun &&
+    floor < state.bundle.bossFloor &&
+    (isDiscoveredFloor
+      ? (nextState.floorStepsThisRunMap[floor] ?? 0) >=
+        (discoveredArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps)
+      : nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent);
+  if (reachedStairs) {
+    const isFirstDiscovery = !prevFloorProgress.stairsDiscovered;
+    if (isFirstDiscovery) {
+      nextFloorProgress = { ...nextFloorProgress, stairsDiscovered: true };
+      nextState = withFloorProgress(nextState, nextFloorProgress);
+      nextState = appendEvent(nextState, {
+        tick: nextTick,
+        type: "STAIRS_DISCOVERED",
+        floor,
+        messageId: "exploration.event.stairs.discovered",
+        payload: { explorationPercent: nextFloorProgress.explorationPercent },
+      });
+    } else {
+      nextState = appendEvent(nextState, {
+        tick: nextTick,
+        type: "STAIRS_REACHED",
+        floor,
+        messageId: "exploration.event.stairs.reached",
+        payload: { explorationPercent: nextFloorProgress.explorationPercent },
+      });
+    }
+    nextState = {
+      ...nextState,
+      status: "AWAITING_DECISION",
+      pendingDecisionFloor: floor,
+      stairsReachedThisRunMap: {
+        ...nextState.stairsReachedThisRunMap,
+        [floor]: true,
+      },
+    };
+  }
+
+  const justCompletedFloor =
+    prevFloorProgress.explorationPercent < state.config.fullExplorationPercent &&
+    nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
+  if (justCompletedFloor) {
+    nextState = appendEvent(nextState, {
+      tick: nextTick,
+      type: "FLOOR_COMPLETE",
+      floor,
+      messageId: "exploration.event.floor.complete",
+      payload: { explorationPercent: nextFloorProgress.explorationPercent },
+    });
+  }
+
+  if (floor === state.bundle.bossFloor && nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent) {
+    nextState = appendEvent(nextState, {
+      tick: nextTick,
+      type: "BUNDLE_CLEAR",
+      floor,
+      messageId: "exploration.event.bundle.clear",
+    });
+    nextState = {
+      ...nextState,
+      status: "BUNDLE_CLEARED",
+      pendingDecisionFloor: null,
+    };
+    return nextState;
+  }
+
+  return resolveStatusAfterStepBudget(nextState);
+};
+
+export const applyFloorDecision = (
+  state: ExplorationSessionState,
+  decision: FloorDecision
+): ExplorationSessionState => {
+  if (state.status !== "AWAITING_DECISION" || state.pendingDecisionFloor === null) {
+    return state;
+  }
+  if (decision === "CONTINUE") {
+    return resolveStatusAfterStepBudget({
+      ...state,
+      status: "RUNNING",
+      pendingDecisionFloor: null,
+    });
+  }
+
+  const fromFloor = state.pendingDecisionFloor;
+  if (fromFloor >= state.bundle.bossFloor) {
+    return resolveStatusAfterStepBudget({
+      ...state,
+      status: "RUNNING",
+      pendingDecisionFloor: null,
+    });
+  }
+  const toFloor = fromFloor + 1;
+  const next = appendEvent(
+    {
+      ...state,
+      currentFloor: toFloor,
+      status: "RUNNING",
+      pendingDecisionFloor: null,
+    },
+    {
+      tick: state.currentStep,
+      type: "FLOOR_DESCEND",
+      floor: toFloor,
+      messageId: "exploration.event.floor.descend",
+      payload: { fromFloor, toFloor },
+    }
+  );
+  return resolveStatusAfterStepBudget(next);
+};
+
+export const toExplorationResult = (state: ExplorationSessionState): ExplorationResult => ({
+  seed: state.seed,
+  events: state.events,
+  encounterTicks: state.encounterTicks,
+  encounters: state.encounters,
+  totalTicks: state.totalSteps,
+});

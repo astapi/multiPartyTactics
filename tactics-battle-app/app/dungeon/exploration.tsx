@@ -1,19 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ImageBackground, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Package } from "lucide-react-native";
 import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/PartyStatusStrip";
 import { DUNGEONS } from "@/constants/dungeons";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
+import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
+import { DungeonBundleRange, findBundleByFloor, formatBundleLabel } from "@/game/dungeonBundles";
+import { ExplorationEvent, ExplorationResult } from "@/game/exploration";
 import {
-  ExplorationEvent,
-  ExplorationResult,
-  generateExplorationResult,
-} from "@/game/exploration";
+  ExplorationSessionState,
+  advanceExplorationStep,
+  applyFloorDecision,
+  createExplorationSession,
+  toExplorationResult,
+} from "@/game/explorationSession";
 import { useI18n } from "@/i18n";
+import { useBattleStore } from "@/stores/battleStore";
 import type { EquipmentReward } from "@/types/equipment";
 import { toUnit } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
@@ -26,6 +32,12 @@ const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   ENCOUNTER: "✖",
   TREASURE: "✦",
   TRAP: "⚠",
+  STAIRS_DISCOVERED: "⇣",
+  STAIRS_REACHED: "⇣",
+  SHORTCUT: "➜",
+  FLOOR_DESCEND: "↓",
+  FLOOR_COMPLETE: "✓",
+  BUNDLE_CLEAR: "★",
 };
 
 const getTreasureItemLabel = (
@@ -59,17 +71,35 @@ const formatEvent = (
   t: ReturnType<typeof useI18n>["t"]
 ): string => {
   if (event.type === "TREASURE") {
-    return t(event.messageId, {
+    return t(event.messageId as any, {
       itemId: getTreasureItemLabel(event.payload?.reward, locale, t),
     });
   }
   if (event.type === "TRAP") {
-    return t(event.messageId, {
+    return t(event.messageId as any, {
       damage: event.payload?.damage ?? 0,
       debuffType: getTrapDebuffLabel(event.payload?.debuffType, t),
     });
   }
-  return t(event.messageId);
+  if (event.type === "STAIRS_DISCOVERED") {
+    return `B${event.floor ?? "?"}Fで下り階段を発見`;
+  }
+  if (event.type === "STAIRS_REACHED") {
+    return `B${event.floor ?? "?"}Fの下り階段に到着`;
+  }
+  if (event.type === "SHORTCUT") {
+    return `発見済み階段でB${event.payload?.toFloor ?? "?"}Fへ移動 (-${event.payload?.stepCost ?? 0}step)`;
+  }
+  if (event.type === "FLOOR_DESCEND") {
+    return `B${event.payload?.toFloor ?? "?"}Fへ降りた`;
+  }
+  if (event.type === "FLOOR_COMPLETE") {
+    return `B${event.floor ?? "?"}F の探索度が ${event.payload?.explorationPercent ?? 100}% に到達`;
+  }
+  if (event.type === "BUNDLE_CLEAR") {
+    return "区間探索を完了した";
+  }
+  return t(event.messageId as any);
 };
 
 const formatClock = (tick: number): string => {
@@ -84,6 +114,12 @@ type ExplorationPartySnapshotMember = PartyStatusStripMember & {
   baseMp: number;
 };
 
+type ExplorationResultItem = {
+  key: string;
+  source: "BATTLE" | "TREASURE";
+  label: string;
+};
+
 export default function ExplorationScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -93,15 +129,21 @@ export default function ExplorationScreen() {
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
   const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
 
-  const [currentTick, setCurrentTick] = useState(0);
   const [nextEncounterIndex, setNextEncounterIndex] = useState(0);
-  const [result, setResult] = useState<ExplorationResult | null>(null);
+  const [session, setSession] = useState<ExplorationSessionState | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const logScrollRef = useRef<ScrollView | null>(null);
   const appliedRewardGrantKeysRef = useRef<Set<string>>(new Set());
+  const processedBattleRewardSessionIdsRef = useRef<Set<string>>(new Set());
+  const hasAppliedBundleClearRef = useRef(false);
   const [partySnapshot, setPartySnapshot] = useState<ExplorationPartySnapshotMember[]>([]);
+  const [bundleRange, setBundleRange] = useState<DungeonBundleRange | null>(null);
+  const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
+  const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
+  const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
+  const latestBattleDrops = useBattleStore((s) => s.latestBattleDrops);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -144,18 +186,32 @@ export default function ExplorationScreen() {
         const party = partyRecords.map(toUnit);
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
-        const nextResult = generateExplorationResult({
+        const bundle = findBundleByFloor(dungeon.id, floor);
+        const persistedBundleProgress = await dungeonExplorationProgressRepository.listByDungeonAndRange({
+          dungeonId: resolvedDungeonId,
+          startFloor: bundle.startFloor,
+          endFloor: bundle.bossFloor,
+        });
+        const nextSession = createExplorationSession({
           party,
           dungeon,
-          floor,
+          bundle,
           seed,
+          persistedProgress: persistedBundleProgress.map((row) => ({
+            floor: row.floor,
+            explorationPercent: row.explorationPercent,
+            stairsDiscovered: row.stairsDiscovered,
+          })),
         });
 
         if (!mounted) return;
         appliedRewardGrantKeysRef.current = new Set();
-        setResult(nextResult);
+        processedBattleRewardSessionIdsRef.current = new Set();
+        hasAppliedBundleClearRef.current = false;
+        setSession(nextSession);
+        setBundleRange(bundle);
         setPartySnapshot(nextPartySnapshot);
-        setCurrentTick(0);
+        setResultItems([]);
         setNextEncounterIndex(0);
         setIsPaused(false);
       } catch (err) {
@@ -184,19 +240,64 @@ export default function ExplorationScreen() {
   );
 
   useEffect(() => {
-    if (!result) return;
+    if (!session) return;
     if (!isFocused || isNavigating || isPaused) return;
-    if (currentTick >= result.totalTicks) return;
+    if (session.status !== "RUNNING") return;
 
     const timer = setInterval(() => {
-      setCurrentTick((prev) => {
-        if (!result) return prev;
-        return Math.min(prev + 1, result.totalTicks);
-      });
+      setSession((prev) => (prev ? advanceExplorationStep(prev) : prev));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentTick, isFocused, isNavigating, isPaused, result]);
+  }, [isFocused, isNavigating, isPaused, session]);
+
+  useEffect(() => {
+    if (!session || !bundleRange) return;
+    let cancelled = false;
+    const persist = async () => {
+      try {
+        await dungeonExplorationProgressRepository.upsertMany(
+          Object.values(session.floorProgressMap)
+            .filter((row) => row.floor >= bundleRange.startFloor && row.floor <= bundleRange.bossFloor)
+            .map((row) => ({
+              dungeonId: resolvedDungeonId,
+              floor: row.floor,
+              explorationPercent: row.explorationPercent,
+              stairsDiscovered: row.stairsDiscovered,
+            }))
+        );
+      } catch (persistError) {
+        if (!cancelled) {
+          console.error("Failed to persist floor exploration progress:", persistError);
+        }
+      }
+    };
+    void persist();
+    return () => {
+      cancelled = true;
+    };
+  }, [bundleRange, resolvedDungeonId, session]);
+
+  const result = useMemo<ExplorationResult | null>(() => (session ? toExplorationResult(session) : null), [session]);
+  const currentTick = session?.currentStep ?? 0;
+
+  useEffect(() => {
+    if (!result) return;
+    if (!latestBattleSessionId) return;
+    if (latestBattleExplorationSeed !== result.seed) return;
+    if (processedBattleRewardSessionIdsRef.current.has(latestBattleSessionId)) return;
+
+    processedBattleRewardSessionIdsRef.current.add(latestBattleSessionId);
+    if (!latestBattleDrops || latestBattleDrops.length === 0) return;
+    setResultItems((prev) => [
+      ...prev,
+      ...latestBattleDrops.map((label, index) => ({
+        key: `battle:${latestBattleSessionId}:${index}`,
+        source: "BATTLE" as const,
+        label,
+      })),
+    ]);
+  }, [latestBattleDrops, latestBattleExplorationSeed, latestBattleSessionId, result]);
 
   useEffect(() => {
     if (!result) return;
@@ -221,7 +322,7 @@ export default function ExplorationScreen() {
               quantity: 1,
               contextJson: JSON.stringify({
                 dungeonId: resolvedDungeonId,
-                floor,
+                floor: event.floor ?? floor,
                 explorationSeed: result.seed,
                 tick: event.tick,
               }),
@@ -229,6 +330,17 @@ export default function ExplorationScreen() {
           });
           if (cancelled) return;
           appliedRewardGrantKeysRef.current.add(reward.grantKey);
+          setResultItems((prev) => {
+            if (prev.some((item) => item.key === reward.grantKey)) return prev;
+            return [
+              ...prev,
+              {
+                key: reward.grantKey,
+                source: "TREASURE",
+                label: getTreasureItemLabel(reward, locale, t),
+              },
+            ];
+          });
         } catch (persistError) {
           console.error("Failed to persist treasure reward:", persistError);
         }
@@ -240,7 +352,7 @@ export default function ExplorationScreen() {
     return () => {
       cancelled = true;
     };
-  }, [currentTick, floor, resolvedDungeonId, result]);
+  }, [currentTick, floor, locale, resolvedDungeonId, result, t]);
 
   useEffect(() => {
     if (!result || isNavigating) return;
@@ -257,13 +369,66 @@ export default function ExplorationScreen() {
       pathname: "/dungeon/battle",
       params: {
         dungeonId: resolvedDungeonId,
-        floor: String(floor),
+        floor: String(session?.currentFloor ?? floor),
         partyId: resolvedPartyId,
         explorationSeed: String(result.seed),
         encounter: encounterPayload,
       },
     });
-  }, [currentTick, floor, isFocused, isNavigating, nextEncounterIndex, resolvedDungeonId, resolvedPartyId, result, router]);
+  }, [
+    currentTick,
+    floor,
+    isFocused,
+    isNavigating,
+    nextEncounterIndex,
+    resolvedDungeonId,
+    resolvedPartyId,
+    result,
+    router,
+    session?.currentFloor,
+  ]);
+
+  useEffect(() => {
+    if (!session || !bundleRange) return;
+    if (session.status !== "BUNDLE_CLEARED") return;
+    if (hasAppliedBundleClearRef.current) return;
+    hasAppliedBundleClearRef.current = true;
+
+    let cancelled = false;
+    const persistClear = async () => {
+      try {
+        const list = await dungeonRepository.list();
+        const found = list.find((row) => row.dungeonId === resolvedDungeonId);
+        const nextProgress = found ?? {
+          dungeonId: resolvedDungeonId,
+          lastEnteredFloor: bundleRange.startFloor,
+          maxClearedFloor: 0,
+          clearCount: 0,
+          updatedAt: "",
+        };
+        await dungeonRepository.upsert({
+          ...nextProgress,
+          lastEnteredFloor: bundleRange.startFloor,
+          maxClearedFloor: Math.max(nextProgress.maxClearedFloor, bundleRange.bossFloor),
+          clearCount:
+            bundleRange.bossFloor > nextProgress.maxClearedFloor
+              ? nextProgress.clearCount
+              : nextProgress.clearCount + 1,
+        });
+        if (!cancelled) {
+          setIsPaused(true);
+        }
+      } catch (persistError) {
+        if (!cancelled) {
+          console.error("Failed to persist bundle clear:", persistError);
+        }
+      }
+    };
+    void persistClear();
+    return () => {
+      cancelled = true;
+    };
+  }, [bundleRange, resolvedDungeonId, session]);
 
   const displayedEvents = useMemo(
     () => (result ? result.events.filter((event) => event.tick <= currentTick).slice(-30) : []),
@@ -281,6 +446,25 @@ export default function ExplorationScreen() {
     if (!result || result.totalTicks <= 0) return 0;
     return Math.max(0, Math.min(1, currentTick / result.totalTicks));
   }, [currentTick, result]);
+  const currentFloor = session?.currentFloor ?? floor;
+  const currentFloorProgress = session?.floorProgressMap[currentFloor];
+  const currentFloorExplorationPercent = currentFloorProgress?.explorationPercent ?? 0;
+  const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
+  const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
+  const isAwaitingFloorDecision = session?.status === "AWAITING_DECISION";
+  const canDescend = isAwaitingFloorDecision && !!bundleRange && currentFloor < bundleRange.bossFloor;
+  const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "BUNDLE_CLEARED";
+  const exploredFloorProgressRows = useMemo(() => {
+    if (!session) return [];
+    return Object.entries(session.floorStepsThisRunMap)
+      .filter(([, steps]) => steps > 0)
+      .map(([floorText]) => Number(floorText))
+      .sort((a, b) => a - b)
+      .map((floorNum) => ({
+        floor: floorNum,
+        explorationPercent: Math.floor(session.floorProgressMap[floorNum]?.explorationPercent ?? 0),
+      }));
+  }, [session]);
   const displayedPartyMembers = useMemo<PartyStatusStripMember[]>(() => {
     if (partySnapshot.length === 0) return [];
     const members = partySnapshot.map((member) => ({
@@ -346,7 +530,9 @@ export default function ExplorationScreen() {
       <View style={styles.container}>
         <View style={styles.headerSection}>
           <View style={styles.topRow}>
-            <Text style={styles.title}>{`B${floor}F - Exploring`}</Text>
+            <Text style={styles.title}>
+              {bundleRange ? `${formatBundleLabel(bundleRange)} 探索` : `B${floor}F - Exploring`}
+            </Text>
             <View style={styles.timeBadge}>
               <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
             </View>
@@ -355,12 +541,25 @@ export default function ExplorationScreen() {
 
         <ImageBackground source={HERO_IMAGE} style={styles.hero} imageStyle={styles.heroImage}>
           <View style={styles.heroOverlay}>
-            <Text style={styles.heroMain}>The air grows damp. Water drips from the cavern ceiling.</Text>
+            <Text style={styles.heroMain}>
+              {bundleRange
+                ? `${formatBundleLabel(bundleRange)} / 現在 B${currentFloor}F`
+                : `現在 B${currentFloor}F`}
+            </Text>
             <View style={styles.heroProgressWrap}>
-              <Text style={styles.heroProgressLabel}>{`B${floor}F  ${currentTick} / ${result.totalTicks} steps`}</Text>
+              <Text style={styles.heroProgressLabel}>{`${currentTick} / ${result.totalTicks} steps`}</Text>
               <View style={styles.heroProgressTrack}>
                 <View style={[styles.heroProgressFill, { width: `${Math.floor(stepProgressRatio * 100)}%` }]} />
               </View>
+            </View>
+            <View style={styles.floorStatusRow}>
+              <Text style={styles.floorStatusText}>{`探索度 ${currentFloorExplorationPercentDisplay}%`}</Text>
+              <Text style={[styles.floorStatusText, currentFloorStairsDiscovered ? styles.floorStatusFound : null]}>
+                {currentFloorStairsDiscovered ? "階段発見済み" : "階段未発見"}
+              </Text>
+            </View>
+            <View style={styles.floorProgressTrack}>
+              <View style={[styles.floorProgressFill, { width: `${currentFloorExplorationPercent}%` }]} />
             </View>
           </View>
         </ImageBackground>
@@ -403,13 +602,118 @@ export default function ExplorationScreen() {
             <Pressable
               style={[styles.actionButton, styles.pauseButton]}
               onPress={() => setIsPaused((prev) => !prev)}
+              disabled={session?.status === "BUNDLE_CLEARED" || session?.status === "RUN_COMPLETE"}
             >
               <Text style={styles.pauseText}>
-                {isPaused ? "Resume" : "Pause"}
+                {session?.status === "BUNDLE_CLEARED" || session?.status === "RUN_COMPLETE"
+                  ? "Complete"
+                  : isPaused
+                    ? "Resume"
+                    : "Pause"}
               </Text>
             </Pressable>
           </View>
         </View>
+
+        <Modal
+          visible={isAwaitingFloorDecision}
+          transparent
+          animationType="slide"
+          onRequestClose={() => {
+            /* 階段選択中は明示的に選択させる */
+          }}
+        >
+          <View style={styles.decisionModalBackdrop}>
+            <View style={styles.decisionModalSheet}>
+              <Text style={styles.decisionModalTitle}>下り階段に到着しました</Text>
+              <Text style={styles.decisionModalSub}>{`B${currentFloor}Fを降りますか？`}</Text>
+              {canDescend ? (
+                <Pressable
+                  style={styles.decisionTextButton}
+                  onPress={() => setSession((prev) => (prev ? applyFloorDecision(prev, "DESCEND") : prev))}
+                >
+                  <Text style={styles.decisionTextButtonPrimary}>降りる</Text>
+                </Pressable>
+              ) : null}
+              <Pressable
+                style={styles.decisionTextButton}
+                onPress={() => setSession((prev) => (prev ? applyFloorDecision(prev, "CONTINUE") : prev))}
+              >
+                <Text style={styles.decisionTextButtonSecondary}>探索継続</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={!!isExplorationResultVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            /* 明示操作で閉じる */
+          }}
+        >
+          <View style={styles.resultModalBackdrop}>
+            <View style={styles.resultModalCard}>
+              <Text style={styles.resultModalTitle}>
+                {session?.status === "BUNDLE_CLEARED" ? "区間探索完了" : "探索リザルト"}
+              </Text>
+              <Text style={styles.resultModalSub}>
+                {bundleRange ? formatBundleLabel(bundleRange) : `B${floor}F`} / {currentTick} step
+              </Text>
+
+              <Text style={styles.resultSectionTitle}>探索した階の探索度</Text>
+              <ScrollView
+                style={styles.resultListBox}
+                contentContainerStyle={styles.resultListContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {exploredFloorProgressRows.length === 0 ? (
+                  <Text style={styles.resultEmptyText}>探索した階はありません</Text>
+                ) : (
+                  exploredFloorProgressRows.map((row) => (
+                    <View key={`floor-progress-${row.floor}`} style={styles.resultListRow}>
+                      <Text style={styles.resultListRowLabel}>{`B${row.floor}F`}</Text>
+                      <Text style={styles.resultListRowValue}>{`${row.explorationPercent}%`}</Text>
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+
+              <Text style={styles.resultSectionTitle}>入手アイテム（戦闘/宝箱）</Text>
+              <ScrollView
+                style={styles.resultListBox}
+                contentContainerStyle={styles.resultListContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {resultItems.length === 0 ? (
+                  <Text style={styles.resultEmptyText}>入手アイテムなし</Text>
+                ) : (
+                  resultItems.map((item) => (
+                    <View key={item.key} style={styles.resultListRow}>
+                      <Text style={styles.resultListRowLabel}>{item.label}</Text>
+                      <Text
+                        style={[
+                          styles.resultItemSource,
+                          item.source === "TREASURE" ? styles.resultItemSourceTreasure : styles.resultItemSourceBattle,
+                        ]}
+                      >
+                        {item.source === "TREASURE" ? "宝箱" : "戦闘"}
+                      </Text>
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+
+              <Pressable
+                style={styles.resultCloseButton}
+                onPress={() => router.replace("/(tabs)/dungeon")}
+              >
+                <Text style={styles.resultCloseButtonText}>ダンジョンタブへ戻る</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -468,6 +772,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.9)",
   },
   heroSub: { color: "#d4d4d8", marginTop: 4, fontSize: 10 },
+  floorStatusRow: {
+    marginTop: 6,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  floorStatusText: { color: "#e5e7eb", fontSize: 10, fontWeight: "600" },
+  floorStatusFound: { color: "#bbf7d0" },
+  floorProgressTrack: {
+    marginTop: 4,
+    width: "100%",
+    height: 6,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  floorProgressFill: {
+    height: "100%",
+    backgroundColor: "#86efac",
+  },
   logSection: {
     flex: 1,
     paddingHorizontal: 12,
@@ -525,7 +849,148 @@ const styles = StyleSheet.create({
     backgroundColor: "#e6e6e6",
   },
   pauseButton: { backgroundColor: "#121212" },
+  descendButton: { backgroundColor: "#1d4ed8" },
+  continueButton: {
+    borderWidth: 1,
+    borderColor: "#cfcfcf",
+    backgroundColor: "#e6e6e6",
+  },
+  decisionModalBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
+  },
+  decisionModalSheet: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  decisionModalTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    textAlign: "center",
+  },
+  decisionModalSub: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#6b7280",
+    textAlign: "center",
+  },
+  decisionTextButton: {
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  decisionTextButtonPrimary: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1d4ed8",
+  },
+  decisionTextButtonSecondary: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  resultModalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  resultModalCard: {
+    width: "100%",
+    maxWidth: 420,
+    maxHeight: "85%",
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  resultModalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#111827",
+    textAlign: "center",
+  },
+  resultModalSub: {
+    marginTop: 4,
+    marginBottom: 10,
+    fontSize: 12,
+    color: "#6b7280",
+    textAlign: "center",
+  },
+  resultSectionTitle: {
+    marginTop: 8,
+    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#374151",
+  },
+  resultListBox: {
+    maxHeight: 140,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    backgroundColor: "#fafafa",
+  },
+  resultListContent: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  resultListRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  resultListRowLabel: {
+    flex: 1,
+    color: "#111827",
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  resultListRowValue: {
+    color: "#1f2937",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  resultItemSource: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  resultItemSourceTreasure: { color: "#b45309" },
+  resultItemSourceBattle: { color: "#1d4ed8" },
+  resultEmptyText: {
+    color: "#6b7280",
+    fontSize: 12,
+    textAlign: "center",
+    paddingVertical: 8,
+  },
+  resultCloseButton: {
+    marginTop: 14,
+    borderRadius: 10,
+    backgroundColor: "#111827",
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  resultCloseButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
   disabledButton: { backgroundColor: "#8a8a8a" },
   retreatText: { color: "#4a4a4a", fontSize: 16, fontWeight: "600" },
   pauseText: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
+  continueText: { color: "#3f3f46", fontSize: 16, fontWeight: "700" },
 });

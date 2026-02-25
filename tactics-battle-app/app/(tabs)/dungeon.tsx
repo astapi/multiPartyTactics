@@ -8,6 +8,7 @@ import { dungeonRepository } from "@/db/repositories/dungeonRepository";
 import { dungeonPartyUiRepository } from "@/db/repositories/dungeonPartyUiRepository";
 import { partiesRepository } from "@/db/repositories/partiesRepository";
 import { buildDungeonPartyCardState, DungeonPartyCardAction } from "@/features/dungeon/partyCardState";
+import { buildDungeonBundles, findBundleByFloor, formatBundleLabel } from "@/game/dungeonBundles";
 import { useI18n } from "@/i18n";
 import { DungeonPartyUiStateRecord, DungeonProgressRecord, PartyWithMembers } from "@/types/models";
 
@@ -77,6 +78,39 @@ const buildFloorCandidates = (params: {
   }
   return Array.from(values).sort((a, b) => a - b);
 };
+
+const buildBundleStartCandidates = (params: {
+  dungeonId: string;
+  maxClearedFloor: number;
+  selectedFloor: number | null;
+}): number[] => {
+  const bundles = buildDungeonBundles(params.dungeonId);
+  if (bundles.length === 0 || bundles.every((bundle) => bundle.startFloor === bundle.bossFloor)) {
+    const maxFloor = bundles.at(-1)?.bossFloor ?? Math.max(1, params.maxClearedFloor + 1);
+    return buildFloorCandidates({
+      maxFloor,
+      maxClearedFloor: params.maxClearedFloor,
+      selectedFloor: params.selectedFloor,
+    });
+  }
+  const starts = bundles.map((bundle) => bundle.startFloor);
+  const frontierStart = Math.max(1, params.maxClearedFloor + 1);
+  const selectedStart = params.selectedFloor ?? frontierStart;
+  const anchorIndex = Math.max(
+    0,
+    starts.findIndex((start) => start >= selectedStart)
+  );
+  const values = new Set<number>([starts[0] ?? 1, frontierStart, selectedStart]);
+  for (let delta = -5; delta <= 5; delta += 1) {
+    const index = Math.max(0, Math.min(starts.length - 1, anchorIndex + delta));
+    const start = starts[index];
+    if (start) values.add(start);
+  }
+  return Array.from(values).sort((a, b) => a - b);
+};
+
+const normalizeSelectableFloor = (dungeonId: string, floor: number): number =>
+  findBundleByFloor(dungeonId, floor).startFloor;
 
 const defaultUiState = (partyId: string, dungeonId: string): DungeonPartyUiStateRecord => ({
   partyId,
@@ -159,12 +193,12 @@ export default function DungeonScreen() {
   const pickerUiState = pickerPartyId ? uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID) : null;
   const floorCandidates = useMemo(
     () =>
-      buildFloorCandidates({
-        maxFloor,
+      buildBundleStartCandidates({
+        dungeonId: selectedDungeon?.id ?? DEFAULT_DUNGEON_ID,
         maxClearedFloor,
         selectedFloor: pickerUiState?.selectedFloor ?? null,
       }),
-    [maxClearedFloor, maxFloor, pickerUiState?.selectedFloor]
+    [maxClearedFloor, pickerUiState?.selectedFloor, selectedDungeon?.id]
   );
 
   const upsertUiState = useCallback(
@@ -192,7 +226,7 @@ export default function DungeonScreen() {
   const handleSelectFloor = useCallback(
     async (partyId: string, floor: number) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
-      const clampedFloor = clampFloor(floor, maxFloor);
+      const clampedFloor = normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(floor, maxFloor));
       await upsertUiState({
         partyId,
         dungeonId: DEFAULT_DUNGEON_ID,
@@ -479,19 +513,33 @@ export default function DungeonScreen() {
             <View style={styles.quickRow}>
               <Pressable
                 style={styles.quickButton}
-                onPress={() => pickerPartyId && void handleSelectFloor(pickerPartyId, 1)}
+                onPress={() =>
+                  pickerPartyId && void handleSelectFloor(pickerPartyId, normalizeSelectableFloor(DEFAULT_DUNGEON_ID, 1))
+                }
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickB1")}</Text>
               </Pressable>
               <Pressable
                 style={styles.quickButton}
-                onPress={() => pickerPartyId && void handleSelectFloor(pickerPartyId, clampFloor(maxClearedFloor + 1, maxFloor))}
+                onPress={() =>
+                  pickerPartyId &&
+                  void handleSelectFloor(
+                    pickerPartyId,
+                    normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(maxClearedFloor + 1, maxFloor))
+                  )
+                }
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickFrontier")}</Text>
               </Pressable>
               <Pressable
                 style={styles.quickButton}
-                onPress={() => pickerPartyId && void handleSelectFloor(pickerPartyId, clampFloor(Math.max(1, maxClearedFloor), maxFloor))}
+                onPress={() =>
+                  pickerPartyId &&
+                  void handleSelectFloor(
+                    pickerPartyId,
+                    normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(Math.max(1, maxClearedFloor), maxFloor))
+                  )
+                }
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickMaxCleared")}</Text>
               </Pressable>
@@ -499,16 +547,19 @@ export default function DungeonScreen() {
 
             <ScrollView style={styles.floorList} contentContainerStyle={styles.floorListContent}>
               {floorCandidates.map((floor) => {
+                const bundleRange = findBundleByFloor(DEFAULT_DUNGEON_ID, floor);
                 const active = floor === (pickerUiState?.selectedFloor ?? null);
-                const isCleared = floor <= maxClearedFloor;
-                const isFrontier = floor === maxClearedFloor + 1;
+                const isCleared = bundleRange.bossFloor <= maxClearedFloor;
+                const isFrontier = bundleRange.startFloor === maxClearedFloor + 1;
                 return (
                   <Pressable
                     key={`picker-floor-${floor}`}
                     style={[styles.floorListItem, active ? styles.floorListItemActive : null]}
                     onPress={() => pickerPartyId && void handleSelectFloor(pickerPartyId, floor)}
                   >
-                    <Text style={[styles.floorListItemTitle, active ? styles.floorListItemTitleActive : null]}>{`B${floor}`}</Text>
+                    <Text style={[styles.floorListItemTitle, active ? styles.floorListItemTitleActive : null]}>
+                      {formatBundleLabel(bundleRange)}
+                    </Text>
                     <Text style={[styles.floorListItemSub, active ? styles.floorListItemSubActive : null]}>
                       {isFrontier
                         ? t("dungeon.ui.floorPicker.status.frontier")
