@@ -88,6 +88,7 @@ export type DungeonPartyUiStateRecord = {
   partyId: string;
   dungeonId: string;
   selectedFloor: number | null;
+  stepCount: number;
   mode: DungeonPartyUiMode;
   autoRunCount: number;
   autoLootCount: number;

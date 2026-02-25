@@ -26,6 +26,7 @@ import { generateTimeSeed } from "@/utils/rng";
 
 const HERO_IMAGE = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const EXPLORATION_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
+const DEFAULT_EXPLORATION_STEP_COUNT = 40;
 
 const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   LOG: "⋄",
@@ -123,11 +124,13 @@ type ExplorationResultItem = {
 export default function ExplorationScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const params = useLocalSearchParams<{ dungeonId?: string; floor?: string; partyId?: string }>();
+  const params = useLocalSearchParams<{ dungeonId?: string; floor?: string; partyId?: string; steps?: string }>();
 
   const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_4";
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
   const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
+  const requestedSteps = Number.parseInt(params.steps ?? String(DEFAULT_EXPLORATION_STEP_COUNT), 10);
+  const explorationStepCount = Math.max(1, Number.isFinite(requestedSteps) ? requestedSteps : DEFAULT_EXPLORATION_STEP_COUNT);
 
   const [nextEncounterIndex, setNextEncounterIndex] = useState(0);
   const [session, setSession] = useState<ExplorationSessionState | null>(null);
@@ -197,6 +200,7 @@ export default function ExplorationScreen() {
           dungeon,
           bundle,
           seed,
+          config: { stepsPerRun: explorationStepCount },
           persistedProgress: persistedBundleProgress.map((row) => ({
             floor: row.floor,
             explorationPercent: row.explorationPercent,
@@ -227,7 +231,7 @@ export default function ExplorationScreen() {
     return () => {
       mounted = false;
     };
-  }, [floor, resolvedDungeonId, resolvedPartyId]);
+  }, [explorationStepCount, floor, resolvedDungeonId, resolvedPartyId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -454,6 +458,8 @@ export default function ExplorationScreen() {
   const isAwaitingFloorDecision = session?.status === "AWAITING_DECISION";
   const canDescend = isAwaitingFloorDecision && !!bundleRange && currentFloor < bundleRange.bossFloor;
   const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "BUNDLE_CLEARED";
+  const isFloorDecisionModalVisible = isFocused && !isNavigating && isAwaitingFloorDecision && !isExplorationResultVisible;
+  const isExplorationResultModalVisible = isFocused && !isNavigating && !!isExplorationResultVisible;
   const exploredFloorProgressRows = useMemo(() => {
     if (!session) return [];
     return Object.entries(session.floorStepsThisRunMap)
@@ -616,7 +622,7 @@ export default function ExplorationScreen() {
         </View>
 
         <Modal
-          visible={isAwaitingFloorDecision}
+          visible={isFloorDecisionModalVisible}
           transparent
           animationType="slide"
           onRequestClose={() => {
@@ -646,7 +652,7 @@ export default function ExplorationScreen() {
         </Modal>
 
         <Modal
-          visible={!!isExplorationResultVisible}
+          visible={isExplorationResultModalVisible}
           transparent
           animationType="fade"
           onRequestClose={() => {

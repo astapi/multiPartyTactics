@@ -33,6 +33,8 @@ const DUNGEON_NAME_I18N_KEY = {
 } as const;
 
 const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "hakusla_dungeon_1_200";
+const DEFAULT_EXPLORATION_STEP_COUNT = 40;
+const EXPLORATION_STEP_COUNT_OPTIONS = [20, 40, 60, 80] as const;
 
 type PartyIconKey = "shield" | "swords" | "crown";
 
@@ -52,6 +54,20 @@ const getPartyIcon = (kind: PartyIconKey) => {
 };
 
 const clampFloor = (floor: number, maxFloor: number) => Math.max(1, Math.min(Math.max(1, maxFloor), floor));
+const getMaxSelectableStartFloor = (dungeonId: string, maxClearedFloor: number): number =>
+  findBundleByFloor(dungeonId, Math.max(1, maxClearedFloor + 1)).startFloor;
+const isSelectableStartFloor = (dungeonId: string, floor: number, maxClearedFloor: number): boolean =>
+  normalizeSelectableFloor(dungeonId, floor) <= getMaxSelectableStartFloor(dungeonId, maxClearedFloor);
+const sanitizeSelectedFloor = (params: {
+  dungeonId: string;
+  floor: number | null;
+  maxClearedFloor: number;
+  maxFloor: number;
+}): number | null => {
+  if (params.floor === null) return null;
+  const normalized = normalizeSelectableFloor(params.dungeonId, clampFloor(params.floor, params.maxFloor));
+  return isSelectableStartFloor(params.dungeonId, normalized, params.maxClearedFloor) ? normalized : null;
+};
 
 const formatElapsedShort = (totalSeconds: number): string => {
   const seconds = Math.max(0, Math.floor(totalSeconds));
@@ -66,17 +82,21 @@ const buildFloorCandidates = (params: {
   maxFloor: number;
   maxClearedFloor: number;
   selectedFloor: number | null;
+  maxSelectableFloor?: number;
 }): number[] => {
   const maxFloor = Math.max(1, params.maxFloor);
   const anchorBase = params.selectedFloor ?? (params.maxClearedFloor + 1);
   const anchor = clampFloor(anchorBase || 1, maxFloor);
   const frontier = clampFloor(params.maxClearedFloor + 1, maxFloor);
   const deepest = clampFloor(Math.max(1, params.maxClearedFloor), maxFloor);
+  const selectableMax = clampFloor(params.maxSelectableFloor ?? maxFloor, maxFloor);
   const values = new Set<number>([1, deepest, frontier, anchor]);
   for (let delta = -5; delta <= 5; delta += 1) {
     values.add(clampFloor(anchor + delta, maxFloor));
   }
-  return Array.from(values).sort((a, b) => a - b);
+  return Array.from(values)
+    .filter((value) => value <= selectableMax)
+    .sort((a, b) => a - b);
 };
 
 const buildBundleStartCandidates = (params: {
@@ -85,17 +105,19 @@ const buildBundleStartCandidates = (params: {
   selectedFloor: number | null;
 }): number[] => {
   const bundles = buildDungeonBundles(params.dungeonId);
+  const maxSelectableStartFloor = getMaxSelectableStartFloor(params.dungeonId, params.maxClearedFloor);
   if (bundles.length === 0 || bundles.every((bundle) => bundle.startFloor === bundle.bossFloor)) {
     const maxFloor = bundles.at(-1)?.bossFloor ?? Math.max(1, params.maxClearedFloor + 1);
     return buildFloorCandidates({
       maxFloor,
       maxClearedFloor: params.maxClearedFloor,
       selectedFloor: params.selectedFloor,
+      maxSelectableFloor: Math.max(1, Math.min(maxFloor, params.maxClearedFloor + 1)),
     });
   }
   const starts = bundles.map((bundle) => bundle.startFloor);
-  const frontierStart = Math.max(1, params.maxClearedFloor + 1);
-  const selectedStart = params.selectedFloor ?? frontierStart;
+  const frontierStart = maxSelectableStartFloor;
+  const selectedStart = Math.min(maxSelectableStartFloor, params.selectedFloor ?? frontierStart);
   const anchorIndex = Math.max(
     0,
     starts.findIndex((start) => start >= selectedStart)
@@ -106,16 +128,25 @@ const buildBundleStartCandidates = (params: {
     const start = starts[index];
     if (start) values.add(start);
   }
-  return Array.from(values).sort((a, b) => a - b);
+  return Array.from(values)
+    .filter((start) => start <= maxSelectableStartFloor)
+    .sort((a, b) => a - b);
 };
 
 const normalizeSelectableFloor = (dungeonId: string, floor: number): number =>
   findBundleByFloor(dungeonId, floor).startFloor;
+const normalizeStepCount = (value: number | null | undefined): number => {
+  const parsed = Math.max(1, Math.floor(value ?? DEFAULT_EXPLORATION_STEP_COUNT));
+  return EXPLORATION_STEP_COUNT_OPTIONS.includes(parsed as (typeof EXPLORATION_STEP_COUNT_OPTIONS)[number])
+    ? parsed
+    : DEFAULT_EXPLORATION_STEP_COUNT;
+};
 
 const defaultUiState = (partyId: string, dungeonId: string): DungeonPartyUiStateRecord => ({
   partyId,
   dungeonId,
   selectedFloor: null,
+  stepCount: DEFAULT_EXPLORATION_STEP_COUNT,
   mode: "IDLE",
   autoRunCount: 0,
   autoLootCount: 0,
@@ -191,14 +222,29 @@ export default function DungeonScreen() {
   );
   const pickerParty = pickerPartyId ? partyById.get(pickerPartyId) ?? null : null;
   const pickerUiState = pickerPartyId ? uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID) : null;
+  const pickerStepCount = normalizeStepCount(pickerUiState?.stepCount);
+  const maxSelectableStartFloor = useMemo(
+    () => getMaxSelectableStartFloor(selectedDungeon?.id ?? DEFAULT_DUNGEON_ID, maxClearedFloor),
+    [maxClearedFloor, selectedDungeon?.id]
+  );
+  const pickerSelectedFloor = useMemo(
+    () =>
+      sanitizeSelectedFloor({
+        dungeonId: selectedDungeon?.id ?? DEFAULT_DUNGEON_ID,
+        floor: pickerUiState?.selectedFloor ?? null,
+        maxClearedFloor,
+        maxFloor,
+      }),
+    [maxClearedFloor, maxFloor, pickerUiState?.selectedFloor, selectedDungeon?.id]
+  );
   const floorCandidates = useMemo(
     () =>
       buildBundleStartCandidates({
         dungeonId: selectedDungeon?.id ?? DEFAULT_DUNGEON_ID,
         maxClearedFloor,
-        selectedFloor: pickerUiState?.selectedFloor ?? null,
+        selectedFloor: pickerSelectedFloor,
       }),
-    [maxClearedFloor, pickerUiState?.selectedFloor, selectedDungeon?.id]
+    [maxClearedFloor, pickerSelectedFloor, selectedDungeon?.id]
   );
 
   const upsertUiState = useCallback(
@@ -227,10 +273,14 @@ export default function DungeonScreen() {
     async (partyId: string, floor: number) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
       const clampedFloor = normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(floor, maxFloor));
+      if (!isSelectableStartFloor(DEFAULT_DUNGEON_ID, clampedFloor, maxClearedFloor)) {
+        return;
+      }
       await upsertUiState({
         partyId,
         dungeonId: DEFAULT_DUNGEON_ID,
         selectedFloor: clampedFloor,
+        stepCount: normalizeStepCount(current.stepCount),
         mode: "IDLE",
         autoRunCount: current.autoRunCount,
         autoLootCount: current.autoLootCount,
@@ -238,13 +288,31 @@ export default function DungeonScreen() {
       });
       setPickerPartyId(null);
     },
-    [maxFloor, uiStateMap, upsertUiState]
+    [maxClearedFloor, maxFloor, uiStateMap, upsertUiState]
+  );
+
+  const handleSelectStepCount = useCallback(
+    async (partyId: string, stepCount: number) => {
+      const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
+      await upsertUiState({
+        ...current,
+        partyId,
+        dungeonId: DEFAULT_DUNGEON_ID,
+        stepCount: normalizeStepCount(stepCount),
+      });
+    },
+    [uiStateMap, upsertUiState]
   );
 
   const handlePartyAction = useCallback(
     async (partyId: string, action: DungeonPartyCardAction) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
-      const selectedFloor = current.selectedFloor;
+      const selectedFloor = sanitizeSelectedFloor({
+        dungeonId: DEFAULT_DUNGEON_ID,
+        floor: current.selectedFloor,
+        maxClearedFloor,
+        maxFloor,
+      });
 
       if (action === "selectFloor") {
         openFloorPicker(partyId);
@@ -262,6 +330,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "AUTO",
           selectedFloor,
+          stepCount: normalizeStepCount(current.stepCount),
         });
         return;
       }
@@ -273,6 +342,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "IDLE",
           selectedFloor,
+          stepCount: normalizeStepCount(current.stepCount),
         });
         return;
       }
@@ -284,6 +354,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "EXPLORE",
           selectedFloor,
+          stepCount: normalizeStepCount(current.stepCount),
         });
         router.push({
           pathname: "/dungeon/exploration",
@@ -291,11 +362,12 @@ export default function DungeonScreen() {
             dungeonId: DEFAULT_DUNGEON_ID,
             floor: String(selectedFloor),
             partyId,
+            steps: String(normalizeStepCount(current.stepCount)),
           },
         });
       }
     },
-    [openFloorPicker, router, uiStateMap, upsertUiState]
+    [maxClearedFloor, maxFloor, openFloorPicker, router, uiStateMap, upsertUiState]
   );
 
   const renderActionButton = useCallback(
@@ -371,9 +443,6 @@ export default function DungeonScreen() {
           <View style={styles.sharedDungeonTop}>
             <Text style={styles.sharedDungeonTitle}>{t(dungeonNameKey)}</Text>
           </View>
-          <Text style={styles.sharedDungeonMeta}>
-            {t("dungeon.ui.shared.maxCleared", { floor: Math.max(0, maxClearedFloor) })}
-          </Text>
         </View>
 
         {isLoading ? (
@@ -391,8 +460,15 @@ export default function DungeonScreen() {
         ) : (
           parties.map((entry, index) => {
             const uiState = uiStateMap[entry.party.id] ?? defaultUiState(entry.party.id, DEFAULT_DUNGEON_ID);
+            const stepCount = normalizeStepCount(uiState.stepCount);
+            const safeSelectedFloor = sanitizeSelectedFloor({
+              dungeonId: DEFAULT_DUNGEON_ID,
+              floor: uiState.selectedFloor,
+              maxClearedFloor,
+              maxFloor,
+            });
             const cardState = buildDungeonPartyCardState({
-              selectedFloor: uiState.selectedFloor,
+              selectedFloor: safeSelectedFloor,
               mode: uiState.mode,
               maxClearedFloor,
             });
@@ -454,6 +530,9 @@ export default function DungeonScreen() {
                           <Text style={styles.floorChipText}>{t("dungeon.ui.action.changeFloor")}</Text>
                         </Pressable>
                       ) : null}
+                      <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
+                        <Text style={styles.floorChipText}>{t("dungeon.ui.step.short", { steps: stepCount })}</Text>
+                      </Pressable>
                     </View>
                   ) : null}
 
@@ -531,26 +610,34 @@ export default function DungeonScreen() {
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickFrontier")}</Text>
               </Pressable>
-              <Pressable
-                style={styles.quickButton}
-                onPress={() =>
-                  pickerPartyId &&
-                  void handleSelectFloor(
-                    pickerPartyId,
-                    normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(Math.max(1, maxClearedFloor), maxFloor))
-                  )
-                }
-              >
-                <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickMaxCleared")}</Text>
-              </Pressable>
+            </View>
+
+            <View style={styles.stepPickerSection}>
+              <Text style={styles.stepPickerTitle}>{t("dungeon.ui.stepPicker.title")}</Text>
+              <View style={styles.stepPickerOptions}>
+                {EXPLORATION_STEP_COUNT_OPTIONS.map((stepCount) => {
+                  const active = stepCount === pickerStepCount;
+                  return (
+                    <Pressable
+                      key={`picker-step-${stepCount}`}
+                      style={[styles.stepPickerOption, active ? styles.stepPickerOptionActive : null]}
+                      onPress={() => pickerPartyId && void handleSelectStepCount(pickerPartyId, stepCount)}
+                    >
+                      <Text style={[styles.stepPickerOptionText, active ? styles.stepPickerOptionTextActive : null]}>
+                        {t("dungeon.ui.step.short", { steps: stepCount })}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
             <ScrollView style={styles.floorList} contentContainerStyle={styles.floorListContent}>
               {floorCandidates.map((floor) => {
                 const bundleRange = findBundleByFloor(DEFAULT_DUNGEON_ID, floor);
-                const active = floor === (pickerUiState?.selectedFloor ?? null);
+                const active = floor === pickerSelectedFloor;
                 const isCleared = bundleRange.bossFloor <= maxClearedFloor;
-                const isFrontier = bundleRange.startFloor === maxClearedFloor + 1;
+                const isFrontier = bundleRange.startFloor === maxSelectableStartFloor;
                 return (
                   <Pressable
                     key={`picker-floor-${floor}`}
@@ -718,6 +805,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   quickButtonText: { color: colors.textPrimary, fontSize: 12, fontWeight: "600" },
+  stepPickerSection: { gap: 8, marginTop: 6, marginBottom: 10 },
+  stepPickerTitle: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
+  stepPickerOptions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  stepPickerOption: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSubtle,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  stepPickerOptionActive: {
+    backgroundColor: colors.bgDark,
+    borderColor: colors.bgDark,
+  },
+  stepPickerOptionText: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
+  stepPickerOptionTextActive: { color: "#ffffff" },
   floorList: { maxHeight: 240 },
   floorListContent: { gap: 8 },
   floorListItem: {
