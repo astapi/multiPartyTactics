@@ -1,18 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
-import { Link, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, ChevronRight, GripVertical, Plus, Shield, Sword } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Link, Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { ArrowLeft, Gem, GripVertical, Plus, RefreshCw, Shield, Sword } from "lucide-react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getClassById } from "@/constants/classes";
+import { getConstellationDisplayName } from "@/constants/constellations";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
-import { getConstellationDisplayName } from "@/constants/constellations";
 import { buildEquipmentDisplayName } from "@/game/loot/equipmentMasterService";
-import {
-  MAX_CHARACTER_LEVEL,
-  getExpIntoCurrentLevel,
-  getExpRequiredForNextLevel,
-  getExpToNextLevel,
-} from "@/game/progression";
 import {
   getConditionTypeLabel,
   getSkillIdDisplayName,
@@ -20,20 +15,20 @@ import {
   summarizeConditionParams,
   summarizeTargetParams,
 } from "@/game/tactics/labels";
-import { TranslationKey, useI18n } from "@/i18n";
 import { useTactics } from "@/hooks/useTactics";
+import { TranslationKey, useI18n } from "@/i18n";
 import { CharacterRecord, ClassId } from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
   bgSurface: "#f5f5f5",
-  bgElevated: "#e5e5e5",
   textPrimary: "#1a1a1a",
-  textStrong: "#444444",
+  textStrong: "#555555",
   textSecondary: "#666666",
   textTertiary: "#888888",
-  iconSecondary: "#999999",
+  textMuted: "#999999",
   borderDefault: "#e0e0e0",
+  iconDark: "#111111",
 } as const;
 
 const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
@@ -43,6 +38,15 @@ const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
   CLERIC: "class.name.cleric",
   WITCH: "class.name.witch",
   THIEF: "class.name.thief",
+};
+
+const PRIORITY_BADGE_COLORS = ["#333333", "#666666", "#999999"] as const;
+
+type EquipmentRowView = {
+  key: "weapon" | "armor" | "accessory";
+  slotLabel: string;
+  itemName: string;
+  hint: string;
 };
 
 export default function CharacterDetailScreen() {
@@ -73,31 +77,55 @@ export default function CharacterDetailScreen() {
 
   const topRules = useMemo(() => [...rules].sort((a, b) => a.priority - b.priority).slice(0, 3), [rules]);
   const classLabel = t(CLASS_NAME_KEYS[character?.classId ?? "SWORDMAN"]);
-  const constellationTitle = locale === "ja" ? "星座" : "Constellation";
-  const constellationLabel = character
-    ? getConstellationDisplayName(character.constellationId, locale)
-    : "";
+  const constellationLabel = character ? getConstellationDisplayName(character.constellationId, locale) : "";
   const unequippedLabel = locale === "ja" ? "未装備" : "Unequipped";
+  const tacticsInfoText =
+    locale === "ja"
+      ? "ルールは順番に実行されます。ドラッグで優先度を並び替え。"
+      : "Rules are executed in order. Drag to reorder priority.";
+
   const weaponLabel = useMemo(() => {
     const weapon = equippedBySlot.weapon;
     if (!weapon) return unequippedLabel;
     const name = buildEquipmentDisplayName(weapon.baseItemId, weapon.mutationPrefixId);
     return locale === "ja" ? name.jp : name.en;
   }, [equippedBySlot.weapon, locale, unequippedLabel]);
+
   const armorLabel = useMemo(() => {
     const armor = equippedBySlot.armor;
     if (!armor) return unequippedLabel;
     const name = buildEquipmentDisplayName(armor.baseItemId, armor.mutationPrefixId);
     return locale === "ja" ? name.jp : name.en;
   }, [equippedBySlot.armor, locale, unequippedLabel]);
-  const expIntoLevel = character ? getExpIntoCurrentLevel(character.exp, character.level) : 0;
-  const expNeededForLevel = character ? getExpRequiredForNextLevel(character.level) : 0;
-  const expToNextLevel = character ? getExpToNextLevel(character.exp, character.level) : 0;
-  const isLevelCapped = !!character && character.level >= MAX_CHARACTER_LEVEL;
+
+  const equipmentRows = useMemo<EquipmentRowView[]>(
+    () => [
+      {
+        key: "weapon",
+        slotLabel: "Weapon",
+        itemName: weaponLabel,
+        hint: equippedBySlot.weapon ? "ATK" : "--",
+      },
+      {
+        key: "armor",
+        slotLabel: "Armor",
+        itemName: armorLabel,
+        hint: equippedBySlot.armor ? "DEF" : "--",
+      },
+      {
+        key: "accessory",
+        slotLabel: "Accessory",
+        itemName: unequippedLabel,
+        hint: "--",
+      },
+    ],
+    [armorLabel, equippedBySlot.armor, equippedBySlot.weapon, unequippedLabel, weaponLabel]
+  );
 
   if (!character) {
     return (
       <SafeAreaView style={styles.screen}>
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.centerWrap}>
           <Text style={styles.emptyText}>{t("character.empty")}</Text>
         </View>
@@ -105,61 +133,57 @@ export default function CharacterDetailScreen() {
     );
   }
 
+  const classInfo = getClassById(character.classId);
+
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
+      <Stack.Screen options={{ headerShown: false }} />
+
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Pressable style={styles.iconBtn} onPress={() => router.back()}>
             <ArrowLeft size={18} stroke={colors.textPrimary} />
           </Pressable>
-          <Text style={styles.headerTitle}>{character.name}</Text>
-        </View>
-        <View style={styles.iconBtn}>
-          <Plus size={16} stroke={colors.iconSecondary} />
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {character.name}
+          </Text>
         </View>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileWrap}>
-          <View style={styles.avatar}>
-            <Shield size={36} stroke={colors.textStrong} />
+        <View style={styles.profileCard}>
+          <View style={styles.avatarWrap}>
+            <Image source={classInfo.image} style={styles.avatarImage} resizeMode="contain" />
           </View>
-          <Text style={styles.profileName}>{character.name}</Text>
-          <Text style={styles.profileSub}>{`${classLabel}  Lv.${character.level}`}</Text>
-          <Text style={styles.profileMeta}>{`${constellationTitle}: ${constellationLabel}`}</Text>
-
-          <View style={styles.statRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>HP</Text>
-              <Text style={styles.statValue}>{character.baseMaxHp}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>MP</Text>
-              <Text style={styles.statValue}>{character.baseMaxMp}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>ATK</Text>
-              <Text style={styles.statValue}>{character.baseAtk}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>DEF</Text>
-              <Text style={styles.statValue}>{character.baseDef}</Text>
-            </View>
+          <View style={styles.profileTextWrap}>
+            <Text style={styles.profileName} numberOfLines={1}>
+              {character.name}
+            </Text>
+            <Text style={styles.profileSub} numberOfLines={1}>
+              {`${classLabel}  Lv.${character.level}`}
+            </Text>
+            <Text style={styles.profileMeta} numberOfLines={1}>
+              {constellationLabel}
+            </Text>
           </View>
+        </View>
 
-          <View style={styles.expCard}>
-            <View style={styles.expRow}>
-              <Text style={styles.expLabel}>{t("character.exp.progress")}</Text>
-              <Text style={styles.expValue}>
-                {isLevelCapped ? t("character.exp.max") : `${expIntoLevel} / ${expNeededForLevel}`}
-              </Text>
-            </View>
-            <View style={styles.expRow}>
-              <Text style={styles.expLabel}>{t("character.exp.nextLevel")}</Text>
-              <Text style={styles.expValue}>
-                {isLevelCapped ? t("character.exp.max") : String(expToNextLevel)}
-              </Text>
-            </View>
+        <View style={styles.statRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>HP</Text>
+            <Text style={styles.statValue}>{character.baseMaxHp}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>MP</Text>
+            <Text style={styles.statValue}>{character.baseMaxMp}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>ATK</Text>
+            <Text style={styles.statValue}>{character.baseAtk}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>DEF</Text>
+            <Text style={styles.statValue}>{character.baseDef}</Text>
           </View>
         </View>
 
@@ -167,69 +191,85 @@ export default function CharacterDetailScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>{t("character.equipment")}</Text>
             <Link href={`/characters/${id}/equipment`} asChild>
-              <Pressable style={styles.darkBtn}>
-                <Text style={styles.darkBtnText}>{t("character.change")}</Text>
+              <Pressable style={styles.sectionIconButton}>
+                <RefreshCw size={14} stroke="#ffffff" />
               </Pressable>
             </Link>
           </View>
 
-          <View style={styles.itemCard}>
-            <Sword size={18} stroke={colors.textSecondary} />
-            <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>{weaponLabel}</Text>
-              <Text style={styles.itemSub}>{equippedBySlot.weapon ? t("equip.equipped") : unequippedLabel}</Text>
-            </View>
-            <ChevronRight size={18} stroke={colors.iconSecondary} />
-          </View>
-          <View style={styles.itemCard}>
-            <Shield size={18} stroke={colors.textSecondary} />
-            <View style={styles.itemTextWrap}>
-              <Text style={styles.itemName}>{armorLabel}</Text>
-              <Text style={styles.itemSub}>{equippedBySlot.armor ? t("equip.equipped") : unequippedLabel}</Text>
-            </View>
-            <ChevronRight size={18} stroke={colors.iconSecondary} />
+          <View style={styles.sectionList}>
+            {equipmentRows.map((row) => {
+              const leftIcon =
+                row.key === "weapon" ? (
+                  <Sword size={14} stroke="#ffffff" />
+                ) : row.key === "armor" ? (
+                  <Shield size={14} stroke="#ffffff" />
+                ) : (
+                  <Gem size={14} stroke="#ffffff" />
+                );
+
+              return (
+                <View key={row.key} style={styles.equipmentRowCard}>
+                  <View style={styles.rowLeadingIcon}>{leftIcon}</View>
+                  <View style={styles.rowMainText}>
+                    <Text style={styles.rowSlotLabel}>{row.slotLabel}</Text>
+                    <Text style={styles.rowItemName} numberOfLines={1}>
+                      {row.itemName}
+                    </Text>
+                  </View>
+                  <Text style={styles.rowHintText}>{row.hint}</Text>
+                </View>
+              );
+            })}
           </View>
         </View>
-
-        <View style={styles.divider} />
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>{t("character.tactics")}</Text>
             <Link href={`/characters/${id}/tactics`} asChild>
-              <Pressable style={styles.darkBtn}>
-                <Text style={styles.darkBtnText}>{t("character.addRule")}</Text>
+              <Pressable style={styles.sectionIconButton}>
+                <Plus size={14} stroke="#ffffff" />
               </Pressable>
             </Link>
           </View>
 
-          <Text style={styles.infoText}>{t("character.tactics.info")}</Text>
+          <Text style={styles.infoText}>{tacticsInfoText}</Text>
 
           {topRules.length === 0 ? (
             <Text style={styles.emptyText}>{t("character.tactics.empty")}</Text>
           ) : (
-            topRules.map((rule) => (
-              <View key={rule.id} style={styles.ruleCard}>
-                <View style={styles.priorityBadge}>
-                  <Text style={styles.priorityText}>{rule.priority}</Text>
-                </View>
-                <View style={styles.ruleTextWrap}>
-                  <Text style={styles.ruleTitle}>{getSkillIdDisplayName(rule.skillId, t)}</Text>
-                  <Text style={styles.ruleSub}>
-                    {`${getConditionTypeLabel(rule.conditionType, t)}${
-                      summarizeConditionParams(rule, t)
-                        ? ` (${summarizeConditionParams(rule, t)})`
-                        : ""
-                    } -> ${getTargetTypeLabel(rule.targetType, t)}${
-                      summarizeTargetParams(rule, t)
-                        ? ` (${summarizeTargetParams(rule, t)})`
-                        : ""
-                    }`}
-                  </Text>
-                </View>
-                <GripVertical size={16} stroke={colors.iconSecondary} />
-              </View>
-            ))
+            <View style={styles.sectionList}>
+              {topRules.map((rule, index) => {
+                const conditionSummary = summarizeConditionParams(rule, t);
+                const targetSummary = summarizeTargetParams(rule, t);
+                const ruleSummary = `${getConditionTypeLabel(rule.conditionType, t)}${
+                  conditionSummary ? ` (${conditionSummary})` : ""
+                }  ->  ${getTargetTypeLabel(rule.targetType, t)}${targetSummary ? ` (${targetSummary})` : ""}`;
+
+                return (
+                  <View key={rule.id} style={styles.ruleCard}>
+                    <View
+                      style={[
+                        styles.priorityBadge,
+                        { backgroundColor: PRIORITY_BADGE_COLORS[index] ?? PRIORITY_BADGE_COLORS[2] },
+                      ]}
+                    >
+                      <Text style={styles.priorityText}>{rule.priority}</Text>
+                    </View>
+                    <View style={styles.ruleTextWrap}>
+                      <Text style={styles.ruleTitle} numberOfLines={1}>
+                        {getSkillIdDisplayName(rule.skillId, t)}
+                      </Text>
+                      <Text style={styles.ruleSub} numberOfLines={1}>
+                        {ruleSummary}
+                      </Text>
+                    </View>
+                    <GripVertical size={14} stroke={colors.textMuted} />
+                  </View>
+                );
+              })}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -238,51 +278,216 @@ export default function CharacterDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgPrimary },
-  centerWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
-  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, paddingHorizontal: 20 },
-  headerLeft: { alignItems: "center", flexDirection: "row", gap: 12 },
-  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, alignItems: "center", justifyContent: "center" },
-  headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
-  scroll: { flex: 1 },
-  content: { paddingBottom: 20 },
-  profileWrap: { alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 24, alignItems: "center", justifyContent: "center", backgroundColor: colors.bgSurface, borderWidth: 2, borderColor: colors.textPrimary },
-  profileName: { color: colors.textPrimary, fontSize: 24, fontWeight: "700" },
-  profileSub: { color: colors.textStrong, fontSize: 13, fontWeight: "500" },
-  profileMeta: { color: colors.textSecondary, fontSize: 12, fontWeight: "500" },
-  statRow: { flexDirection: "row", gap: 8, width: "100%" },
-  statCard: { flex: 1, alignItems: "center", borderWidth: 1, borderColor: colors.borderDefault, borderRadius: 12, backgroundColor: colors.bgSurface, padding: 12, gap: 4 },
-  statLabel: { color: colors.textSecondary, fontSize: 10, fontWeight: "500" },
-  statValue: { color: colors.textPrimary, fontSize: 15, fontWeight: "700" },
-  expCard: {
-    width: "100%",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
+  screen: {
+    flex: 1,
+    backgroundColor: colors.bgPrimary,
+  },
+  centerWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 28,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.bgPrimary,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 12,
     backgroundColor: colors.bgSurface,
-    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  expRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  expLabel: { color: colors.textSecondary, fontSize: 12, fontWeight: "500" },
-  expValue: { color: colors.textPrimary, fontSize: 13, fontWeight: "700" },
-  section: { paddingHorizontal: 20, paddingTop: 12, gap: 8 },
-  sectionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  sectionLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: "500", letterSpacing: 1 },
-  darkBtn: { borderRadius: 12, backgroundColor: colors.textPrimary, paddingHorizontal: 10, paddingVertical: 8 },
-  darkBtnText: { color: "#ffffff", fontSize: 11, fontWeight: "600" },
-  itemCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, gap: 12, padding: 12 },
-  itemTextWrap: { flex: 1, gap: 2 },
-  itemName: { color: colors.textPrimary, fontSize: 14, fontWeight: "600" },
-  itemSub: { color: colors.textTertiary, fontSize: 10 },
-  divider: { height: 1, backgroundColor: colors.borderDefault, marginTop: 12 },
-  infoText: { color: colors.textTertiary, fontSize: 12 },
-  emptyText: { color: colors.textTertiary, fontSize: 12 },
-  ruleCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, gap: 12, padding: 14 },
-  priorityBadge: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#333333" },
-  priorityText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
-  ruleTextWrap: { flex: 1, gap: 4 },
-  ruleTitle: { color: colors.textPrimary, fontSize: 13, fontWeight: "600" },
-  ruleSub: { color: colors.textTertiary, fontSize: 11 },
+  headerTitle: {
+    flexShrink: 1,
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 14,
+  },
+  avatarWrap: {
+    width: 80,
+    height: 80,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+  },
+  profileTextWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  profileName: {
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  profileSub: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  profileMeta: {
+    color: colors.textTertiary,
+    fontSize: 11,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 20,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSurface,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+  },
+  statLabel: {
+    color: colors.textTertiary,
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 0.4,
+  },
+  statValue: {
+    color: colors.textStrong,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  section: {
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionLabel: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 1.1,
+  },
+  sectionIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: colors.iconDark,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sectionList: {
+    gap: 8,
+  },
+  equipmentRowCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSurface,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  rowLeadingIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#111111",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowMainText: {
+    flex: 1,
+    gap: 2,
+  },
+  rowSlotLabel: {
+    color: colors.textTertiary,
+    fontSize: 10,
+  },
+  rowItemName: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  rowHintText: {
+    color: colors.textTertiary,
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+  },
+  infoText: {
+    color: colors.textTertiary,
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  emptyText: {
+    color: colors.textTertiary,
+    fontSize: 12,
+  },
+  ruleCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSurface,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  priorityBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  priorityText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  ruleTextWrap: {
+    flex: 1,
+    gap: 4,
+  },
+  ruleTitle: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  ruleSub: {
+    color: colors.textTertiary,
+    fontSize: 10,
+  },
 });
