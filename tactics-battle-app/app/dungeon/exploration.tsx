@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Package } from "lucide-react-native";
 import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/PartyStatusStrip";
 import { DUNGEONS } from "@/constants/dungeons";
-import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import {
@@ -87,10 +87,11 @@ type ExplorationPartySnapshotMember = PartyStatusStripMember & {
 export default function ExplorationScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const params = useLocalSearchParams<{ dungeonId?: string; floor?: string }>();
+  const params = useLocalSearchParams<{ dungeonId?: string; floor?: string; partyId?: string }>();
 
   const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_4";
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
+  const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
 
   const [currentTick, setCurrentTick] = useState(0);
   const [nextEncounterIndex, setNextEncounterIndex] = useState(0);
@@ -123,7 +124,7 @@ export default function ExplorationScreen() {
           lastEnteredFloor: floor,
         });
 
-        const partyRecords = await charactersRepository.listPartyMembers();
+        const partyRecords = await charactersRepository.listPartyMembers(resolvedPartyId);
         if (partyRecords.length === 0) {
           if (mounted) {
             setError("パーティメンバーがいません。ギルドでキャラクターを追加してください。");
@@ -170,7 +171,7 @@ export default function ExplorationScreen() {
     return () => {
       mounted = false;
     };
-  }, [floor, resolvedDungeonId]);
+  }, [floor, resolvedDungeonId, resolvedPartyId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -257,11 +258,12 @@ export default function ExplorationScreen() {
       params: {
         dungeonId: resolvedDungeonId,
         floor: String(floor),
+        partyId: resolvedPartyId,
         explorationSeed: String(result.seed),
         encounter: encounterPayload,
       },
     });
-  }, [currentTick, floor, isFocused, isNavigating, nextEncounterIndex, resolvedDungeonId, result, router]);
+  }, [currentTick, floor, isFocused, isNavigating, nextEncounterIndex, resolvedDungeonId, resolvedPartyId, result, router]);
 
   const displayedEvents = useMemo(
     () => (result ? result.events.filter((event) => event.tick <= currentTick).slice(-30) : []),

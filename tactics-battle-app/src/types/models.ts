@@ -23,6 +23,19 @@ export type CharacterRecord = {
   currentMp: number;
 };
 
+export type PartyRecord = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
+export type PartyMemberRecord = CharacterRecord & { slotIndex: number };
+
+export type PartyWithMembers = {
+  party: PartyRecord;
+  members: PartyMemberRecord[];
+};
+
 export type ConditionType =
   | "TURN_EQUALS"
   | "SELF_HP_BELOW"
@@ -58,6 +71,19 @@ export type DungeonProgressRecord = {
   lastEnteredFloor: number;
   maxClearedFloor: number;
   clearCount: number;
+  updatedAt: string;
+};
+
+export type DungeonPartyUiMode = "IDLE" | "EXPLORE" | "AUTO";
+
+export type DungeonPartyUiStateRecord = {
+  partyId: string;
+  dungeonId: string;
+  selectedFloor: number | null;
+  mode: DungeonPartyUiMode;
+  autoRunCount: number;
+  autoLootCount: number;
+  autoElapsedSeconds: number;
   updatedAt: string;
 };
 
