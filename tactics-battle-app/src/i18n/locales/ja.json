@@ -141,6 +141,7 @@
   "dungeon.ui.headerTitle": "ダンジョン",
   "dungeon.ui.loading": "読み込み中...",
   "dungeon.ui.emptyParties": "パーティがありません",
+  "dungeon.ui.shared.title": "クレストリアダンジョン",
   "dungeon.ui.shared.maxCleared": "最深到達: B{floor}",
   "dungeon.ui.party.membersAvg": "{count}/6 members  •  Avg Lv.{avg}",
   "dungeon.ui.status.idle": "待機",

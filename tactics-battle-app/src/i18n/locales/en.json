@@ -141,6 +141,7 @@
   "dungeon.ui.headerTitle": "Dungeon",
   "dungeon.ui.loading": "Loading...",
   "dungeon.ui.emptyParties": "No parties found",
+  "dungeon.ui.shared.title": "Crestoria Dungeon",
   "dungeon.ui.shared.maxCleared": "Max Cleared: B{floor}",
   "dungeon.ui.party.membersAvg": "{count}/6 members  •  Avg Lv.{avg}",
   "dungeon.ui.status.idle": "Idle",

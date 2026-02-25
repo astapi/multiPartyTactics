@@ -26,12 +26,6 @@ const colors = {
   overlay: "rgba(0,0,0,0.28)",
 } as const;
 
-const DUNGEON_NAME_I18N_KEY = {
-  hakusla_dungeon_1_200: "dungeon.name.hakusla_dungeon_1_200",
-  crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
-  crestoria_dungeon_5_9: "dungeon.name.crestoria_dungeon_5_9",
-} as const;
-
 const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "hakusla_dungeon_1_200";
 const DEFAULT_EXPLORATION_STEP_COUNT = 40;
 const EXPLORATION_STEP_COUNT_OPTIONS = [20, 40, 60, 80] as const;
@@ -212,10 +206,6 @@ export default function DungeonScreen() {
   const maxFloor = selectedDungeon?.floors ?? 1;
   const progress = progressMap.get(DEFAULT_DUNGEON_ID);
   const maxClearedFloor = progress?.maxClearedFloor ?? 0;
-  const dungeonNameKey =
-    DUNGEON_NAME_I18N_KEY[(selectedDungeon?.id ?? DEFAULT_DUNGEON_ID) as keyof typeof DUNGEON_NAME_I18N_KEY] ??
-    "dungeon.name.hakusla_dungeon_1_200";
-
   const partyById = useMemo(
     () => new Map(parties.map((entry) => [entry.party.id, entry] as const)),
     [parties]
@@ -441,7 +431,8 @@ export default function DungeonScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.sharedDungeonCard}>
           <View style={styles.sharedDungeonTop}>
-            <Text style={styles.sharedDungeonTitle}>{t(dungeonNameKey)}</Text>
+            <Text style={styles.sharedDungeonTitle}>{t("dungeon.ui.shared.title")}</Text>
+            <Text style={styles.sharedDungeonMeta}>B1-???F</Text>
           </View>
         </View>
 
