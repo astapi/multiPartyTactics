@@ -17,10 +17,25 @@ import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { toUnit } from "@/game/partyMapper";
 import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
 import { useI18n } from "@/i18n";
-import { TacticsRuleRecord } from "@/types/models";
+import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
 import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
+type LevelUpStatKey = "maxHp" | "atk" | "def" | "spd" | "maxMp" | "mpRegen";
+type BattleResultLevelUp = {
+  characterId: string;
+  name: string;
+  previousLevel: number;
+  newLevel: number;
+  statUps: Array<{ statKey: LevelUpStatKey; amount: number }>;
+};
+type BattleResultSummary = {
+  expGained: number;
+  expRecipientCount: number;
+  levelUps: BattleResultLevelUp[];
+  drops: string[];
+};
+
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 
@@ -51,6 +66,27 @@ const parseEncounter = (raw: string | undefined): EncounterResult | null => {
   }
 };
 
+const buildLevelUpStatDiffs = (
+  previous: CharacterRecord,
+  next: CharacterRecord
+): BattleResultLevelUp["statUps"] => {
+  const diffs: BattleResultLevelUp["statUps"] = [];
+  const pairs: Array<{ statKey: LevelUpStatKey; previous: number; next: number }> = [
+    { statKey: "maxHp", previous: previous.baseMaxHp, next: next.baseMaxHp },
+    { statKey: "atk", previous: previous.baseAtk, next: next.baseAtk },
+    { statKey: "def", previous: previous.baseDef, next: next.baseDef },
+    { statKey: "spd", previous: previous.baseSpd, next: next.baseSpd },
+    { statKey: "maxMp", previous: previous.baseMaxMp, next: next.baseMaxMp },
+    { statKey: "mpRegen", previous: previous.baseMpRegen, next: next.baseMpRegen },
+  ];
+  for (const pair of pairs) {
+    const amount = Math.max(0, pair.next - pair.previous);
+    if (amount <= 0) continue;
+    diffs.push({ statKey: pair.statKey, amount });
+  }
+  return diffs;
+};
+
 export default function BattleScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -71,8 +107,8 @@ export default function BattleScreen() {
   const [resolvedSeed, setResolvedSeed] = useState<number | null>(null);
   const [battleCompleted, setBattleCompleted] = useState(false);
   const [revealedLogCount, setRevealedLogCount] = useState(0);
-  const [autoReturned, setAutoReturned] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [battleResultSummary, setBattleResultSummary] = useState<BattleResultSummary | null>(null);
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
@@ -142,8 +178,8 @@ export default function BattleScreen() {
         setStatus("IDLE");
         setBattleCompleted(false);
         setRevealedLogCount(0);
-        setAutoReturned(false);
         setIsPaused(false);
+        setBattleResultSummary(null);
         setPhase("ENCOUNTER");
       } catch (error) {
         console.error("Failed to load battle:", error);
@@ -186,6 +222,12 @@ export default function BattleScreen() {
       await battleRepository.updateSessionStatus(nextSessionId, result.outcome);
 
       let combinedLogs = result.logs;
+      const nextResultSummary: BattleResultSummary = {
+        expGained: 0,
+        expRecipientCount: 0,
+        levelUps: [],
+        drops: [],
+      };
       if (result.outcome === "WIN") {
         const alivePartyIds = new Set(
           result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
@@ -196,6 +238,8 @@ export default function BattleScreen() {
             floor: resolvedFloor,
             enemyCount: encounterData.enemies.length,
           });
+          nextResultSummary.expGained = expGain;
+          nextResultSummary.expRecipientCount = alivePartyIds.size;
           const leveledPartyUiMetaById: Record<string, { level: number }> = {
             ...partyUiMetaById,
           };
@@ -204,6 +248,15 @@ export default function BattleScreen() {
             const progression = applyExperienceToCharacter(record, expGain);
             await charactersRepository.upsert(progression.character);
             leveledPartyUiMetaById[record.id] = { level: progression.newLevel };
+            if (progression.leveledUpBy > 0) {
+              nextResultSummary.levelUps.push({
+                characterId: record.id,
+                name: record.name,
+                previousLevel: progression.previousLevel,
+                newLevel: progression.newLevel,
+                statUps: buildLevelUpStatDiffs(record, progression.character),
+              });
+            }
           }
           setPartyUiMetaById(leveledPartyUiMetaById);
         }
@@ -235,6 +288,7 @@ export default function BattleScreen() {
           });
           if (!applyResult.applied) continue;
           const itemName = locale === "ja" ? drop.reward.displayName.jp : drop.reward.displayName.en;
+          nextResultSummary.drops.push(itemName);
           lootLogRecords.push({
             battleSessionId: nextSessionId,
             turn: result.turns,
@@ -256,6 +310,7 @@ export default function BattleScreen() {
       setLogs(combinedLogs);
       setTurns(result.turns);
       setRevealedLogCount(0);
+      setBattleResultSummary(nextResultSummary);
       setBattleCompleted(true);
       setPhase("RESULT");
     } catch (startError) {
@@ -276,16 +331,6 @@ export default function BattleScreen() {
   }, [battleCompleted, isPaused, logs.length, phase, revealedLogCount]);
 
   useEffect(() => {
-    if (!battleCompleted || autoReturned || phase !== "RESULT" || isPaused) return;
-    if (logs.length > 0 && revealedLogCount < logs.length) return;
-    const timeout = setTimeout(() => {
-      setAutoReturned(true);
-      router.back();
-    }, 900);
-    return () => clearTimeout(timeout);
-  }, [autoReturned, battleCompleted, isPaused, logs.length, phase, revealedLogCount, router]);
-
-  useEffect(() => {
     if (!encounterData || phase !== "ENCOUNTER") return;
     let cancelled = false;
     const rafId = requestAnimationFrame(() => {
@@ -300,6 +345,16 @@ export default function BattleScreen() {
   }, [encounterData, phase]);
 
   const renderedLogCount = phase === "RESULT" ? Math.min(revealedLogCount, logs.length) : logs.length;
+  const isResultSummaryVisible =
+    phase === "RESULT" && battleCompleted && (logs.length === 0 || revealedLogCount >= logs.length);
+  const resultStatLabelByKey: Record<LevelUpStatKey, string> = {
+    maxHp: t("battle.result.stat.maxHp"),
+    atk: t("battle.result.stat.atk"),
+    def: t("battle.result.stat.def"),
+    spd: t("battle.result.stat.spd"),
+    maxMp: t("battle.result.stat.maxMp"),
+    mpRegen: t("battle.result.stat.mpRegen"),
+  };
 
   useEffect(() => {
     if (renderedLogCount <= 0) return;
@@ -499,6 +554,71 @@ export default function BattleScreen() {
               level: partyUiMetaById[member.id]?.level,
             }))}
           />
+
+          {isResultSummaryVisible ? (
+            <View style={styles.resultOverlayBackdrop}>
+              <View style={styles.resultPanel}>
+                <Text style={styles.resultPanelTitle}>{t("battle.result.summaryTitle")}</Text>
+                <ScrollView
+                  style={styles.resultPanelScroll}
+                  contentContainerStyle={styles.resultPanelContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.resultSection}>
+                    <Text style={styles.resultSectionTitle}>{t("battle.result.expTitle")}</Text>
+                    <Text style={styles.resultPrimaryLine}>
+                      {t("battle.result.expValue", {
+                        exp: battleResultSummary?.expGained ?? 0,
+                      })}
+                    </Text>
+                  </View>
+
+                  {(battleResultSummary?.levelUps.length ?? 0) > 0 ? (
+                    <View style={styles.resultSection}>
+                      <Text style={styles.resultSectionTitle}>{t("battle.result.levelUpTitle")}</Text>
+                      {battleResultSummary?.levelUps.map((levelUp) => (
+                        <View key={levelUp.characterId} style={styles.levelUpCard}>
+                          <Text style={styles.levelUpName}>
+                            {t("battle.result.levelUpName", {
+                              name: levelUp.name,
+                              prev: levelUp.previousLevel,
+                              next: levelUp.newLevel,
+                            })}
+                          </Text>
+                          <View style={styles.levelUpStatsRow}>
+                            {levelUp.statUps.map((stat) => (
+                              <View key={`${levelUp.characterId}-${stat.statKey}`} style={styles.levelUpStatChip}>
+                                <Text style={styles.levelUpStatChipText}>
+                                  {resultStatLabelByKey[stat.statKey]} +{stat.amount}
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+
+                  {(battleResultSummary?.drops.length ?? 0) > 0 ? (
+                    <View style={styles.resultSection}>
+                      <Text style={styles.resultSectionTitle}>{t("battle.result.dropTitle")}</Text>
+                      {battleResultSummary?.drops.map((dropName, idx) => (
+                        <Text key={`${dropName}-${idx}`} style={styles.resultListLine}>
+                          ・{dropName}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                </ScrollView>
+
+                <Pressable onPress={() => router.back()} style={styles.resultContinueButton}>
+                  <Text style={styles.resultContinueButtonText}>
+                    {t("battle.result.continueExploration")}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
         </View>
       </SafeAreaView>
     );
@@ -580,7 +700,7 @@ const styles = StyleSheet.create({
   },
   loadingText: { color: "#525252", fontSize: 14 },
   errorText: { color: "#ef4444", textAlign: "center", paddingHorizontal: 24 },
-  container: { flex: 1, backgroundColor: "#ffffff" },
+  container: { flex: 1, backgroundColor: "#ffffff", position: "relative" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -727,6 +847,113 @@ const styles = StyleSheet.create({
     textShadowColor: "#000000",
     textShadowRadius: 3,
     fontSize: 9,
+  },
+  resultOverlayBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,24,39,0.38)",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  resultPanel: {
+    maxHeight: "88%",
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    overflow: "hidden",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
+  },
+  resultPanelTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111827",
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 8,
+  },
+  resultPanelScroll: {
+    maxHeight: 360,
+  },
+  resultPanelContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
+  },
+  resultSection: {
+    gap: 6,
+  },
+  resultSectionTitle: {
+    color: "#4b5563",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  resultPrimaryLine: {
+    color: "#111827",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  resultMutedLine: {
+    color: "#6b7280",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  resultListLine: {
+    color: "#111827",
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  levelUpCard: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#f9fafb",
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    gap: 7,
+  },
+  levelUpName: {
+    color: "#111827",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  levelUpStatsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  levelUpStatChip: {
+    borderRadius: 999,
+    backgroundColor: "#eef2ff",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  levelUpStatChipText: {
+    color: "#1f2937",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  resultContinueButton: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    marginTop: 4,
+    borderRadius: 12,
+    backgroundColor: "#111827",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+  resultContinueButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 14,
   },
   skeletonBlock: {
     backgroundColor: "#e7e7e7",
