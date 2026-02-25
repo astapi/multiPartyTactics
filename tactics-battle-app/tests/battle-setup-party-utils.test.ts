@@ -16,6 +16,7 @@ describe("misc testable logic", () => {
       slotIndex: 2,
       name: "Alicia",
       classId: "CLERIC",
+      constellationId: "VIRGO",
       level: 1,
       exp: 0,
       baseMaxHp: 80,

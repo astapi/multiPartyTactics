@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { getConstellationDisplayName } from "@/constants/constellations";
 import { buildEquipmentDisplayName } from "@/game/loot/equipmentMasterService";
 import {
   MAX_CHARACTER_LEVEL,
@@ -72,6 +73,10 @@ export default function CharacterDetailScreen() {
 
   const topRules = useMemo(() => [...rules].sort((a, b) => a.priority - b.priority).slice(0, 3), [rules]);
   const classLabel = t(CLASS_NAME_KEYS[character?.classId ?? "SWORDMAN"]);
+  const constellationTitle = locale === "ja" ? "星座" : "Constellation";
+  const constellationLabel = character
+    ? getConstellationDisplayName(character.constellationId, locale)
+    : "";
   const unequippedLabel = locale === "ja" ? "未装備" : "Unequipped";
   const weaponLabel = useMemo(() => {
     const weapon = equippedBySlot.weapon;
@@ -121,6 +126,7 @@ export default function CharacterDetailScreen() {
           </View>
           <Text style={styles.profileName}>{character.name}</Text>
           <Text style={styles.profileSub}>{`${classLabel}  Lv.${character.level}`}</Text>
+          <Text style={styles.profileMeta}>{`${constellationTitle}: ${constellationLabel}`}</Text>
 
           <View style={styles.statRow}>
             <View style={styles.statCard}>
@@ -244,6 +250,7 @@ const styles = StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 24, alignItems: "center", justifyContent: "center", backgroundColor: colors.bgSurface, borderWidth: 2, borderColor: colors.textPrimary },
   profileName: { color: colors.textPrimary, fontSize: 24, fontWeight: "700" },
   profileSub: { color: colors.textStrong, fontSize: 13, fontWeight: "500" },
+  profileMeta: { color: colors.textSecondary, fontSize: 12, fontWeight: "500" },
   statRow: { flexDirection: "row", gap: 8, width: "100%" },
   statCard: { flex: 1, alignItems: "center", borderWidth: 1, borderColor: colors.borderDefault, borderRadius: 12, backgroundColor: colors.bgSurface, padding: 12, gap: 4 },
   statLabel: { color: colors.textSecondary, fontSize: 10, fontWeight: "500" },
