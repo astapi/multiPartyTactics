@@ -33,6 +33,10 @@ describe("game/battleSimulation", () => {
 
     expect(result.outcome).toBe("WIN");
     expect(result.logs.length).toBeGreaterThan(0);
+    expect(result.replayStates).toHaveLength(result.logs.length + 1);
+    expect(result.outcomeRevealLogCount).toBe(result.logs.length);
+    expect(result.replayStates[0].party.map((unit) => unit.hp)).toEqual(party.map((unit) => unit.hp));
+    expect(result.replayStates[0].enemies[0].hp).toBe(enemies[0].stats.maxHp);
     expect(result.logs.some((log) => log.actionType === "basic_attack")).toBe(true);
     expect(result.finalEnemies[0].hp).toBe(0);
     expect(result.finalParty[0]).not.toBe(party[0]);
@@ -71,6 +75,8 @@ describe("game/battleSimulation", () => {
 
     expect(result).toMatchObject({ outcome: "DRAW", turns: 0 });
     expect(result.logs).toEqual([]);
+    expect(result.replayStates).toHaveLength(1);
+    expect(result.outcomeRevealLogCount).toBe(0);
   });
 
   it("logs poison tick and stun skip when statuses are present", () => {
@@ -102,6 +108,9 @@ describe("game/battleSimulation", () => {
 
     expect(result.logs.some((log) => log.actionType === "POISON_TICK")).toBe(true);
     expect(result.logs.some((log) => log.actionType === "SKIP")).toBe(true);
+    const poisonLogIndex = result.logs.findIndex((log) => log.actionType === "POISON_TICK");
+    expect(poisonLogIndex).toBeGreaterThanOrEqual(0);
+    expect(result.replayStates[poisonLogIndex + 1].party[0].hp).toBe(28);
   });
 
   it("uses matched tactics skill when rules resolve successfully", () => {
@@ -272,6 +281,11 @@ describe("game/battleSimulation", () => {
     expect(result.logs.some((log) => log.actionType === "lightning" && log.targetName === null)).toBe(
       true
     );
+    const lightningLogIndex = result.logs.findIndex((log) => log.actionType === "lightning");
+    expect(lightningLogIndex).toBeGreaterThanOrEqual(0);
+    expect(
+      result.replayStates[lightningLogIndex + 1].enemies.every((enemy) => enemy.hp < enemy.stats.maxHp)
+    ).toBe(true);
   });
 
   it("makes front party slots more likely targets than back slots", () => {

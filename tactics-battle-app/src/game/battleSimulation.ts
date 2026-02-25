@@ -30,6 +30,14 @@ export type BattleSimulationResult = {
   logs: BattleLogRecord[];
   finalParty: Unit[];
   finalEnemies: Unit[];
+  replayStates: BattleReplayState[];
+  outcomeRevealLogCount: number;
+};
+
+export type BattleReplayState = {
+  turn: number;
+  party: Unit[];
+  enemies: Unit[];
 };
 
 const BASIC_ATTACK: Skill = {
@@ -49,6 +57,12 @@ const cloneUnit = (unit: Unit): Unit => ({
   statusEffects: unit.statusEffects.map((status) => ({ ...status })),
   effects: unit.effects.map((effect) => ({ ...effect })),
   cooldowns: { ...unit.cooldowns },
+});
+
+const snapshotState = (turn: number, party: Unit[], enemies: Unit[]): BattleReplayState => ({
+  turn,
+  party: party.map(cloneUnit),
+  enemies: enemies.map(cloneUnit),
 });
 
 const createEncounterUnits = (enemies: EncounterEnemy[]): Unit[] => {
@@ -135,6 +149,12 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
   const party = params.party.map(cloneUnit);
   const enemies = createEncounterUnits(params.enemies);
   const logs: BattleLogRecord[] = [];
+  const replayStates: BattleReplayState[] = [snapshotState(0, party, enemies)];
+
+  const pushLog = (log: BattleLogRecord, turn: number) => {
+    logs.push(log);
+    replayStates.push(snapshotState(turn, party, enemies));
+  };
 
   for (let turn = 1; turn <= maxTurns; turn += 1) {
     const units = [...party, ...enemies];
@@ -150,7 +170,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
       const statusResult = tickStatusesOnTurnStart(actor);
 
       if (statusResult.poisonedDamage > 0) {
-        logs.push(
+        pushLog(
           createBattleLog(
             params.sessionId,
             turn,
@@ -160,13 +180,14 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             statusResult.poisonedDamage,
             0,
             "battle.log.poison_tick"
-          )
+          ),
+          turn
         );
       }
 
       if (actor.hp <= 0) continue;
       if (statusResult.skippedAction) {
-        logs.push(
+        pushLog(
           createBattleLog(
             params.sessionId,
             turn,
@@ -176,7 +197,8 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             0,
             0,
             "battle.log.skip_stun"
-          )
+          ),
+          turn
         );
         continue;
       }
@@ -186,7 +208,15 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
         const aliveParty = getAlive(party);
         const aliveEnemies = getAlive(enemies);
         if (aliveEnemies.length === 0) {
-          return { outcome: "WIN", turns: turn, logs, finalParty: party, finalEnemies: enemies };
+          return {
+            outcome: "WIN",
+            turns: turn,
+            logs,
+            finalParty: party,
+            finalEnemies: enemies,
+            replayStates,
+            outcomeRevealLogCount: logs.length,
+          };
         }
         const rules = params.tacticsByCharacter[actor.id] ?? [];
         const resolution = evaluateTactics(
@@ -204,7 +234,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             allies: aliveParty,
             opponents: aliveEnemies,
           });
-          logs.push(
+          pushLog(
             createBattleLog(
               params.sessionId,
               turn,
@@ -214,7 +244,8 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
               result.damage,
               0,
               "battle.log.basic_attack"
-            )
+            ),
+            turn
           );
           continue;
         }
@@ -223,7 +254,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           opponents: aliveEnemies,
         });
         const isArea = isAreaSkill(resolution.skill) || result.resolvedTargetIds.length > 1;
-        logs.push(
+        pushLog(
           createBattleLog(
             params.sessionId,
             turn,
@@ -233,12 +264,21 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             result.damage,
             result.healing,
             isArea ? "battle.log.skill_use" : "battle.log.skill_use_target"
-          )
+          ),
+          turn
         );
       } else {
         const aliveParty = getAlive(party);
         if (aliveParty.length === 0) {
-          return { outcome: "LOSE", turns: turn, logs, finalParty: party, finalEnemies: enemies };
+          return {
+            outcome: "LOSE",
+            turns: turn,
+            logs,
+            finalParty: party,
+            finalEnemies: enemies,
+            replayStates,
+            outcomeRevealLogCount: logs.length,
+          };
         }
         const target = pickWeightedPartyTarget(aliveParty, rng);
         const aliveEnemies = getAlive(enemies);
@@ -246,7 +286,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           allies: aliveEnemies,
           opponents: aliveParty,
         });
-        logs.push(
+        pushLog(
           createBattleLog(
             params.sessionId,
             turn,
@@ -256,7 +296,8 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             result.damage,
             0,
             "battle.log.basic_attack"
-          )
+          ),
+          turn
         );
       }
 
@@ -269,6 +310,8 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           logs,
           finalParty: party,
           finalEnemies: enemies,
+          replayStates,
+          outcomeRevealLogCount: logs.length,
         };
       }
     }
@@ -280,5 +323,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
     logs,
     finalParty: party,
     finalEnemies: enemies,
+    replayStates,
+    outcomeRevealLogCount: logs.length,
   };
 };
