@@ -11,8 +11,9 @@ import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getClassById } from "@/constants/classes";
+import { getConstellationDisplayName } from "@/constants/constellations";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
-import { useI18n } from "@/i18n";
+import { TranslationKey, useI18n } from "@/i18n";
 import { CharacterRecord } from "@/types/models";
 
 const colors = {
@@ -31,9 +32,18 @@ const colors = {
 
 type GuildTab = "hire" | "party";
 
+const CLASS_NAME_KEYS: Record<CharacterRecord["classId"], TranslationKey> = {
+  GUARDIAN: "class.name.guardian",
+  SWORDMAN: "class.name.swordman",
+  BERSERKER: "class.name.berserker",
+  CLERIC: "class.name.cleric",
+  WITCH: "class.name.witch",
+  THIEF: "class.name.thief",
+};
+
 export default function GuildScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<GuildTab>("hire");
   const [characters, setCharacters] = useState<CharacterRecord[]>([]);
 
@@ -112,7 +122,8 @@ export default function GuildScreen() {
                 </View>
                 <View style={styles.listTextWrap}>
                   <Text style={styles.listTitle}>{character.name}</Text>
-                  <Text style={styles.listSub}>{`${character.classId}  •  Lv.${character.level}`}</Text>
+                  <Text style={styles.listSub}>{`${t(CLASS_NAME_KEYS[character.classId])}  •  Lv.${character.level}`}</Text>
+                  <Text style={styles.listMeta}>{getConstellationDisplayName(character.constellationId, locale)}</Text>
                 </View>
                 <ChevronRight size={18} stroke={colors.iconSecondary} />
               </Pressable>
@@ -205,7 +216,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderDefault,
     backgroundColor: colors.bgSurface,
     gap: 6,
-    paddingVertical: 6,
+    paddingVertical: 3,
     paddingHorizontal: 12,
   },
   currencyText: { color: colors.textPrimary, fontSize: 12, fontWeight: "500" },
@@ -226,23 +237,21 @@ const styles = StyleSheet.create({
     borderColor: colors.borderDefault,
     backgroundColor: colors.bgSurface,
     gap: 12,
-    paddingVertical: 14,
+    paddingVertical: 6,
     paddingHorizontal: 16,
   },
   listCardPressed: { opacity: 0.8 },
   avatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 60,
+    height: 60,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.bgElevated,
-    overflow: "hidden",
   },
-  avatarImage: { width: "100%", height: "100%" },
+  avatarImage: { width: 60, height: 60 },
   listTextWrap: { flex: 1, gap: 2 },
   listTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
   listSub: { color: colors.textTertiary, fontSize: 10, fontWeight: "400" },
+  listMeta: { color: colors.textMuted, fontSize: 10, fontWeight: "400" },
   emptyBox: {
     alignItems: "center",
     justifyContent: "center",
