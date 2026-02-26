@@ -11,6 +11,7 @@ import Svg, { Line, Path } from "react-native-svg";
 import LottieView from "lottie-react-native";
 import type { AnimationObject } from "lottie-react-native";
 import { getAttackTrailPreset, HIT_IMPACT_PRESET } from "@/features/battle/animation/presets";
+import { playAttackSE } from "@/features/battle/audio/battleSounds";
 import type {
   BattleAttackStyle,
   BattleEffectRect,
@@ -430,6 +431,7 @@ export function BattleEffectLayer({
             .filter((r): r is BattleEffectRect => Boolean(r));
           if (targetRects.length === 0) continue;
           const style = event.attackStyle ?? "generic";
+          void playAttackSE(style);
 
           if (style === "cleave" && targetRects.length > 1) {
             // Cleave: 全ターゲットを覆う1本の横薙ぎ

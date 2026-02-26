@@ -23,6 +23,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Pause, Play } from "lucide-react-native";
 import { BattleEffectLayer } from "@/components/battle/BattleEffectLayer";
+import { preloadBattleSounds, unloadBattleSounds } from "@/features/battle/audio/battleSounds";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
@@ -263,6 +264,13 @@ export default function BattleScreen() {
     isOutcomeBadgeVisible && finalOutcome ? t(BATTLE_RESULT_I18N_KEY[finalOutcome]) : null;
 
   const skillMap = useMemo(() => createSkillMap(DEFAULT_SKILLS), []);
+
+  useEffect(() => {
+    void preloadBattleSounds();
+    return () => {
+      unloadBattleSounds();
+    };
+  }, []);
 
   useEffect(() => {
     const load = async () => {
