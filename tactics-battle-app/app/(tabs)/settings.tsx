@@ -402,6 +402,10 @@ export default function SettingsScreen() {
                 {isTransitionPlaying ? "Playing..." : "Battle Transition Test 3 (Shutter)"}
               </Text>
             </Pressable>
+            <View style={styles.divider} />
+            <Pressable style={styles.row} onPress={() => router.push("/debug/battle-effects")}>
+              <Text style={styles.rowText}>Battle Effect Debug</Text>
+            </Pressable>
           </View>
         </View>
 
