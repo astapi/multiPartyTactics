@@ -1,4 +1,4 @@
-import type { Skill } from "@/game/skills";
+import type { Skill } from "@/game/skills/types";
 import type { TacticsRuleRecord } from "@/types/models";
 import type { Unit } from "@/game/battle";
 

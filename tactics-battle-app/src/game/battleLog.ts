@@ -1,5 +1,5 @@
 import type { TranslationKey } from "@/i18n";
-import { getSkillNameKey } from "@/game/skills";
+import { getSkillNameKey } from "@/game/skills/labels";
 import type { BattleLogRecord } from "@/types/models";
 
 const ACTION_LABEL_KEYS: Partial<Record<string, TranslationKey>> = {

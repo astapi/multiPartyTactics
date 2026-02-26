@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Compass, Crown, MapPin, Repeat, Shield, Square, Swords } from "lucide-react-native";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DUNGEONS } from "@/constants/dungeons";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
@@ -428,149 +429,158 @@ export default function DungeonScreen() {
         </View>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.sharedDungeonCard}>
-          <View style={styles.sharedDungeonTop}>
-            <Text style={styles.sharedDungeonTitle}>{t("dungeon.ui.shared.title")}</Text>
-            <Text style={styles.sharedDungeonMeta}>B1-???F</Text>
+      <FlashList
+        data={isLoading || error || parties.length === 0 ? [] : parties}
+        keyExtractor={(item) => item.party.id}
+        estimatedItemSize={180}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+        ListHeaderComponent={
+          <View style={styles.listHeader}>
+            <View style={styles.sharedDungeonCard}>
+              <View style={styles.sharedDungeonTop}>
+                <Text style={styles.sharedDungeonTitle}>{t("dungeon.ui.shared.title")}</Text>
+                <Text style={styles.sharedDungeonMeta}>B1-???F</Text>
+              </View>
+            </View>
           </View>
-        </View>
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={styles.stateWrap}>
+              <Text style={styles.stateText}>{t("dungeon.ui.loading")}</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.stateWrap}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : (
+            <View style={styles.stateWrap}>
+              <Text style={styles.stateText}>{t("dungeon.ui.emptyParties")}</Text>
+            </View>
+          )
+        }
+        renderItem={({ item: entry, index }) => {
+          const uiState = uiStateMap[entry.party.id] ?? defaultUiState(entry.party.id, DEFAULT_DUNGEON_ID);
+          const stepCount = normalizeStepCount(uiState.stepCount);
+          const safeSelectedFloor = sanitizeSelectedFloor({
+            dungeonId: DEFAULT_DUNGEON_ID,
+            floor: uiState.selectedFloor,
+            maxClearedFloor,
+            maxFloor,
+          });
+          const cardState = buildDungeonPartyCardState({
+            selectedFloor: safeSelectedFloor,
+            mode: uiState.mode,
+            maxClearedFloor,
+          });
+          const memberCount = entry.members.length;
+          const avgLv =
+            memberCount > 0
+              ? Math.round(entry.members.reduce((sum, member) => sum + member.level, 0) / memberCount)
+              : 0;
+          const iconKind = PARTY_ICON_ORDER[index % PARTY_ICON_ORDER.length] ?? "shield";
+          const isIdleCard = cardState.displayStatus === "idle";
+          const hasMembers = memberCount > 0;
+          const primaryActionEnabled =
+            (cardState.primaryAction === "selectFloor" || cardState.isExploreEnabled || cardState.primaryAction === "autoStop") &&
+            (hasMembers || cardState.primaryAction === "selectFloor");
+          const secondaryActionEnabled = !!cardState.secondaryAction && cardState.isAutoEnabled && hasMembers;
 
-        {isLoading ? (
-          <View style={styles.stateWrap}>
-            <Text style={styles.stateText}>{t("dungeon.ui.loading")}</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.stateWrap}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : parties.length === 0 ? (
-          <View style={styles.stateWrap}>
-            <Text style={styles.stateText}>{t("dungeon.ui.emptyParties")}</Text>
-          </View>
-        ) : (
-          parties.map((entry, index) => {
-            const uiState = uiStateMap[entry.party.id] ?? defaultUiState(entry.party.id, DEFAULT_DUNGEON_ID);
-            const stepCount = normalizeStepCount(uiState.stepCount);
-            const safeSelectedFloor = sanitizeSelectedFloor({
-              dungeonId: DEFAULT_DUNGEON_ID,
-              floor: uiState.selectedFloor,
-              maxClearedFloor,
-              maxFloor,
-            });
-            const cardState = buildDungeonPartyCardState({
-              selectedFloor: safeSelectedFloor,
-              mode: uiState.mode,
-              maxClearedFloor,
-            });
-            const memberCount = entry.members.length;
-            const avgLv =
-              memberCount > 0
-                ? Math.round(entry.members.reduce((sum, member) => sum + member.level, 0) / memberCount)
-                : 0;
-            const iconKind = PARTY_ICON_ORDER[index % PARTY_ICON_ORDER.length] ?? "shield";
-            const isIdleCard = cardState.displayStatus === "idle";
-            const hasMembers = memberCount > 0;
-            const primaryActionEnabled =
-              (cardState.primaryAction === "selectFloor" || cardState.isExploreEnabled || cardState.primaryAction === "autoStop") &&
-              (hasMembers || cardState.primaryAction === "selectFloor");
-            const secondaryActionEnabled = !!cardState.secondaryAction && cardState.isAutoEnabled && hasMembers;
-
-            return (
-              <View
-                key={entry.party.id}
-                style={[styles.partyCard, isIdleCard ? styles.partyCardIdle : styles.partyCardActiveLike]}
-              >
-                <View style={styles.partyCardTop}>
-                  <View style={[styles.partyIconWrap, isIdleCard ? styles.partyIconWrapIdle : null]}>
-                    {getPartyIcon(iconKind)}
-                  </View>
-                  <View style={styles.partyTextWrap}>
-                    <Text style={styles.partyName} numberOfLines={1}>{entry.party.name}</Text>
-                    <Text style={styles.partySub} numberOfLines={1}>
-                      {t("dungeon.ui.party.membersAvg", { count: memberCount, avg: avgLv })}
-                    </Text>
-                  </View>
-                  {cardState.showAutoBadge ? (
-                    <View style={styles.badgeWrap}>
-                      <Repeat size={12} stroke={colors.textSecondary} />
-                      <Text style={styles.badgeText}>{t("dungeon.ui.auto.badge")}</Text>
-                    </View>
-                  ) : cardState.displayStatus === "idle" ? (
-                    <View style={[styles.badgeWrap, styles.badgeIdle]}>
-                      <Text style={[styles.badgeText, styles.badgeIdleText]}>{t("dungeon.ui.status.idle")}</Text>
-                    </View>
-                  ) : null}
+          return (
+            <View
+              style={[styles.partyCard, isIdleCard ? styles.partyCardIdle : styles.partyCardActiveLike]}
+            >
+              <View style={styles.partyCardTop}>
+                <View style={[styles.partyIconWrap, isIdleCard ? styles.partyIconWrapIdle : null]}>
+                  {getPartyIcon(iconKind)}
                 </View>
-
-                <View style={styles.cardDivider} />
-
-                <View style={styles.partyCardBottom}>
-                  {cardState.floor && cardState.floorLabelType ? (
-                    <View style={styles.floorRow}>
-                      <MapPin size={14} stroke={colors.textTertiary} />
-                      <Text style={styles.floorRowText} numberOfLines={1}>
-                        {cardState.floorLabelType === "deepest"
-                          ? t("dungeon.ui.floor.deepest", { floor: cardState.floor })
-                          : cardState.floorLabelType === "target"
-                            ? t("dungeon.ui.floor.target", { floor: cardState.floor })
-                            : t("dungeon.ui.floor.auto", { floor: cardState.floor })}
-                      </Text>
-                      {cardState.showFloorChangeChip ? (
-                        <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
-                          <Text style={styles.floorChipText}>{t("dungeon.ui.action.changeFloor")}</Text>
-                        </Pressable>
-                      ) : null}
-                      <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
-                        <Text style={styles.floorChipText}>{t("dungeon.ui.step.short", { steps: stepCount })}</Text>
-                      </Pressable>
-                    </View>
-                  ) : null}
-
-                  {cardState.showAutoStats ? (
-                    <View style={styles.autoStatsRow}>
-                      <View style={styles.autoStatItem}>
-                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statRuns")}</Text>
-                        <Text style={styles.autoStatValue}>{uiState.autoRunCount}</Text>
-                      </View>
-                      <View style={styles.autoStatItem}>
-                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statLoot")}</Text>
-                        <Text style={styles.autoStatValue}>{uiState.autoLootCount}</Text>
-                      </View>
-                      <View style={styles.autoStatItem}>
-                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statElapsed")}</Text>
-                        <Text style={styles.autoStatValue}>{formatElapsedShort(uiState.autoElapsedSeconds)}</Text>
-                      </View>
-                    </View>
-                  ) : null}
-
-                  <View style={styles.actionRow}>
-                    {renderActionButton({
-                      action: cardState.primaryAction,
-                      onPress: () => void handlePartyAction(entry.party.id, cardState.primaryAction),
-                      variant:
-                        cardState.primaryAction === "resumeExplore" || cardState.primaryAction === "explore"
-                          ? "primary"
-                          : "outline",
-                      fullWidth: cardState.secondaryAction === null,
-                      disabled: !primaryActionEnabled,
-                    })}
-                    {cardState.secondaryAction
-                      ? renderActionButton({
-                          action: cardState.secondaryAction,
-                          onPress: () => void handlePartyAction(entry.party.id, cardState.secondaryAction!),
-                          fullWidth: true,
-                          disabled: !secondaryActionEnabled,
-                          variant: "outline",
-                        })
-                      : null}
+                <View style={styles.partyTextWrap}>
+                  <Text style={styles.partyName} numberOfLines={1}>{entry.party.name}</Text>
+                  <Text style={styles.partySub} numberOfLines={1}>
+                    {t("dungeon.ui.party.membersAvg", { count: memberCount, avg: avgLv })}
+                  </Text>
+                </View>
+                {cardState.showAutoBadge ? (
+                  <View style={styles.badgeWrap}>
+                    <Repeat size={12} stroke={colors.textSecondary} />
+                    <Text style={styles.badgeText}>{t("dungeon.ui.auto.badge")}</Text>
                   </View>
+                ) : cardState.displayStatus === "idle" ? (
+                  <View style={[styles.badgeWrap, styles.badgeIdle]}>
+                    <Text style={[styles.badgeText, styles.badgeIdleText]}>{t("dungeon.ui.status.idle")}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.cardDivider} />
+
+              <View style={styles.partyCardBottom}>
+                {cardState.floor && cardState.floorLabelType ? (
+                  <View style={styles.floorRow}>
+                    <MapPin size={14} stroke={colors.textTertiary} />
+                    <Text style={styles.floorRowText} numberOfLines={1}>
+                      {cardState.floorLabelType === "deepest"
+                        ? t("dungeon.ui.floor.deepest", { floor: cardState.floor })
+                        : cardState.floorLabelType === "target"
+                          ? t("dungeon.ui.floor.target", { floor: cardState.floor })
+                          : t("dungeon.ui.floor.auto", { floor: cardState.floor })}
+                    </Text>
+                    {cardState.showFloorChangeChip ? (
+                      <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
+                        <Text style={styles.floorChipText}>{t("dungeon.ui.action.changeFloor")}</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
+                      <Text style={styles.floorChipText}>{t("dungeon.ui.step.short", { steps: stepCount })}</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
+
+                {cardState.showAutoStats ? (
+                  <View style={styles.autoStatsRow}>
+                    <View style={styles.autoStatItem}>
+                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statRuns")}</Text>
+                      <Text style={styles.autoStatValue}>{uiState.autoRunCount}</Text>
+                    </View>
+                    <View style={styles.autoStatItem}>
+                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statLoot")}</Text>
+                      <Text style={styles.autoStatValue}>{uiState.autoLootCount}</Text>
+                    </View>
+                    <View style={styles.autoStatItem}>
+                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statElapsed")}</Text>
+                      <Text style={styles.autoStatValue}>{formatElapsedShort(uiState.autoElapsedSeconds)}</Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                <View style={styles.actionRow}>
+                  {renderActionButton({
+                    action: cardState.primaryAction,
+                    onPress: () => void handlePartyAction(entry.party.id, cardState.primaryAction),
+                    variant:
+                      cardState.primaryAction === "resumeExplore" || cardState.primaryAction === "explore"
+                        ? "primary"
+                        : "outline",
+                    fullWidth: cardState.secondaryAction === null,
+                    disabled: !primaryActionEnabled,
+                  })}
+                  {cardState.secondaryAction
+                    ? renderActionButton({
+                        action: cardState.secondaryAction,
+                        onPress: () => void handlePartyAction(entry.party.id, cardState.secondaryAction!),
+                        fullWidth: true,
+                        disabled: !secondaryActionEnabled,
+                        variant: "outline",
+                      })
+                    : null}
                 </View>
               </View>
-            );
-          })
-        )}
-      </ScrollView>
+            </View>
+          );
+        }}
+      />
 
       <Modal transparent visible={pickerPartyId !== null} animationType="fade" onRequestClose={closeFloorPicker}>
         <View style={styles.modalBackdrop}>
@@ -666,7 +676,9 @@ const styles = StyleSheet.create({
   headerSub: { color: colors.textSecondary, fontSize: 13, fontWeight: "500" },
   headerTitle: { color: colors.textPrimary, fontSize: 30, fontWeight: "700" },
   scroll: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20, gap: 12 },
+  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 },
+  listHeader: { marginBottom: 12 },
+  listSeparator: { height: 12 },
   sharedDungeonCard: {
     borderRadius: 16,
     borderWidth: 1,

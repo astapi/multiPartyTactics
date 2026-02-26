@@ -7,8 +7,11 @@ import {
   tickStatusesOnTurnStart,
 } from "@/game/battle";
 import { EncounterEnemy } from "@/game/encounter";
-import { Skill, executeSkill } from "@/game/skills";
+import type { Skill } from "@/game/skills/types";
+import { executeSkill } from "@/game/skills/execute";
 import { evaluateTactics } from "@/game/tactics/evaluator";
+import { mapAttackStyleFromUnit } from "@/features/battle/animation/mapAttackStyle";
+import type { BattleVisualEvent } from "@/features/battle/animation/types";
 import { BattleLogRecord, TacticsRuleRecord } from "@/types/models";
 import { createSeededRng } from "@/utils/rng";
 
@@ -28,6 +31,7 @@ export type BattleSimulationResult = {
   outcome: BattleOutcome;
   turns: number;
   logs: BattleLogRecord[];
+  visualEvents: BattleVisualEvent[];
   finalParty: Unit[];
   finalEnemies: Unit[];
   replayStates: BattleReplayState[];
@@ -149,10 +153,19 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
   const party = params.party.map(cloneUnit);
   const enemies = createEncounterUnits(params.enemies);
   const logs: BattleLogRecord[] = [];
+  const visualEvents: BattleVisualEvent[] = [];
   const replayStates: BattleReplayState[] = [snapshotState(0, party, enemies)];
 
-  const pushLog = (log: BattleLogRecord, turn: number) => {
+  const pushLog = (
+    log: BattleLogRecord,
+    turn: number,
+    buildVisualEvents?: (logIndex: number) => BattleVisualEvent[]
+  ) => {
     logs.push(log);
+    const logIndex = logs.length - 1;
+    if (buildVisualEvents) {
+      visualEvents.push(...buildVisualEvents(logIndex));
+    }
     replayStates.push(snapshotState(turn, party, enemies));
   };
 
@@ -212,6 +225,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             outcome: "WIN",
             turns: turn,
             logs,
+            visualEvents,
             finalParty: party,
             finalEnemies: enemies,
             replayStates,
@@ -245,7 +259,16 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
               0,
               "battle.log.basic_attack"
             ),
-            turn
+            turn,
+            (logIndex) =>
+              createBasicAttackVisualEvents({
+                turn,
+                logIndex,
+                actorId: actor.id,
+                targetIds: result.resolvedTargetIds,
+                damage: result.damage,
+                attackStyle: mapAttackStyleFromUnit(actor),
+              })
           );
           continue;
         }
@@ -274,6 +297,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             outcome: "LOSE",
             turns: turn,
             logs,
+            visualEvents,
             finalParty: party,
             finalEnemies: enemies,
             replayStates,
@@ -297,7 +321,16 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             0,
             "battle.log.basic_attack"
           ),
-          turn
+          turn,
+          (logIndex) =>
+            createBasicAttackVisualEvents({
+              turn,
+              logIndex,
+              actorId: actor.id,
+              targetIds: result.resolvedTargetIds,
+              damage: result.damage,
+              attackStyle: mapAttackStyleFromUnit(actor),
+            })
         );
       }
 
@@ -308,6 +341,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           outcome: partyAlive ? "WIN" : "LOSE",
           turns: turn,
           logs,
+          visualEvents,
           finalParty: party,
           finalEnemies: enemies,
           replayStates,
@@ -321,9 +355,62 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
     outcome: "DRAW",
     turns: maxTurns,
     logs,
+    visualEvents,
     finalParty: party,
     finalEnemies: enemies,
     replayStates,
     outcomeRevealLogCount: logs.length,
   };
+};
+
+const createBasicAttackVisualEvents = (params: {
+  turn: number;
+  logIndex: number;
+  actorId: string;
+  targetIds: string[];
+  damage: number;
+  attackStyle: BattleVisualEvent["attackStyle"];
+}): BattleVisualEvent[] => {
+  if (params.targetIds.length === 0) return [];
+
+  const events: BattleVisualEvent[] = [
+    {
+      kind: "attack_trail",
+      turn: params.turn,
+      logIndex: params.logIndex,
+      actorId: params.actorId,
+      targetIds: [...params.targetIds],
+      attackStyle: params.attackStyle ?? "generic",
+    },
+    {
+      kind: "hit_flash",
+      turn: params.turn,
+      logIndex: params.logIndex,
+      actorId: params.actorId,
+      targetIds: [...params.targetIds],
+      attackStyle: params.attackStyle ?? "generic",
+    },
+    {
+      kind: "hit_reaction",
+      turn: params.turn,
+      logIndex: params.logIndex,
+      actorId: params.actorId,
+      targetIds: [...params.targetIds],
+      attackStyle: params.attackStyle ?? "generic",
+    },
+  ];
+
+  if (params.damage > 0) {
+    events.push({
+      kind: "damage_number",
+      turn: params.turn,
+      logIndex: params.logIndex,
+      actorId: params.actorId,
+      targetIds: [...params.targetIds],
+      amount: params.damage,
+      attackStyle: params.attackStyle ?? "generic",
+    });
+  }
+
+  return events;
 };
