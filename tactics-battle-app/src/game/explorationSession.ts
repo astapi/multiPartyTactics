@@ -145,12 +145,31 @@ const appendEncounter = (
   encounters: [...state.encounters, encounter],
 });
 
+export const getDiscoveredStairsArrivalMaxSteps = (params: {
+  explorationPercent: number;
+  config: Pick<
+    ExplorationSessionConfig,
+    "stairsDiscoveryThresholdPercent" | "discoveredStairsArrivalMinSteps" | "discoveredStairsArrivalMaxSteps"
+  >;
+}): number => {
+  const minSteps = Math.max(1, Math.floor(params.config.discoveredStairsArrivalMinSteps));
+  const defaultMaxSteps = Math.max(minSteps, Math.floor(params.config.discoveredStairsArrivalMaxSteps));
+  const threshold = Math.max(0, params.config.stairsDiscoveryThresholdPercent);
+  const explorationPercent = clampPercent(params.explorationPercent);
+  if (explorationPercent < threshold + 10) return defaultMaxSteps;
+  const reduction = Math.floor((explorationPercent - threshold) / 10) + 1;
+  return Math.max(minSteps, defaultMaxSteps - reduction);
+};
+
 const sampleDiscoveredStairsArrivalTarget = (
   state: ExplorationSessionState,
   floor: number
 ): number => {
   const minSteps = Math.max(1, Math.floor(state.config.discoveredStairsArrivalMinSteps));
-  const maxSteps = Math.max(minSteps, Math.floor(state.config.discoveredStairsArrivalMaxSteps));
+  const maxSteps = getDiscoveredStairsArrivalMaxSteps({
+    explorationPercent: getFloorProgress(state, floor).explorationPercent,
+    config: state.config,
+  });
   const rng = createSeededRng(
     (state.seed + floor * 7919 + state.bundle.startFloor * 104729 + state.bundle.bossFloor * 131071) >>> 0
   );

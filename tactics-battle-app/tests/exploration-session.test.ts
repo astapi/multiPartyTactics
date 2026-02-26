@@ -8,6 +8,7 @@ import {
   applyFloorDecision,
   buildShortcutTraversalPlan,
   createExplorationSession,
+  getDiscoveredStairsArrivalMaxSteps,
 } from "@/game/explorationSession";
 import { makeUnit } from "./helpers";
 
@@ -103,7 +104,7 @@ describe("game/explorationSession", () => {
     expect(state.events.filter((event) => event.type === "SHORTCUT")).toHaveLength(0);
   });
 
-  it("on resumed run with discovered stairs, stairs are reached probabilistically after 5-20 steps", () => {
+  it("on resumed run with 60% explored discovered stairs, stairs are reached probabilistically after 5-18 steps", () => {
     let state = createExplorationSession({
       dungeon,
       party,
@@ -122,10 +123,25 @@ describe("game/explorationSession", () => {
       stepsSpent += 1;
     }
     expect(stepsSpent).toBeGreaterThanOrEqual(5);
-    expect(stepsSpent).toBeLessThanOrEqual(20);
+    expect(stepsSpent).toBeLessThanOrEqual(18);
     expect(state.status).toBe("AWAITING_DECISION");
     expect(state.currentFloor).toBe(1);
     expect(state.events.some((event) => event.type === "STAIRS_REACHED")).toBe(true);
+  });
+
+  it("reduces discovered stairs arrival max steps as exploration percent increases", () => {
+    const config = {
+      stairsDiscoveryThresholdPercent: 50,
+      discoveredStairsArrivalMinSteps: 5,
+      discoveredStairsArrivalMaxSteps: 20,
+    } as const;
+
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 50, config })).toBe(20);
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 60, config })).toBe(18);
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 70, config })).toBe(17);
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 80, config })).toBe(16);
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 90, config })).toBe(15);
+    expect(getDiscoveredStairsArrivalMaxSteps({ explorationPercent: 100, config })).toBe(14);
   });
 
   it("builds shortcut traversal only for consecutive discovered stairs and available steps", () => {

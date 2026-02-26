@@ -28,7 +28,7 @@ const colors = {
 
 const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "hakusla_dungeon_1_200";
 const DEFAULT_EXPLORATION_STEP_COUNT = 40;
-const EXPLORATION_STEP_COUNT_OPTIONS = [20, 40, 60, 80] as const;
+const EXPLORATION_STEP_COUNT_OPTIONS = [20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
 
 type PartyIconKey = "shield" | "swords" | "crown";
 
