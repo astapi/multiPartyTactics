@@ -8,7 +8,7 @@ import { RuleEditModal } from "@/components/tactics/RuleEditModal";
 import { RuleItem } from "@/components/tactics/RuleItem";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useTactics } from "@/hooks/useTactics";
-import { CLASS_DEFINITIONS } from "@/game/skills";
+import { CLASS_DEFINITIONS } from "@/game/skills/classes";
 import { useI18n } from "@/i18n";
 import { TacticsRuleRecord } from "@/types/models";
 

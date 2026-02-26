@@ -1,5 +1,6 @@
 import { StatusType, Unit } from "@/game/battle";
-import { Skill, isSkillUsable } from "@/game/skills";
+import type { Skill } from "@/game/skills/types";
+import { isSkillUsable } from "@/game/skills/execute";
 import { ConditionType, TargetType, TacticsRuleRecord } from "@/types/models";
 
 type RuleParams = Record<string, unknown>;

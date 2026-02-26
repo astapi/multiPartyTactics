@@ -1,12 +1,9 @@
-import {
-  ARCANE_SKILLS,
-  BERSERKER_SKILLS,
-  CLERIC_SKILLS,
-  GUARDIAN_SKILLS,
-  Skill,
-  SWORDMAN_SKILLS,
-  THIEF_SKILLS,
-} from "@/game/skills";
+import type { Skill } from "@/game/skills/types";
+import { GUARDIAN_SKILLS } from "@/game/skills/guardian";
+import { CLERIC_SKILLS } from "@/game/skills/cleric";
+import { SWORDMAN_SKILLS, BERSERKER_SKILLS } from "@/game/skills/blade";
+import { ARCANE_SKILLS } from "@/game/skills/arcane";
+import { THIEF_SKILLS } from "@/game/skills/thief";
 import { generateId } from "@/utils/id";
 
 const buildSkillMap = (skills: Skill[]): Map<string, Skill> => {

@@ -16,6 +16,7 @@
   "dependencies": {
     "@babel/runtime": "^7.26.0",
     "@shopify/flash-list": "^1.7.2",
+    "babel-plugin-react-compiler": "^1.0.0",
     "babel-preset-expo": "^54.0.10",
     "expo": "~54.0.0",
     "expo-build-properties": "^1.0.10",

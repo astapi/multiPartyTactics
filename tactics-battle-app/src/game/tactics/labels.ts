@@ -1,4 +1,4 @@
-import { getSkillNameKey } from "@/game/skills";
+import { getSkillNameKey } from "@/game/skills/labels";
 import type { TranslationKey } from "@/i18n";
 import type { ConditionType, TacticsRuleRecord, TargetType } from "@/types/models";
 

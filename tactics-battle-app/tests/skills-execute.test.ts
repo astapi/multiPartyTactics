@@ -1,18 +1,11 @@
 import { describe, expect, it } from "vitest";
-import {
-  BERSERKER_SKILLS,
-  CLASS_DEFINITIONS,
-  CLERIC_SKILLS,
-  GUARDIAN_SKILLS,
-  SWORDMAN_SKILLS,
-  THIEF_SKILLS,
-  ARCANE_SKILLS,
-  applySkillCost,
-  executeSkill,
-  hasEffect,
-  isSkillUsable,
-  removeStatus,
-} from "@/game/skills";
+import { GUARDIAN_SKILLS } from "@/game/skills/guardian";
+import { CLERIC_SKILLS } from "@/game/skills/cleric";
+import { SWORDMAN_SKILLS, BERSERKER_SKILLS } from "@/game/skills/blade";
+import { ARCANE_SKILLS } from "@/game/skills/arcane";
+import { THIEF_SKILLS } from "@/game/skills/thief";
+import { CLASS_DEFINITIONS } from "@/game/skills/classes";
+import { applySkillCost, executeSkill, hasEffect, isSkillUsable, removeStatus } from "@/game/skills/execute";
 import { makeSkill, makeUnit } from "./helpers";
 
 describe("game/skills/execute", () => {

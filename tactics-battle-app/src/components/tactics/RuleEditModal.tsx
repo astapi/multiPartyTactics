@@ -9,7 +9,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { getSkillDisplayName, Skill } from "@/game/skills";
+import type { Skill } from "@/game/skills/types";
+import { getSkillDisplayName } from "@/game/skills/labels";
 import { getConditionTypeLabel, getTargetTypeLabel } from "@/game/tactics/labels";
 import { useI18n } from "@/i18n";
 import { ConditionType, TacticsRuleRecord, TargetType } from "@/types/models";
