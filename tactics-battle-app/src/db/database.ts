@@ -2,7 +2,6 @@ import * as SQLite from "expo-sqlite";
 import { MIGRATION_001 } from "./migrations/001_initial";
 import { MIGRATION_002 } from "./migrations/002_equipment_loot";
 import { MIGRATION_003 } from "./migrations/003_character_equipment";
-import { MIGRATION_004 } from "./migrations/004_hakusla_dungeon";
 import { MIGRATION_005 } from "./migrations/005_character_exp";
 import { MIGRATION_006 } from "./migrations/006_dungeon_party_ui_state";
 import { MIGRATION_007 } from "./migrations/007_dungeon_floor_exploration_progress";
@@ -25,7 +24,6 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync(MIGRATION_001);
   await db.execAsync(MIGRATION_002);
   await db.execAsync(MIGRATION_003);
-  await db.execAsync(MIGRATION_004);
   await db.execAsync(MIGRATION_006);
   await db.execAsync(MIGRATION_007);
   const migrateCharacterExpColumn = async (): Promise<void> => {

@@ -1,12 +1,54 @@
 import { DungeonOption } from "@/constants/dungeons";
 import difficultyConfig from "@/data/difficultyConfig.json";
+import dungeonEnemyTableData from "@/data/dungeonEnemyTable.json";
 import { Unit } from "@/game/battle";
+import { findBundleByFloor } from "@/game/dungeonBundles";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { rollTreasureChestEquipment } from "@/game/loot/equipmentLootRoller";
 import type { EquipmentReward } from "@/types/equipment";
 import { createSeededRng } from "@/utils/rng";
 
 const cfg = difficultyConfig.exploration;
+
+type DungeonEncounterRateTable = {
+  dungeonId: string;
+  floors: Array<{
+    floor: number;
+    encounterChance?: number;
+  }>;
+};
+
+const DUNGEON_ENCOUNTER_RATE_TABLES = dungeonEnemyTableData.dungeons as DungeonEncounterRateTable[];
+const CRESTORIA_DUNGEON_ID = "crestoria_dungeon_1_200";
+const CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE = 0.14;
+const CRESTORIA_BUNDLE_ENCOUNTER_CHANCE_BY_BOSS_FLOOR: Record<number, number> = {
+  5: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  10: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  20: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  25: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  30: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  40: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  50: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  55: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  60: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  70: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  80: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  90: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  95: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  100: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  110: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  120: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  130: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  140: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  145: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  150: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  160: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  170: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  180: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  190: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  195: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+  200: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
+};
 
 export type ExplorationEventType =
   | "LOG"
@@ -94,6 +136,22 @@ const LOG_MESSAGE_IDS: ExplorationMessageId[] = [
 
 const TRAP_DEBUFFS = ["POISON", "SLOW", "WEAKEN"] as const;
 
+const getFloorEncounterChanceOverride = (dungeonId: string, floor: number): number | null => {
+  const dungeon = DUNGEON_ENCOUNTER_RATE_TABLES.find((row) => row.dungeonId === dungeonId);
+  const floorRow = dungeon?.floors.find((row) => row.floor === floor);
+  const configured = floorRow?.encounterChance;
+  if (!Number.isFinite(configured)) return null;
+  return clamp(configured as number, 0, 1);
+};
+
+const getBundleEncounterChanceOverride = (dungeonId: string, floor: number): number | null => {
+  if (dungeonId !== CRESTORIA_DUNGEON_ID) return null;
+  const bundle = findBundleByFloor(dungeonId, floor);
+  const configured = CRESTORIA_BUNDLE_ENCOUNTER_CHANCE_BY_BOSS_FLOOR[bundle.bossFloor];
+  if (!Number.isFinite(configured)) return null;
+  return clamp(configured, 0, 1);
+};
+
 const buildEncounterChanceContext = (party: Unit[], dungeon: DungeonOption, floor: number) => {
   const safeFloor = Math.max(1, floor);
   const dungeonDepthFactor = clamp(dungeon.floors / 10, 0.8, 2);
@@ -137,8 +195,9 @@ export const rollExplorationEvent = (
     params.dungeon,
     params.floor
   );
-  const ramp = Math.min(cfg.encounterRampMax, params.tick * cfg.encounterRampPerTick);
-  const encounterChance = clamp(baseEncounter + ramp, cfg.encounterChanceMin, cfg.finalEncounterMax);
+  const configuredEncounterChance = getFloorEncounterChanceOverride(params.dungeon.id, floor);
+  const bundleEncounterChance = getBundleEncounterChanceOverride(params.dungeon.id, floor);
+  const encounterChance = configuredEncounterChance ?? bundleEncounterChance ?? baseEncounter;
 
   if (params.rng() < encounterChance) {
     const encounter = generateEncounter({

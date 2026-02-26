@@ -63,18 +63,18 @@ describe("dungeonExplorationProgressRepository", () => {
 
   it("upserts and lists rows by dungeon", async () => {
     await dungeonExplorationProgressRepository.upsert({
-      dungeonId: "hakusla_dungeon_1_200",
+      dungeonId: "crestoria_dungeon_1_200",
       floor: 1,
       explorationPercent: 20,
       stairsDiscovered: false,
     });
     await dungeonExplorationProgressRepository.upsert({
-      dungeonId: "hakusla_dungeon_1_200",
+      dungeonId: "crestoria_dungeon_1_200",
       floor: 2,
       explorationPercent: 60,
       stairsDiscovered: true,
     });
-    const rows = await dungeonExplorationProgressRepository.listByDungeon("hakusla_dungeon_1_200");
+    const rows = await dungeonExplorationProgressRepository.listByDungeon("crestoria_dungeon_1_200");
     expect(rows.map((row) => row.floor)).toEqual([1, 2]);
     expect(rows[1]?.stairsDiscovered).toBe(true);
   });
@@ -95,6 +95,19 @@ describe("dungeonExplorationProgressRepository", () => {
     const rows = await dungeonExplorationProgressRepository.listByDungeon("d1");
     expect(rows[0]?.explorationPercent).toBe(70);
     expect(rows[0]?.stairsDiscovered).toBe(true);
+  });
+
+  it("does not auto-mark stairs_discovered from exploration percent alone", async () => {
+    await dungeonExplorationProgressRepository.upsert({
+      dungeonId: "d_boss",
+      floor: 5,
+      explorationPercent: 100,
+      stairsDiscovered: false,
+    });
+
+    const rows = await dungeonExplorationProgressRepository.listByDungeon("d_boss");
+    expect(rows[0]?.explorationPercent).toBe(100);
+    expect(rows[0]?.stairsDiscovered).toBe(false);
   });
 
   it("lists by range and computes bundle summary", async () => {

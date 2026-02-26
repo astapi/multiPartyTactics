@@ -130,7 +130,7 @@ export default function ExplorationScreen() {
   const { locale, t } = useI18n();
   const params = useLocalSearchParams<{ dungeonId?: string; floor?: string; partyId?: string; steps?: string }>();
 
-  const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_4";
+  const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_200";
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
   const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
   const requestedSteps = Number.parseInt(params.steps ?? String(DEFAULT_EXPLORATION_STEP_COUNT), 10);

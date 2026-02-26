@@ -57,20 +57,21 @@ export type ExplorationSessionState = {
   stairsReachedThisRunMap: Record<number, boolean>;
   floorStepsThisRunMap: Record<number, number>;
   discoveredStairsArrivalTargetMap: Record<number, number>;
+  specialBossArrivalTargetMap: Record<number, number>;
   bossEncounterOfferedThisRunMap: Record<number, boolean>;
 };
 
 const DEFAULT_CONFIG: ExplorationSessionConfig = {
   stepsPerRun: difficultyConfig.exploration.maxTicks,
-  stairsDiscoveryThresholdPercent: 50,
+  stairsDiscoveryThresholdPercent: 40,
   fullExplorationPercent: 100,
   explorationPercentGainPerStep: 0.25,
   shortcutStepCostPerDiscoveredFloor: 2,
-  discoveredStairsArrivalMinSteps: 5,
+  discoveredStairsArrivalMinSteps: 3,
   discoveredStairsArrivalMaxSteps: 20,
 };
 
-const SPECIAL_B5_BOSS_DUNGEON_ID = "hakusla_dungeon_1_200";
+const SPECIAL_B5_BOSS_DUNGEON_ID = "crestoria_dungeon_1_200";
 const SPECIAL_B5_BOSS_FLOOR = 5;
 
 const clampPercent = (value: number): number => {
@@ -234,6 +235,7 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
     stairsReachedThisRunMap: {},
     floorStepsThisRunMap: {},
     discoveredStairsArrivalTargetMap: {},
+    specialBossArrivalTargetMap: {},
     bossEncounterOfferedThisRunMap: {},
   };
 
@@ -335,6 +337,25 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     }
   }
 
+  let nextSpecialBossArrivalTargetMap = nextState.specialBossArrivalTargetMap;
+  const canSampleSpecialBossArrivalTarget =
+    isSpecialBossGateFloor(state, floor) &&
+    nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
+    !nextFloorProgress.stairsDiscovered &&
+    !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&
+    nextSpecialBossArrivalTargetMap[floor] === undefined;
+  if (canSampleSpecialBossArrivalTarget) {
+    nextSpecialBossArrivalTargetMap = {
+      ...nextSpecialBossArrivalTargetMap,
+      [floor]: sampleDiscoveredStairsArrivalTarget(nextState, floor),
+    };
+    nextState = {
+      ...nextState,
+      specialBossArrivalTargetMap: nextSpecialBossArrivalTargetMap,
+    };
+  }
+  const specialBossArrivalTarget = nextSpecialBossArrivalTargetMap[floor];
+
   const justCompletedFloor =
     prevFloorProgress.explorationPercent < state.config.fullExplorationPercent &&
     nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
@@ -354,9 +375,10 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     (!isSpecialBossGateFloor(state, floor) || nextFloorProgress.stairsDiscovered);
   const shouldOfferSpecialBossEncounter =
     isSpecialBossGateFloor(state, floor) &&
-    nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent &&
+    nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
     !nextFloorProgress.stairsDiscovered &&
-    !(state.bossEncounterOfferedThisRunMap[floor] ?? false);
+    !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&
+    (nextState.floorStepsThisRunMap[floor] ?? 0) >= (specialBossArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps);
   if (shouldOfferSpecialBossEncounter) {
     const bossEncounter = createBossEncounter({
       dungeonId: state.dungeon.id,

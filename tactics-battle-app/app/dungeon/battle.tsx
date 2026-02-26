@@ -45,9 +45,7 @@ const RESULT_SHEET_ANIMATION_MS = 220;
 const RESULT_SHEET_PARTY_STRIP_OFFSET = 10;
 
 const DUNGEON_NAME_I18N_KEY = {
-  hakusla_dungeon_1_200: "dungeon.name.hakusla_dungeon_1_200",
-  crestoria_dungeon_1_4: "dungeon.name.crestoria_dungeon_1_4",
-  crestoria_dungeon_5_9: "dungeon.name.crestoria_dungeon_5_9",
+  crestoria_dungeon_1_200: "dungeon.name.crestoria_dungeon_1_200",
 } as const;
 const BATTLE_RESULT_I18N_KEY = {
   WIN: "battle.result.win",
@@ -63,6 +61,12 @@ const getEnemyImage = (enemyId: string): ImageSourcePropType => {
   if (id.includes("poison_toad") || id.includes("poison_frog")) return require("@/assets/images/enemies/poison_frog.png");
   return require("@/assets/images/enemies/slime.png");
 };
+
+const isBossEnemyId = (enemyId: string): boolean => {
+  const id = enemyId.toLowerCase();
+  return id.includes("boss_") || id.includes("lepus");
+};
+
 const parseEncounter = (raw: string | undefined): EncounterResult | null => {
   if (!raw) return null;
   try {
@@ -124,7 +128,7 @@ export default function BattleScreen() {
   const [initialParty, setInitialParty] = useState<Unit[]>([]);
   const [encounterData, setEncounterData] = useState<EncounterResult | null>(() => parseEncounter(encounter));
   const [tacticsByCharacter, setTacticsByCharacter] = useState<Record<string, TacticsRuleRecord[]>>({});
-  const [resolvedDungeonId, setResolvedDungeonId] = useState("crestoria_dungeon_1_4");
+  const [resolvedDungeonId, setResolvedDungeonId] = useState("crestoria_dungeon_1_200");
   const [resolvedFloor, setResolvedFloor] = useState(1);
   const [resolvedSeed, setResolvedSeed] = useState<number | null>(null);
   const [battleCompleted, setBattleCompleted] = useState(false);
@@ -155,7 +159,7 @@ export default function BattleScreen() {
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
     DUNGEON_NAME_I18N_KEY[resolvedDungeonId as keyof typeof DUNGEON_NAME_I18N_KEY] ??
-      "dungeon.name.crestoria_dungeon_1_4"
+      "dungeon.name.crestoria_dungeon_1_200"
   );
   const isOutcomeBadgeVisible =
     phase === "RESULT" &&
@@ -174,7 +178,7 @@ export default function BattleScreen() {
       setError(null);
       const parsedFloor = Math.max(1, Number.parseInt(floor ?? "1", 10) || 1);
       const parsedSeed = explorationSeed ? Number.parseInt(explorationSeed, 10) : Date.now();
-      const nextDungeonId = dungeonId ?? "crestoria_dungeon_1_4";
+      const nextDungeonId = dungeonId ?? "crestoria_dungeon_1_200";
       const nextPartyId = partyId ?? DEFAULT_PARTY_ID;
       const parsedEncounter = parseEncounter(encounter);
       setResolvedDungeonId(nextDungeonId);
@@ -564,6 +568,7 @@ export default function BattleScreen() {
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
+          isBoss: isBossEnemyId(enemy.enemyId),
           hp: enemy.stats.maxHp,
           maxHp: enemy.stats.maxHp,
         })),
@@ -586,6 +591,7 @@ export default function BattleScreen() {
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
+          isBoss: isBossEnemyId(enemy.enemyId),
           hp: enemy.stats.maxHp,
           maxHp: enemy.stats.maxHp,
         })),
@@ -618,6 +624,7 @@ export default function BattleScreen() {
         id: `${enemy.enemyId}-${idx}`,
         name: enemy.name,
         image: getEnemyImage(enemy.enemyId),
+        isBoss: isBossEnemyId(enemy.enemyId),
         hp: enemy.stats.maxHp,
         maxHp: enemy.stats.maxHp,
       })),
@@ -643,6 +650,7 @@ export default function BattleScreen() {
       id: enemy.id,
       name: enemy.name,
       image: getEnemyImage(enemy.id),
+      isBoss: isBossEnemyId(enemy.id),
       hp: enemy.hp,
       maxHp: enemy.stats.maxHp,
     })),
@@ -656,7 +664,7 @@ export default function BattleScreen() {
   function renderBattleLayout(params: {
     floor: number;
     title: string;
-    enemies: Array<{ id: string; name: string; image: ImageSourcePropType; hp: number; maxHp: number }>;
+    enemies: Array<{ id: string; name: string; image: ImageSourcePropType; isBoss: boolean; hp: number; maxHp: number }>;
     party: Unit[];
     logs: typeof logs;
     turnText: string;
@@ -722,8 +730,12 @@ export default function BattleScreen() {
             <View style={styles.enemyAreaOverlay}>
               <View style={styles.enemyRow}>
                 {params.enemies.slice(0, 3).map((enemy) => (
-                  <View key={enemy.id} style={styles.enemyItem}>
-                    <Image source={enemy.image} style={styles.enemyImage} resizeMode="contain" />
+                  <View key={enemy.id} style={[styles.enemyItem, enemy.isBoss && styles.enemyItemBoss]}>
+                    <Image
+                      source={enemy.image}
+                      style={[styles.enemyImage, enemy.isBoss && styles.enemyImageBoss]}
+                      resizeMode="contain"
+                    />
                     <Text style={styles.enemyLabel} numberOfLines={1}>
                       {enemy.name}
                     </Text>
@@ -1040,7 +1052,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 90,
   },
+  enemyItemBoss: {
+    width: 120,
+  },
   enemyImage: { width: 72, height: 72 },
+  enemyImageBoss: { width: 112, height: 112 },
   enemyLabel: {
     marginTop: 4,
     color: "#efefef",

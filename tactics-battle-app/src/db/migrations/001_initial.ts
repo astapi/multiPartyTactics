@@ -109,10 +109,9 @@ CREATE TABLE IF NOT EXISTS battle_logs (
 INSERT OR IGNORE INTO dungeons
 (id, min_floor, max_floor, sort_order, is_bonus, is_enabled)
 VALUES
-('crestoria_dungeon_1_4', 1, 4, 10, 0, 1),
-('crestoria_dungeon_5_9', 5, 9, 20, 0, 1);
+('crestoria_dungeon_1_200', 1, 200, 5, 0, 1);
 
 INSERT OR IGNORE INTO unlocked_dungeons (dungeon_id, unlock_reason)
 VALUES
-('crestoria_dungeon_1_4', 'initial');
+('crestoria_dungeon_1_200', 'initial');
 `;
