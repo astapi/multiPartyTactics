@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateEncounter } from "@/game/encounter";
+import { createBossEncounter, generateEncounter } from "@/game/encounter";
 import dungeonEnemyTableData from "@/data/dungeonEnemyTable.json";
 import enemiesData from "@/data/enemies.json";
 
@@ -80,5 +80,18 @@ describe("game/encounter", () => {
     const f70 = weightedFloorScore(70);
     const f71 = weightedFloorScore(71);
     expect(f71).toBeGreaterThan(f70 * 1.1);
+  });
+
+  it("creates a boss encounter for Lepus with boss metadata", () => {
+    const result = createBossEncounter({
+      dungeonId: "hakusla_dungeon_1_200",
+      floor: 5,
+      seed: 123,
+    });
+    expect(result.enemies).toHaveLength(1);
+    expect(result.enemies[0]?.name).toBe("レプス");
+    expect(result.rollMeta.enemyCount).toBe(1);
+    expect(result.rollMeta.encounterKind).toBe("BOSS");
+    expect(result.rollMeta.bossName).toBe("レプス");
   });
 });

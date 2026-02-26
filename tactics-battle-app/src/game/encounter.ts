@@ -15,6 +15,8 @@ export type EncounterEnemy = {
   stats: Stats;
 };
 
+export type EncounterKind = "NORMAL" | "BOSS";
+
 export type EncounterResult = {
   enemies: EncounterEnemy[];
   rollMeta: {
@@ -22,10 +24,18 @@ export type EncounterResult = {
     floor: number;
     seed: number;
     enemyCount: number;
+    encounterKind?: EncounterKind;
+    bossName?: string;
   };
 };
 
 export type GenerateEncounterParams = {
+  dungeonId: string;
+  floor: number;
+  seed: number;
+};
+
+export type CreateBossEncounterParams = {
   dungeonId: string;
   floor: number;
   seed: number;
@@ -52,6 +62,17 @@ const ENEMY_MASTER = new Map(
 );
 
 const DUNGEON_TABLE = dungeonEnemyTableData.dungeons as DungeonTable[];
+
+const LEPUS_BOSS_ID = "boss_lepus";
+const LEPUS_BOSS_NAME = "レプス";
+const LEPUS_BOSS_STATS: Stats = {
+  maxHp: 120,
+  atk: 24,
+  def: 12,
+  spd: 12,
+  maxMp: 18,
+  mpRegen: 2,
+};
 
 type WeightedEncounterEntry = {
   enemyId: string;
@@ -125,6 +146,28 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
       floor,
       seed: params.seed,
       enemyCount,
+      encounterKind: "NORMAL",
+    },
+  };
+};
+
+export const createBossEncounter = (params: CreateBossEncounterParams): EncounterResult => {
+  const floor = Math.max(1, params.floor);
+  return {
+    enemies: [
+      {
+        enemyId: LEPUS_BOSS_ID,
+        name: LEPUS_BOSS_NAME,
+        stats: { ...LEPUS_BOSS_STATS },
+      },
+    ],
+    rollMeta: {
+      dungeonId: params.dungeonId,
+      floor,
+      seed: params.seed,
+      enemyCount: 1,
+      encounterKind: "BOSS",
+      bossName: LEPUS_BOSS_NAME,
     },
   };
 };

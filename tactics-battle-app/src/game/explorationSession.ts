@@ -7,7 +7,7 @@ import {
   ExplorationResult,
   rollExplorationEvent,
 } from "@/game/exploration";
-import { EncounterResult } from "@/game/encounter";
+import { EncounterResult, createBossEncounter } from "@/game/encounter";
 import { createSeededRng } from "@/utils/rng";
 
 export type ExplorationFloorProgress = {
@@ -19,10 +19,14 @@ export type ExplorationFloorProgress = {
 export type ExplorationSessionStatus =
   | "RUNNING"
   | "AWAITING_DECISION"
+  | "AWAITING_BOSS_DECISION"
+  | "AWAITING_BOSS_RESULT"
   | "RUN_COMPLETE"
   | "BUNDLE_CLEARED";
 
 export type FloorDecision = "DESCEND" | "CONTINUE";
+export type BossEncounterDecision = "FIGHT" | "CONTINUE";
+export type BossBattleOutcome = "WIN" | "LOSE" | "DRAW";
 
 export type ExplorationSessionConfig = {
   stepsPerRun: number;
@@ -48,10 +52,12 @@ export type ExplorationSessionState = {
   events: ExplorationEvent[];
   encounterTicks: number[];
   encounters: EncounterResult[];
+  pendingBossEncounter: EncounterResult | null;
   floorProgressMap: Record<number, ExplorationFloorProgress>;
   stairsReachedThisRunMap: Record<number, boolean>;
   floorStepsThisRunMap: Record<number, number>;
   discoveredStairsArrivalTargetMap: Record<number, number>;
+  bossEncounterOfferedThisRunMap: Record<number, boolean>;
 };
 
 const DEFAULT_CONFIG: ExplorationSessionConfig = {
@@ -63,6 +69,9 @@ const DEFAULT_CONFIG: ExplorationSessionConfig = {
   discoveredStairsArrivalMinSteps: 5,
   discoveredStairsArrivalMaxSteps: 20,
 };
+
+const SPECIAL_B5_BOSS_DUNGEON_ID = "hakusla_dungeon_1_200";
+const SPECIAL_B5_BOSS_FLOOR = 5;
 
 const clampPercent = (value: number): number => {
   const clamped = Math.max(0, Math.min(100, value));
@@ -88,6 +97,11 @@ const withFloorProgress = (
     [progress.floor]: progress,
   },
 });
+
+const isSpecialBossGateFloor = (state: Pick<ExplorationSessionState, "dungeon" | "bundle">, floor: number): boolean =>
+  state.dungeon.id === SPECIAL_B5_BOSS_DUNGEON_ID &&
+  floor === SPECIAL_B5_BOSS_FLOOR &&
+  floor === state.bundle.bossFloor;
 
 export const isStairsDiscoveredForFloor = (progress: Pick<ExplorationFloorProgress, "stairsDiscovered">): boolean =>
   progress.stairsDiscovered;
@@ -145,7 +159,14 @@ const sampleDiscoveredStairsArrivalTarget = (
 };
 
 const resolveStatusAfterStepBudget = (state: ExplorationSessionState): ExplorationSessionState => {
-  if (state.status === "BUNDLE_CLEARED" || state.status === "AWAITING_DECISION") return state;
+  if (
+    state.status === "BUNDLE_CLEARED" ||
+    state.status === "AWAITING_DECISION" ||
+    state.status === "AWAITING_BOSS_DECISION" ||
+    state.status === "AWAITING_BOSS_RESULT"
+  ) {
+    return state;
+  }
   if (state.currentStep >= state.totalSteps) {
     return { ...state, status: "RUN_COMPLETE", pendingDecisionFloor: null };
   }
@@ -189,10 +210,12 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
     events: [],
     encounterTicks: [],
     encounters: [],
+    pendingBossEncounter: null,
     floorProgressMap: initialFloorProgressMap,
     stairsReachedThisRunMap: {},
     floorStepsThisRunMap: {},
     discoveredStairsArrivalTargetMap: {},
+    bossEncounterOfferedThisRunMap: {},
   };
 
   return resolveStatusAfterStepBudget(state);
@@ -307,7 +330,40 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     : null;
 
   const shouldClearBundle =
-    floor === state.bundle.bossFloor && nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
+    floor === state.bundle.bossFloor &&
+    nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent &&
+    (!isSpecialBossGateFloor(state, floor) || nextFloorProgress.stairsDiscovered);
+  const shouldOfferSpecialBossEncounter =
+    isSpecialBossGateFloor(state, floor) &&
+    nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent &&
+    !nextFloorProgress.stairsDiscovered &&
+    !(state.bossEncounterOfferedThisRunMap[floor] ?? false);
+  if (shouldOfferSpecialBossEncounter) {
+    const bossEncounter = createBossEncounter({
+      dungeonId: state.dungeon.id,
+      floor,
+      seed: (state.seed ^ Math.imul(nextTick, 4099) ^ Math.imul(floor, 65537)) >>> 0,
+    });
+    nextState = appendEvent(nextState, {
+      tick: nextTick,
+      type: "BOSS_ENCOUNTER",
+      floor,
+      messageId: "exploration.event.boss.encounter",
+      payload: { bossName: bossEncounter.rollMeta.bossName ?? bossEncounter.enemies[0]?.name ?? "?" },
+    });
+    nextState = {
+      ...nextState,
+      status: "AWAITING_BOSS_DECISION",
+      pendingDecisionFloor: null,
+      pendingBossEncounter: bossEncounter,
+      bossEncounterOfferedThisRunMap: {
+        ...nextState.bossEncounterOfferedThisRunMap,
+        [floor]: true,
+      },
+    };
+    return resolveStatusAfterStepBudget(nextState);
+  }
+
   if (shouldClearBundle) {
     nextState = appendEvent(nextState, {
       tick: nextTick,
@@ -319,6 +375,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
       ...nextState,
       status: "BUNDLE_CLEARED",
       pendingDecisionFloor: null,
+      pendingBossEncounter: null,
     };
     return nextState;
   }
@@ -387,6 +444,72 @@ export const applyFloorDecision = (
     }
   );
   return resolveStatusAfterStepBudget(next);
+};
+
+export const applyBossEncounterDecision = (
+  state: ExplorationSessionState,
+  decision: BossEncounterDecision
+): ExplorationSessionState => {
+  if (state.status !== "AWAITING_BOSS_DECISION" || !state.pendingBossEncounter) {
+    return state;
+  }
+  if (decision === "CONTINUE") {
+    return resolveStatusAfterStepBudget({
+      ...state,
+      status: "RUNNING",
+      pendingBossEncounter: null,
+    });
+  }
+  return {
+    ...state,
+    status: "AWAITING_BOSS_RESULT",
+  };
+};
+
+export const applyBossBattleResult = (
+  state: ExplorationSessionState,
+  outcome: BossBattleOutcome
+): ExplorationSessionState => {
+  if (state.status !== "AWAITING_BOSS_RESULT") return state;
+
+  if (outcome !== "WIN") {
+    return resolveStatusAfterStepBudget({
+      ...state,
+      status: "RUNNING",
+      pendingBossEncounter: null,
+    });
+  }
+
+  const floor = state.currentFloor;
+  let nextState = state;
+  const currentFloorProgress = getFloorProgress(nextState, floor);
+  const nextFloorProgress = currentFloorProgress.stairsDiscovered
+    ? currentFloorProgress
+    : { ...currentFloorProgress, stairsDiscovered: true };
+  if (!currentFloorProgress.stairsDiscovered) {
+    nextState = withFloorProgress(nextState, nextFloorProgress);
+  }
+
+  nextState = appendEvent(nextState, {
+    tick: state.currentStep,
+    type: "STAIRS_DISCOVERED",
+    floor,
+    messageId: "exploration.event.stairs.discovered",
+    payload: { explorationPercent: nextFloorProgress.explorationPercent },
+  });
+  nextState = appendEvent(nextState, {
+    tick: state.currentStep,
+    type: "BUNDLE_CLEAR",
+    floor,
+    messageId: "exploration.event.bundle.clear",
+  });
+
+  return {
+    ...nextState,
+    status: "BUNDLE_CLEARED",
+    pendingDecisionFloor: null,
+    pendingBossEncounter: null,
+  };
 };
 
 export const toExplorationResult = (state: ExplorationSessionState): ExplorationResult => ({

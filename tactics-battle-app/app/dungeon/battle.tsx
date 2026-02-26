@@ -57,6 +57,7 @@ const BATTLE_RESULT_I18N_KEY = {
 
 const getEnemyImage = (enemyId: string): ImageSourcePropType => {
   const id = enemyId.toLowerCase();
+  if (id.includes("lepus")) return require("@/assets/images/enemies/boss/lepus.png");
   if (id.includes("goblin")) return require("@/assets/images/enemies/goblin.png");
   if (id.includes("slime")) return require("@/assets/images/enemies/slime.png");
   if (id.includes("poison_toad") || id.includes("poison_frog")) return require("@/assets/images/enemies/poison_frog.png");
