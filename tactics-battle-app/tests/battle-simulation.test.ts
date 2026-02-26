@@ -34,12 +34,80 @@ describe("game/battleSimulation", () => {
     expect(result.outcome).toBe("WIN");
     expect(result.logs.length).toBeGreaterThan(0);
     expect(result.replayStates).toHaveLength(result.logs.length + 1);
+    expect(result.visualEvents.length).toBeGreaterThan(0);
     expect(result.outcomeRevealLogCount).toBe(result.logs.length);
     expect(result.replayStates[0].party.map((unit) => unit.hp)).toEqual(party.map((unit) => unit.hp));
     expect(result.replayStates[0].enemies[0].hp).toBe(enemies[0].stats.maxHp);
     expect(result.logs.some((log) => log.actionType === "basic_attack")).toBe(true);
+    expect(result.visualEvents.some((event) => event.kind === "damage_number")).toBe(true);
     expect(result.finalEnemies[0].hp).toBe(0);
     expect(result.finalParty[0]).not.toBe(party[0]);
+  });
+
+  it("creates log-index-synced visual events for basic attacks and maps attack style by class", () => {
+    const party = [
+      makeUnit({
+        id: "t1",
+        name: "Thief",
+        classId: "THIEF",
+        stats: { atk: 20, def: 1, spd: 20, maxHp: 30, maxMp: 0, mpRegen: 0 },
+        hp: 30,
+        mp: 0,
+      }),
+    ];
+    const enemies = [
+      toEncounter("slime", "Slime", { maxHp: 20, atk: 1, def: 0, spd: 1, maxMp: 0, mpRegen: 0 }),
+    ];
+
+    const result = simulateBattle({
+      sessionId: "s-visual-1",
+      seed: 9,
+      party,
+      enemies,
+      tacticsByCharacter: {},
+      skillMap: new Map(),
+      maxTurns: 1,
+    });
+
+    const basicAttackLogIndex = result.logs.findIndex((log) => log.actionType === "basic_attack");
+    expect(basicAttackLogIndex).toBeGreaterThanOrEqual(0);
+
+    const syncedEvents = result.visualEvents.filter((event) => event.logIndex === basicAttackLogIndex);
+    expect(syncedEvents.map((event) => event.kind)).toEqual(
+      expect.arrayContaining(["attack_trail", "hit_flash", "hit_reaction", "damage_number"])
+    );
+    expect(syncedEvents.every((event) => event.targetIds.length > 0)).toBe(true);
+    expect(syncedEvents.some((event) => event.attackStyle === "dagger")).toBe(true);
+  });
+
+  it("falls back to generic attack style when class is unknown or missing", () => {
+    const party = [
+      makeUnit({
+        id: "no-class",
+        name: "NoClass",
+        classId: undefined,
+        stats: { atk: 20, def: 1, spd: 20, maxHp: 30, maxMp: 0, mpRegen: 0 },
+        hp: 30,
+        mp: 0,
+      }),
+    ];
+    const enemies = [
+      toEncounter("slime", "Slime", { maxHp: 10, atk: 1, def: 0, spd: 1, maxMp: 0, mpRegen: 0 }),
+    ];
+
+    const result = simulateBattle({
+      sessionId: "s-visual-2",
+      seed: 10,
+      party,
+      enemies,
+      tacticsByCharacter: {},
+      skillMap: new Map(),
+      maxTurns: 1,
+    });
+
+    const attackTrail = result.visualEvents.find((event) => event.kind === "attack_trail");
+    expect(attackTrail).toBeTruthy();
+    expect(attackTrail?.attackStyle).toBe("generic");
   });
 
   it("returns LOSE when enemies overpower the party", () => {

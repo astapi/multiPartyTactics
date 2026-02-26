@@ -8,7 +8,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Line, Path } from "react-native-svg";
-import { getAttackTrailPreset } from "@/features/battle/animation/presets";
+import LottieView from "lottie-react-native";
+import type { AnimationObject } from "lottie-react-native";
+import { getAttackTrailPreset, HIT_IMPACT_PRESET } from "@/features/battle/animation/presets";
 import type {
   BattleAttackStyle,
   BattleEffectRect,
@@ -47,7 +49,9 @@ const MAX_CONCURRENT_FLASHES = 12;
 const MAX_CONCURRENT_TRAILS = 8;
 const MAX_CONCURRENT_DAMAGE_NUMBERS = 16;
 
-const FlashEffect = ({ rect, onDone }: { rect: BattleEffectRect; onDone: () => void }) => {
+/* ---------- SVG Fallback components ---------- */
+
+const SvgFlashEffect = ({ rect, onDone }: { rect: BattleEffectRect; onDone: () => void }) => {
   const opacity = useSharedValue(0);
 
   useEffect(() => {
@@ -81,48 +85,7 @@ const FlashEffect = ({ rect, onDone }: { rect: BattleEffectRect; onDone: () => v
   );
 };
 
-const DamageNumberEffect = ({
-  rect,
-  amount,
-  indexOffset,
-  onDone,
-}: {
-  rect: BattleEffectRect;
-  amount: number;
-  indexOffset: number;
-  onDone: () => void;
-}) => {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) });
-    const timer = setTimeout(onDone, 560);
-    return () => clearTimeout(timer);
-  }, [progress]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const eased = progress.value;
-    return {
-      opacity: 1 - eased,
-      transform: [{ translateY: -22 * eased }, { scale: 1 + (1 - eased) * 0.08 }],
-    };
-  });
-
-  const baseLeft = rect.x + rect.width * 0.5 - 10;
-  const baseTop = rect.y + Math.max(0, rect.height * 0.15);
-  const xOffset = (indexOffset % 2 === 0 ? -1 : 1) * (6 + (indexOffset % 3) * 3);
-
-  return (
-    <AnimatedText
-      pointerEvents="none"
-      style={[styles.damageNumber, { left: baseLeft + xOffset, top: baseTop }, animatedStyle]}
-    >
-      {Math.max(0, Math.floor(amount))}
-    </AnimatedText>
-  );
-};
-
-const TrailEffect = ({
+const SvgTrailEffect = ({
   rect,
   attackStyle,
   onDone,
@@ -226,6 +189,186 @@ const TrailEffect = ({
   );
 };
 
+/* ---------- Lottie-based components ---------- */
+
+const LottieTrailEffect = ({
+  rect,
+  attackStyle,
+  onDone,
+}: {
+  rect: BattleEffectRect;
+  attackStyle: BattleAttackStyle;
+  onDone: () => void;
+}) => {
+  const preset = getAttackTrailPreset(attackStyle);
+
+  if (preset.lottieSource == null) {
+    return <SvgTrailEffect rect={rect} attackStyle={attackStyle} onDone={onDone} />;
+  }
+
+  const padX = Math.max(14, rect.width * 0.28);
+  const padY = Math.max(12, rect.height * 0.22);
+  const box = {
+    left: rect.x - padX,
+    top: rect.y - padY,
+    width: rect.width + padX * 2,
+    height: rect.height + padY * 2,
+  };
+
+  return (
+    <LottieTrailInner
+      source={preset.lottieSource}
+      speed={preset.lottieSpeed}
+      durationMs={preset.durationMs}
+      box={box}
+      onDone={onDone}
+    />
+  );
+};
+
+const LottieTrailInner = ({
+  source,
+  speed,
+  durationMs,
+  box,
+  onDone,
+}: {
+  source: AnimationObject;
+  speed: number;
+  durationMs: number;
+  box: { left: number; top: number; width: number; height: number };
+  onDone: () => void;
+}) => {
+  const doneRef = useRef(false);
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(finish, durationMs + 80);
+    return () => clearTimeout(timer);
+  }, [durationMs]);
+
+  return (
+    <View pointerEvents="none" style={[styles.trailContainer, box]}>
+      <LottieView
+        source={source}
+        autoPlay
+        loop={false}
+        speed={speed}
+        onAnimationFinish={finish}
+        style={styles.lottieFill}
+      />
+    </View>
+  );
+};
+
+const LottieFlashEffect = ({ rect, onDone }: { rect: BattleEffectRect; onDone: () => void }) => {
+  const preset = HIT_IMPACT_PRESET;
+
+  if (preset.lottieSource == null) {
+    return <SvgFlashEffect rect={rect} onDone={onDone} />;
+  }
+
+  return <LottieFlashInner source={preset.lottieSource} speed={preset.lottieSpeed} durationMs={preset.durationMs} rect={rect} onDone={onDone} />;
+};
+
+const LottieFlashInner = ({
+  source,
+  speed,
+  durationMs,
+  rect,
+  onDone,
+}: {
+  source: AnimationObject;
+  speed: number;
+  durationMs: number;
+  rect: BattleEffectRect;
+  onDone: () => void;
+}) => {
+  const doneRef = useRef(false);
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(finish, durationMs + 80);
+    return () => clearTimeout(timer);
+  }, [durationMs]);
+
+  const size = Math.max(rect.width, rect.height) * 1.2;
+  const cx = rect.x + rect.width * 0.5 - size * 0.5;
+  const cy = rect.y + rect.height * 0.5 - size * 0.5;
+
+  return (
+    <View
+      pointerEvents="none"
+      style={[
+        styles.trailContainer,
+        { left: cx, top: cy, width: size, height: size },
+      ]}
+    >
+      <LottieView
+        source={source}
+        autoPlay
+        loop={false}
+        speed={speed}
+        onAnimationFinish={finish}
+        style={styles.lottieFill}
+      />
+    </View>
+  );
+};
+
+/* ---------- Damage number (unchanged) ---------- */
+
+const DamageNumberEffect = ({
+  rect,
+  amount,
+  indexOffset,
+  onDone,
+}: {
+  rect: BattleEffectRect;
+  amount: number;
+  indexOffset: number;
+  onDone: () => void;
+}) => {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) });
+    const timer = setTimeout(onDone, 560);
+    return () => clearTimeout(timer);
+  }, [progress]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const eased = progress.value;
+    return {
+      opacity: 1 - eased,
+      transform: [{ translateY: -22 * eased }, { scale: 1 + (1 - eased) * 0.08 }],
+    };
+  });
+
+  const baseLeft = rect.x + rect.width * 0.5 - 10;
+  const baseTop = rect.y + Math.max(0, rect.height * 0.15);
+  const xOffset = (indexOffset % 2 === 0 ? -1 : 1) * (6 + (indexOffset % 3) * 3);
+
+  return (
+    <AnimatedText
+      pointerEvents="none"
+      style={[styles.damageNumber, { left: baseLeft + xOffset, top: baseTop }, animatedStyle]}
+    >
+      {Math.max(0, Math.floor(amount))}
+    </AnimatedText>
+  );
+};
+
+/* ---------- Main component ---------- */
+
 export function BattleEffectLayer({
   enemyRects,
   visualEvents,
@@ -282,11 +425,35 @@ export function BattleEffectLayer({
         }
 
         if (event.kind === "attack_trail") {
-          const targetId = event.targetIds.find((id) => enemyRects[id]);
-          if (!targetId) continue;
-          const rect = enemyRects[targetId];
-          const id = `trail-${seqRef.current++}`;
-          setTrails((prev) => [...prev, { id, rect, style: event.attackStyle ?? "generic" }].slice(-MAX_CONCURRENT_TRAILS));
+          const targetRects = event.targetIds
+            .map((id) => enemyRects[id])
+            .filter((r): r is BattleEffectRect => Boolean(r));
+          if (targetRects.length === 0) continue;
+          const style = event.attackStyle ?? "generic";
+
+          if (style === "cleave" && targetRects.length > 1) {
+            // Cleave: 全ターゲットを覆う1本の横薙ぎ
+            const merged: BattleEffectRect = {
+              x: Math.min(...targetRects.map((r) => r.x)),
+              y: Math.min(...targetRects.map((r) => r.y)),
+              width:
+                Math.max(...targetRects.map((r) => r.x + r.width)) -
+                Math.min(...targetRects.map((r) => r.x)),
+              height:
+                Math.max(...targetRects.map((r) => r.y + r.height)) -
+                Math.min(...targetRects.map((r) => r.y)),
+            };
+            const id = `trail-${seqRef.current++}`;
+            setTrails((prev) => [...prev, { id, rect: merged, style }].slice(-MAX_CONCURRENT_TRAILS));
+          } else {
+            // その他: 各ターゲットに個別エフェクト
+            const newTrails = targetRects.map((r) => ({
+              id: `trail-${seqRef.current++}`,
+              rect: r,
+              style,
+            }));
+            setTrails((prev) => [...prev, ...newTrails].slice(-MAX_CONCURRENT_TRAILS));
+          }
           continue;
         }
 
@@ -324,7 +491,7 @@ export function BattleEffectLayer({
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {trails.map((trail) => (
-        <TrailEffect
+        <LottieTrailEffect
           key={trail.id}
           rect={trail.rect}
           attackStyle={trail.style}
@@ -332,7 +499,7 @@ export function BattleEffectLayer({
         />
       ))}
       {flashes.map((flash) => (
-        <FlashEffect
+        <LottieFlashEffect
           key={flash.id}
           rect={flash.rect}
           onDone={() => setFlashes((prev) => prev.filter((entry) => entry.id !== flash.id))}
@@ -370,5 +537,9 @@ const styles = StyleSheet.create({
   },
   trailContainer: {
     position: "absolute",
+  },
+  lottieFill: {
+    width: "100%",
+    height: "100%",
   },
 });

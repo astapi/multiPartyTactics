@@ -1,15 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  ImageBackground,
+  ImageSourcePropType,
+  LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { Pause, Play } from "lucide-react-native";
+import { BattleEffectLayer } from "@/components/battle/BattleEffectLayer";
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
+import { getAttackTrailPreset } from "@/features/battle/animation/presets";
+import type {
+  BattleAttackStyle,
+  BattleEffectRect,
+  BattleVisualEvent,
+} from "@/features/battle/animation/types";
 import { Unit } from "@/game/battle";
 import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
@@ -111,6 +135,71 @@ const buildLevelUpStatDiffs = (
   return diffs;
 };
 
+type BattleEnemyViewModel = {
+  id: string;
+  name: string;
+  image: ImageSourcePropType;
+  isBoss: boolean;
+  hp: number;
+  maxHp: number;
+};
+
+const BattleEnemyCard = ({
+  enemy,
+  enemyHpText,
+  hitPulse,
+  hitStyle,
+  onLayout,
+}: {
+  enemy: BattleEnemyViewModel;
+  enemyHpText: string;
+  hitPulse: number;
+  hitStyle?: BattleAttackStyle;
+  onLayout?: (event: LayoutChangeEvent) => void;
+}) => {
+  const translateX = useSharedValue(0);
+
+  useEffect(() => {
+    if (hitPulse <= 0) return;
+    const amplitude = getAttackTrailPreset(hitStyle).hitReactionAmplitude;
+    translateX.value = withSequence(
+      withTiming(-amplitude, { duration: 45, easing: Easing.out(Easing.quad) }),
+      withTiming(amplitude * 0.7, { duration: 55, easing: Easing.inOut(Easing.quad) }),
+      withTiming(-amplitude * 0.4, { duration: 45, easing: Easing.inOut(Easing.quad) }),
+      withTiming(0, { duration: 55, easing: Easing.out(Easing.quad) })
+    );
+  }, [hitPulse, hitStyle, translateX]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  return (
+    <Animated.View
+      onLayout={onLayout}
+      style={[styles.enemyItem, enemy.isBoss && styles.enemyItemBoss, animatedStyle]}
+    >
+      <Image
+        source={enemy.image}
+        style={[styles.enemyImage, enemy.isBoss && styles.enemyImageBoss]}
+        resizeMode="contain"
+      />
+      <Text style={styles.enemyLabel} numberOfLines={1}>
+        {enemy.name}
+      </Text>
+      <View style={styles.enemyHpBar}>
+        <View
+          style={[
+            styles.enemyHpFill,
+            { width: `${Math.max(0, Math.min(100, (enemy.hp / Math.max(1, enemy.maxHp)) * 100))}%` },
+          ]}
+        />
+      </View>
+      <Text style={styles.enemyHpText}>{enemyHpText}</Text>
+    </Animated.View>
+  );
+};
+
 export default function BattleScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -140,6 +229,10 @@ export default function BattleScreen() {
   const [turns, setTurns] = useState(0);
   const [partyUiMetaById, setPartyUiMetaById] = useState<Record<string, { level: number }>>({});
   const [replayStates, setReplayStates] = useState<BattleReplayState[]>([]);
+  const [visualEvents, setVisualEvents] = useState<BattleVisualEvent[]>([]);
+  const [enemyRectsById, setEnemyRectsById] = useState<Record<string, BattleEffectRect>>({});
+  const [enemyHitPulseById, setEnemyHitPulseById] = useState<Record<string, number>>({});
+  const [enemyLastHitStyleById, setEnemyLastHitStyleById] = useState<Record<string, BattleAttackStyle>>({});
   const [combatOutcomeRevealLogCount, setCombatOutcomeRevealLogCount] = useState<number | null>(null);
   const [finalOutcome, setFinalOutcome] = useState<BattleOutcome | null>(null);
   const [resultSheetHeight, setResultSheetHeight] = useState(0);
@@ -237,6 +330,10 @@ export default function BattleScreen() {
         setIsPaused(false);
         setBattleResultSummary(null);
         setReplayStates([]);
+        setVisualEvents([]);
+        setEnemyRectsById({});
+        setEnemyHitPulseById({});
+        setEnemyLastHitStyleById({});
         setCombatOutcomeRevealLogCount(null);
         setFinalOutcome(null);
         setResultSheetHeight(0);
@@ -270,6 +367,9 @@ export default function BattleScreen() {
     if (!encounterData || phase !== "ENCOUNTER") return;
     setPhase("SIMULATING");
     setStatus("IN_PROGRESS");
+    setVisualEvents([]);
+    setEnemyHitPulseById({});
+    setEnemyLastHitStyleById({});
     try {
       const nextSessionId = createBattleSessionId();
       await battleRepository.createSession({
@@ -435,12 +535,15 @@ export default function BattleScreen() {
         })),
       });
       setReplayStates(combinedReplayStates);
+      setVisualEvents(result.visualEvents);
       setCombatOutcomeRevealLogCount(result.outcomeRevealLogCount);
       setFinalOutcome(result.outcome);
       setTurns(result.turns);
       setRevealedLogCount(0);
       setBattleResultSummary(nextResultSummary);
       setResultSheetHeight(0);
+      setEnemyHitPulseById({});
+      setEnemyLastHitStyleById({});
       resultSheetTranslateY.value = 0;
       resultSheetMaxTranslateY.value = 0;
       setBattleCompleted(true);
@@ -559,6 +662,48 @@ export default function BattleScreen() {
       });
     });
 
+  const handleEnemyItemLayout = (enemyId: string, event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    const nextRect = {
+      x: Math.round(x),
+      y: Math.round(y),
+      width: Math.round(width),
+      height: Math.round(height),
+    };
+    setEnemyRectsById((prev) => {
+      const prevRect = prev[enemyId];
+      if (
+        prevRect &&
+        prevRect.x === nextRect.x &&
+        prevRect.y === nextRect.y &&
+        prevRect.width === nextRect.width &&
+        prevRect.height === nextRect.height
+      ) {
+        return prev;
+      }
+      return { ...prev, [enemyId]: nextRect };
+    });
+  };
+
+  const handlePlayHitReaction = (params: { targetIds: string[]; attackStyle: BattleAttackStyle }) => {
+    const validTargetIds = params.targetIds.filter((id) => enemyRectsById[id]);
+    if (validTargetIds.length === 0) return;
+    setEnemyLastHitStyleById((prev) => {
+      const next = { ...prev };
+      for (const id of validTargetIds) {
+        next[id] = params.attackStyle;
+      }
+      return next;
+    });
+    setEnemyHitPulseById((prev) => {
+      const next = { ...prev };
+      for (const id of validTargetIds) {
+        next[id] = (next[id] ?? 0) + 1;
+      }
+      return next;
+    });
+  };
+
   if (phase === "LOADING") {
     if (encounterData) {
       return renderBattleLayout({
@@ -664,7 +809,7 @@ export default function BattleScreen() {
   function renderBattleLayout(params: {
     floor: number;
     title: string;
-    enemies: Array<{ id: string; name: string; image: ImageSourcePropType; isBoss: boolean; hp: number; maxHp: number }>;
+    enemies: BattleEnemyViewModel[];
     party: Unit[];
     logs: typeof logs;
     turnText: string;
@@ -730,26 +875,21 @@ export default function BattleScreen() {
             <View style={styles.enemyAreaOverlay}>
               <View style={styles.enemyRow}>
                 {params.enemies.slice(0, 3).map((enemy) => (
-                  <View key={enemy.id} style={[styles.enemyItem, enemy.isBoss && styles.enemyItemBoss]}>
-                    <Image
-                      source={enemy.image}
-                      style={[styles.enemyImage, enemy.isBoss && styles.enemyImageBoss]}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.enemyLabel} numberOfLines={1}>
-                      {enemy.name}
-                    </Text>
-                    <View style={styles.enemyHpBar}>
-                      <View
-                        style={[
-                          styles.enemyHpFill,
-                          { width: `${Math.max(0, Math.min(100, (enemy.hp / Math.max(1, enemy.maxHp)) * 100))}%` },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.enemyHpText}>{t("battle.ui.enemyHp", { hp: enemy.hp, maxHp: enemy.maxHp })}</Text>
-                  </View>
+                  <BattleEnemyCard
+                    key={enemy.id}
+                    enemy={enemy}
+                    enemyHpText={t("battle.ui.enemyHp", { hp: enemy.hp, maxHp: enemy.maxHp })}
+                    hitPulse={enemyHitPulseById[enemy.id] ?? 0}
+                    hitStyle={enemyLastHitStyleById[enemy.id]}
+                    onLayout={(event) => handleEnemyItemLayout(enemy.id, event)}
+                  />
                 ))}
+                <BattleEffectLayer
+                  enemyRects={enemyRectsById}
+                  visualEvents={visualEvents}
+                  revealedLogCount={revealedLogCount}
+                  onPlayHitReaction={handlePlayHitReaction}
+                />
               </View>
             </View>
           </ImageBackground>
@@ -1047,6 +1187,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-end",
     gap: 20,
+    position: "relative",
+    overflow: "visible",
   },
   enemyItem: {
     alignItems: "center",
