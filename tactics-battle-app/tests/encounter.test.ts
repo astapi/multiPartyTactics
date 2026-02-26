@@ -5,7 +5,7 @@ import enemiesData from "@/data/enemies.json";
 
 describe("game/encounter", () => {
   it("generates deterministic encounters from the same seed", () => {
-    const params = { dungeonId: "crestoria_dungeon_1_4", floor: 3, seed: 12345 };
+    const params = { dungeonId: "crestoria_dungeon_1_200", floor: 3, seed: 12345 };
     const a = generateEncounter(params);
     const b = generateEncounter(params);
     expect(a).toEqual(b);
@@ -15,7 +15,7 @@ describe("game/encounter", () => {
   });
 
   it("clamps floor to minimum 1", () => {
-    const result = generateEncounter({ dungeonId: "crestoria_dungeon_1_4", floor: 0, seed: 1 });
+    const result = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 0, seed: 1 });
     expect(result.rollMeta.floor).toBe(1);
   });
 
@@ -24,14 +24,14 @@ describe("game/encounter", () => {
       generateEncounter({ dungeonId: "unknown_dungeon", floor: 1, seed: 1 })
     ).toThrow("Unknown dungeon id");
     expect(() =>
-      generateEncounter({ dungeonId: "crestoria_dungeon_1_4", floor: 999, seed: 1 })
+      generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 999, seed: 1 })
     ).toThrow("No encounter table");
   });
 
-  it("supports hakusla 200-floor dungeon and boss-floor fallback encounters", () => {
-    const floor1 = generateEncounter({ dungeonId: "hakusla_dungeon_1_200", floor: 1, seed: 101 });
-    const floor5 = generateEncounter({ dungeonId: "hakusla_dungeon_1_200", floor: 5, seed: 105 });
-    const floor200 = generateEncounter({ dungeonId: "hakusla_dungeon_1_200", floor: 200, seed: 200 });
+  it("supports crestoria 200-floor dungeon and boss-floor fallback encounters", () => {
+    const floor1 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 1, seed: 101 });
+    const floor5 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 5, seed: 105 });
+    const floor200 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 200, seed: 200 });
 
     expect(floor1.rollMeta.floor).toBe(1);
     expect(floor5.rollMeta.floor).toBe(5);
@@ -41,9 +41,9 @@ describe("game/encounter", () => {
     expect(floor200.enemies.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("covers floors 1-200 and marks boss floors in hakusla dungeon table", () => {
+  it("covers floors 1-200 and marks boss floors in crestoria dungeon table", () => {
     const dungeon = (dungeonEnemyTableData.dungeons as any[]).find(
-      (entry) => entry.dungeonId === "hakusla_dungeon_1_200"
+      (entry) => entry.dungeonId === "crestoria_dungeon_1_200"
     );
     expect(dungeon).toBeTruthy();
     expect(dungeon.floors).toHaveLength(200);
@@ -57,7 +57,7 @@ describe("game/encounter", () => {
 
   it("raises weighted average enemy power across a T boundary (70F -> 71F)", () => {
     const dungeon = (dungeonEnemyTableData.dungeons as any[]).find(
-      (entry) => entry.dungeonId === "hakusla_dungeon_1_200"
+      (entry) => entry.dungeonId === "crestoria_dungeon_1_200"
     );
     const enemyMap = new Map((enemiesData.enemies as any[]).map((enemy) => [enemy.id, enemy]));
     const score = (stats: any) => stats.maxHp + stats.atk * 8 + stats.def * 6 + stats.spd * 5;
@@ -84,7 +84,7 @@ describe("game/encounter", () => {
 
   it("creates a boss encounter for Lepus with boss metadata", () => {
     const result = createBossEncounter({
-      dungeonId: "hakusla_dungeon_1_200",
+      dungeonId: "crestoria_dungeon_1_200",
       floor: 5,
       seed: 123,
     });

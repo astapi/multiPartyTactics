@@ -213,7 +213,7 @@ export default function SettingsScreen() {
   const triggerDebugEncounterTransition = (type: DebugEncounterTransitionType) => {
     if (isTransitionPlaying) return;
 
-    const dungeonId = "crestoria_dungeon_1_4";
+    const dungeonId = "crestoria_dungeon_1_200";
     const floor = 1;
     const explorationSeed = Date.now() >>> 0;
     const encounter = generateEncounter({

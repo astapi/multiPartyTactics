@@ -13,7 +13,7 @@ import {
 import { makeUnit } from "./helpers";
 
 describe("game/explorationSession", () => {
-  const dungeon = DUNGEONS.find((d) => d.id === "hakusla_dungeon_1_200") ?? DUNGEONS[0];
+  const dungeon = DUNGEONS.find((d) => d.id === "crestoria_dungeon_1_200") ?? DUNGEONS[0];
   const party = [makeUnit()];
   const bundle = findBundleByFloor(dungeon.id, 1);
 
@@ -161,7 +161,7 @@ describe("game/explorationSession", () => {
   it("clears a bundle when the boss floor reaches 100%", () => {
     const bossOnlyBundle = { startFloor: 1, bossFloor: 1 };
     let state = createExplorationSession({
-      dungeon: DUNGEONS.find((d) => d.id === "crestoria_dungeon_1_4") ?? DUNGEONS[1],
+      dungeon: DUNGEONS.find((d) => d.id === "crestoria_dungeon_1_200") ?? DUNGEONS[0],
       party,
       bundle: bossOnlyBundle,
       seed: 5,
@@ -174,19 +174,26 @@ describe("game/explorationSession", () => {
     expect(state.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(true);
   });
 
-  it("on hakusla B5, reaching 100% triggers boss encounter decision instead of immediate clear", () => {
+  it("on crestoria B5, reaching stairs discovery threshold triggers boss encounter decision", () => {
     const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
     let state = createExplorationSession({
       dungeon,
       party,
       bundle: bossOnlyBundle,
       seed: 501,
-      config: { explorationPercentGainPerStep: 50, fullExplorationPercent: 100, stepsPerRun: 10 },
+      config: {
+        explorationPercentGainPerStep: 25,
+        stairsDiscoveryThresholdPercent: 50,
+        fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 2,
+        discoveredStairsArrivalMaxSteps: 2,
+        stepsPerRun: 10,
+      },
     });
     state = advanceExplorationStep(state);
     state = advanceExplorationStep(state);
 
-    expect(state.floorProgressMap[5]?.explorationPercent).toBe(100);
+    expect(state.floorProgressMap[5]?.explorationPercent).toBe(50);
     expect(state.status).toBe("AWAITING_BOSS_DECISION");
     expect(state.pendingBossEncounter?.enemies).toHaveLength(1);
     expect(state.pendingBossEncounter?.enemies[0]?.name).toBe("レプス");
@@ -201,7 +208,13 @@ describe("game/explorationSession", () => {
       party,
       bundle: bossOnlyBundle,
       seed: 502,
-      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+      config: {
+        explorationPercentGainPerStep: 100,
+        fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
+        stepsPerRun: 10,
+      },
     });
     state = advanceExplorationStep(state);
     expect(state.status).toBe("AWAITING_BOSS_DECISION");
@@ -225,7 +238,13 @@ describe("game/explorationSession", () => {
       party,
       bundle: bossOnlyBundle,
       seed: 503,
-      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+      config: {
+        explorationPercentGainPerStep: 100,
+        fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
+        stepsPerRun: 10,
+      },
     });
     state = advanceExplorationStep(state);
     state = applyBossEncounterDecision(state, "FIGHT");
@@ -244,7 +263,13 @@ describe("game/explorationSession", () => {
       party,
       bundle: bossOnlyBundle,
       seed: 504,
-      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+      config: {
+        explorationPercentGainPerStep: 100,
+        fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
+        stepsPerRun: 10,
+      },
     });
     loseState = advanceExplorationStep(loseState);
     loseState = applyBossEncounterDecision(loseState, "FIGHT");
@@ -258,7 +283,13 @@ describe("game/explorationSession", () => {
       party,
       bundle: bossOnlyBundle,
       seed: 505,
-      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+      config: {
+        explorationPercentGainPerStep: 100,
+        fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
+        stepsPerRun: 10,
+      },
     });
     drawState = advanceExplorationStep(drawState);
     drawState = applyBossEncounterDecision(drawState, "FIGHT");
@@ -266,5 +297,32 @@ describe("game/explorationSession", () => {
     expect(drawState.status).toBe("RUNNING");
     expect(drawState.floorProgressMap[5]?.stairsDiscovered).toBe(false);
     expect(drawState.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(false);
+  });
+
+  it("does not trigger B5 boss immediately on arrival even if threshold is already met", () => {
+    const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 506,
+      persistedProgress: [{ floor: 5, explorationPercent: 100, stairsDiscovered: false }],
+      config: {
+        explorationPercentGainPerStep: 0,
+        stairsDiscoveryThresholdPercent: 40,
+        discoveredStairsArrivalMinSteps: 3,
+        discoveredStairsArrivalMaxSteps: 3,
+        stepsPerRun: 10,
+      },
+    });
+
+    state = advanceExplorationStep(state);
+    expect(state.status).toBe("RUNNING");
+    state = advanceExplorationStep(state);
+    expect(state.status).toBe("RUNNING");
+    state = advanceExplorationStep(state);
+
+    expect(state.status).toBe("AWAITING_BOSS_DECISION");
+    expect(state.events.some((event) => event.type === "BOSS_ENCOUNTER")).toBe(true);
   });
 });

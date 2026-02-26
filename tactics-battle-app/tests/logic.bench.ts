@@ -16,7 +16,7 @@ describe("logic benchmarks", () => {
 
   bench("generateEncounter", () => {
     generateEncounter({
-      dungeonId: "crestoria_dungeon_1_4",
+      dungeonId: "crestoria_dungeon_1_200",
       floor: 3,
       seed: 123456,
     });

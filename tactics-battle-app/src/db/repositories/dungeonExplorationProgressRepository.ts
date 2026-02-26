@@ -58,7 +58,7 @@ export const dungeonExplorationProgressRepository = {
   async upsert(record: UpsertInput): Promise<void> {
     const db = await getDb();
     const explorationPercent = clampPercent(record.explorationPercent);
-    const stairsDiscovered = record.stairsDiscovered || explorationPercent >= 50;
+    const stairsDiscovered = record.stairsDiscovered;
     await db.runAsync(
       `INSERT INTO dungeon_floor_exploration_progress
         (dungeon_id, floor, exploration_percent, stairs_discovered, updated_at)

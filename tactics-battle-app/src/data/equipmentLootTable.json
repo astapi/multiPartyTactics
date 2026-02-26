@@ -49,18 +49,5 @@
       "chest": {}
     }
   ],
-  "dungeonOverrides": [
-    {
-      "dungeonId": "crestoria_dungeon_1_4",
-      "monster": {},
-      "chest": {}
-    },
-    {
-      "dungeonId": "crestoria_dungeon_5_9",
-      "monster": {
-        "mutationChance": 0.12
-      },
-      "chest": {}
-    }
-  ]
+  "dungeonOverrides": []
 }

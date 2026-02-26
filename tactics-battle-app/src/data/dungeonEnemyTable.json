@@ -1,72 +1,7 @@
 {
   "dungeons": [
     {
-      "dungeonId": "crestoria_dungeon_1_4",
-      "floors": [
-        {
-          "floor": 1,
-          "encounters": [
-            {
-              "enemyId": "goblin",
-              "weight": 60
-            },
-            {
-              "enemyId": "slime",
-              "weight": 40
-            }
-          ]
-        },
-        {
-          "floor": 2,
-          "encounters": [
-            {
-              "enemyId": "goblin",
-              "weight": 50
-            },
-            {
-              "enemyId": "slime",
-              "weight": 50
-            }
-          ]
-        },
-        {
-          "floor": 3,
-          "encounters": [
-            {
-              "enemyId": "goblin",
-              "weight": 35
-            },
-            {
-              "enemyId": "slime",
-              "weight": 35
-            },
-            {
-              "enemyId": "poison_toad",
-              "weight": 30
-            }
-          ]
-        },
-        {
-          "floor": 4,
-          "encounters": [
-            {
-              "enemyId": "goblin",
-              "weight": 25
-            },
-            {
-              "enemyId": "slime",
-              "weight": 30
-            },
-            {
-              "enemyId": "poison_toad",
-              "weight": 45
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "dungeonId": "hakusla_dungeon_1_200",
+      "dungeonId": "crestoria_dungeon_1_200",
       "bossFloors": [
         5,
         10,

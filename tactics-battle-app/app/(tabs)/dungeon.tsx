@@ -26,7 +26,7 @@ const colors = {
   overlay: "rgba(0,0,0,0.28)",
 } as const;
 
-const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "hakusla_dungeon_1_200";
+const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "crestoria_dungeon_1_200";
 const DEFAULT_EXPLORATION_STEP_COUNT = 40;
 const EXPLORATION_STEP_COUNT_OPTIONS = [20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
 
