@@ -148,6 +148,9 @@ export default function BattleScreen() {
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
   const setLatestBattleRewards = useBattleStore((s) => s.setLatestBattleRewards);
+  const pendingExplorationPartySync = useBattleStore((s) => s.pendingExplorationPartySync);
+  const setPendingExplorationPartySync = useBattleStore((s) => s.setPendingExplorationPartySync);
+  const setLatestBattlePartySync = useBattleStore((s) => s.setLatestBattlePartySync);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
   const dungeonTitle = t(
@@ -186,11 +189,25 @@ export default function BattleScreen() {
           setPhase("ERROR");
           return;
         }
-        const nextPartyUiMetaById = selected.reduce<Record<string, { level: number }>>((acc, member) => {
+        const syncedSelected =
+          pendingExplorationPartySync &&
+          pendingExplorationPartySync.explorationSeed === (Number.isFinite(parsedSeed) ? parsedSeed : null) &&
+          pendingExplorationPartySync.partyId === nextPartyId
+            ? selected.map((member) => {
+                const synced = pendingExplorationPartySync.members.find((row) => row.id === member.id);
+                if (!synced) return member;
+                return {
+                  ...member,
+                  currentHp: Math.max(0, Math.min(member.baseMaxHp, Math.floor(synced.hp))),
+                  currentMp: Math.max(0, Math.min(member.baseMaxMp, Math.floor(synced.mp))),
+                };
+              })
+            : selected;
+        const nextPartyUiMetaById = syncedSelected.reduce<Record<string, { level: number }>>((acc, member) => {
           acc[member.id] = { level: member.level };
           return acc;
         }, {});
-        const units = selected.map(toUnit);
+        const units = syncedSelected.map(toUnit);
         const map: Record<string, TacticsRuleRecord[]> = {};
         for (const unit of units) {
           map[unit.id] = await tacticsRepository.listByCharacter(unit.id);
@@ -210,6 +227,7 @@ export default function BattleScreen() {
         setEncounterData(nextEncounterData);
         setLogs([]);
         setStatus("IDLE");
+        setPendingExplorationPartySync(null);
         setBattleCompleted(false);
         setRevealedLogCount(0);
         setIsPaused(false);
@@ -229,7 +247,20 @@ export default function BattleScreen() {
       }
     };
     void load();
-  }, [dungeonId, encounter, explorationSeed, floor, partyId, reset, setLogs, setSessionId, setStatus, skillMap]);
+  }, [
+    dungeonId,
+    encounter,
+    explorationSeed,
+    floor,
+    partyId,
+    pendingExplorationPartySync,
+    reset,
+    setLogs,
+    setPendingExplorationPartySync,
+    setSessionId,
+    setStatus,
+    skillMap,
+  ]);
 
   const onStartBattle = async () => {
     if (!encounterData || phase !== "ENCOUNTER") return;
@@ -269,26 +300,31 @@ export default function BattleScreen() {
         levelUps: [],
         drops: [],
       };
+      const currentPartyId = partyId ?? DEFAULT_PARTY_ID;
+      const partyRecords = await charactersRepository.listPartyMembers(currentPartyId);
+      const persistedPartyById = new Map<string, CharacterRecord>(
+        partyRecords.map((record) => [record.id, record] as const)
+      );
+      const finalPartyById = new Map(result.finalParty.map((member) => [member.id, member] as const));
+      const nextPartyUiMetaById: Record<string, { level: number }> = {
+        ...partyUiMetaById,
+      };
       if (result.outcome === "WIN") {
         const alivePartyIds = new Set(
           result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
         );
         if (alivePartyIds.size > 0) {
-          const partyRecords = await charactersRepository.listPartyMembers(partyId ?? DEFAULT_PARTY_ID);
           const expGain = calculateBattleExp({
             floor: resolvedFloor,
             enemyCount: encounterData.enemies.length,
           });
           nextResultSummary.expGained = expGain;
           nextResultSummary.expRecipientCount = alivePartyIds.size;
-          const leveledPartyUiMetaById: Record<string, { level: number }> = {
-            ...partyUiMetaById,
-          };
           for (const record of partyRecords) {
             if (!alivePartyIds.has(record.id)) continue;
             const progression = applyExperienceToCharacter(record, expGain);
-            await charactersRepository.upsert(progression.character);
-            leveledPartyUiMetaById[record.id] = { level: progression.newLevel };
+            persistedPartyById.set(record.id, progression.character);
+            nextPartyUiMetaById[record.id] = { level: progression.newLevel };
             if (progression.leveledUpBy > 0) {
               nextResultSummary.levelUps.push({
                 characterId: record.id,
@@ -299,7 +335,6 @@ export default function BattleScreen() {
               });
             }
           }
-          setPartyUiMetaById(leveledPartyUiMetaById);
         }
 
         const dropResults = rollMonsterDrops({
@@ -357,8 +392,23 @@ export default function BattleScreen() {
         }
       }
 
+      for (const record of partyRecords) {
+        const finalMember = finalPartyById.get(record.id);
+        if (!finalMember) continue;
+        const baseRecord = persistedPartyById.get(record.id) ?? record;
+        const nextRecord = {
+          ...baseRecord,
+          currentHp: Math.max(0, Math.min(baseRecord.baseMaxHp, Math.floor(finalMember.hp))),
+          currentMp: Math.max(0, Math.min(baseRecord.baseMaxMp, Math.floor(finalMember.mp))),
+        };
+        await charactersRepository.upsert(nextRecord);
+        persistedPartyById.set(record.id, nextRecord);
+        nextPartyUiMetaById[record.id] = { level: nextRecord.level };
+      }
+
       setParty(result.finalParty);
       setEnemies(result.finalEnemies);
+      setPartyUiMetaById(nextPartyUiMetaById);
       setSessionId(nextSessionId);
       setStatus(result.outcome);
       setLogs(combinedLogs);
@@ -366,6 +416,19 @@ export default function BattleScreen() {
         sessionId: nextSessionId,
         explorationSeed: resolvedSeed,
         drops: nextResultSummary.drops,
+      });
+      setLatestBattlePartySync({
+        battleSessionId: nextSessionId,
+        explorationSeed: resolvedSeed,
+        partyId: currentPartyId,
+        members: result.finalParty.map((member) => ({
+          id: member.id,
+          name: member.name,
+          classId: member.classId,
+          hp: Math.max(0, Math.floor(member.hp)),
+          mp: Math.max(0, Math.floor(member.mp)),
+          level: nextPartyUiMetaById[member.id]?.level ?? null,
+        })),
       });
       setReplayStates(combinedReplayStates);
       setCombatOutcomeRevealLogCount(result.outcomeRevealLogCount);

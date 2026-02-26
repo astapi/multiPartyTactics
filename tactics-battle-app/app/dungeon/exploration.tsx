@@ -22,6 +22,7 @@ import {
 } from "@/game/explorationSession";
 import { useI18n } from "@/i18n";
 import { useBattleStore } from "@/stores/battleStore";
+import { useExplorationRunStore } from "@/stores/explorationRunStore";
 import type { BattleStatus } from "@/types/models";
 import type { EquipmentReward } from "@/types/equipment";
 import { toUnit } from "@/game/partyMapper";
@@ -30,6 +31,7 @@ import { generateTimeSeed } from "@/utils/rng";
 const HERO_IMAGE = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const EXPLORATION_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 const DEFAULT_EXPLORATION_STEP_COUNT = 40;
+const MAX_EXPLORATION_STEP_COUNT = 100;
 
 const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   LOG: "⋄",
@@ -117,11 +119,6 @@ const formatClock = (tick: number): string => {
   return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 };
 
-type ExplorationPartySnapshotMember = PartyStatusStripMember & {
-  baseHp: number;
-  baseMp: number;
-};
-
 type ExplorationResultItem = {
   key: string;
   source: "BATTLE" | "TREASURE";
@@ -137,7 +134,10 @@ export default function ExplorationScreen() {
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
   const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
   const requestedSteps = Number.parseInt(params.steps ?? String(DEFAULT_EXPLORATION_STEP_COUNT), 10);
-  const explorationStepCount = Math.max(1, Number.isFinite(requestedSteps) ? requestedSteps : DEFAULT_EXPLORATION_STEP_COUNT);
+  const explorationStepCount = Math.min(
+    MAX_EXPLORATION_STEP_COUNT,
+    Math.max(1, Number.isFinite(requestedSteps) ? requestedSteps : DEFAULT_EXPLORATION_STEP_COUNT)
+  );
 
   const [nextEncounterIndex, setNextEncounterIndex] = useState(0);
   const [session, setSession] = useState<ExplorationSessionState | null>(null);
@@ -147,16 +147,23 @@ export default function ExplorationScreen() {
   const logScrollRef = useRef<ScrollView | null>(null);
   const appliedRewardGrantKeysRef = useRef<Set<string>>(new Set());
   const processedBattleRewardSessionIdsRef = useRef<Set<string>>(new Set());
+  const processedTrapDamageEventKeysRef = useRef<Set<string>>(new Set());
+  const processedBattlePartySyncSessionIdsRef = useRef<Set<string>>(new Set());
   const hasAppliedBundleClearRef = useRef(false);
   const awaitingBossBattleReturnRef = useRef(false);
-  const [partySnapshot, setPartySnapshot] = useState<ExplorationPartySnapshotMember[]>([]);
   const [bundleRange, setBundleRange] = useState<DungeonBundleRange | null>(null);
   const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
   const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
   const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
   const latestBattleDrops = useBattleStore((s) => s.latestBattleDrops);
+  const latestBattlePartySync = useBattleStore((s) => s.latestBattlePartySync);
   const latestBattleStatus = useBattleStore((s) => s.status);
   const setBattleStoreStatus = useBattleStore((s) => s.setStatus);
+  const setPendingExplorationPartySync = useBattleStore((s) => s.setPendingExplorationPartySync);
+  const explorationRunMembers = useExplorationRunStore((s) => s.members);
+  const startExplorationRun = useExplorationRunStore((s) => s.startRun);
+  const replaceExplorationMembersForRun = useExplorationRunStore((s) => s.replaceMembersForRun);
+  const applyPartyWideTrapDamage = useExplorationRunStore((s) => s.applyPartyWideTrapDamage);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -186,15 +193,13 @@ export default function ExplorationScreen() {
           }
           return;
         }
-        const nextPartySnapshot: ExplorationPartySnapshotMember[] = partyRecords.map((record) => ({
+        const nextPartySnapshot = partyRecords.map((record) => ({
           id: record.id,
           name: record.name,
           classId: record.classId,
           hp: record.currentHp,
           mp: record.currentMp,
           level: record.level,
-          baseHp: record.currentHp,
-          baseMp: record.currentMp,
         }));
         const party = partyRecords.map(toUnit);
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
@@ -221,11 +226,18 @@ export default function ExplorationScreen() {
         if (!mounted) return;
         appliedRewardGrantKeysRef.current = new Set();
         processedBattleRewardSessionIdsRef.current = new Set();
+        processedTrapDamageEventKeysRef.current = new Set();
+        processedBattlePartySyncSessionIdsRef.current = new Set();
         hasAppliedBundleClearRef.current = false;
         awaitingBossBattleReturnRef.current = false;
+        setPendingExplorationPartySync(null);
         setSession(nextSession);
         setBundleRange(bundle);
-        setPartySnapshot(nextPartySnapshot);
+        startExplorationRun({
+          explorationSeed: nextSession.seed,
+          partyId: resolvedPartyId,
+          members: nextPartySnapshot,
+        });
         setResultItems([]);
         setNextEncounterIndex(0);
         setIsPaused(false);
@@ -242,7 +254,7 @@ export default function ExplorationScreen() {
     return () => {
       mounted = false;
     };
-  }, [explorationStepCount, floor, resolvedDungeonId, resolvedPartyId]);
+  }, [explorationStepCount, floor, resolvedDungeonId, resolvedPartyId, setPendingExplorationPartySync, startExplorationRun]);
 
   useFocusEffect(
     useCallback(() => {
@@ -313,6 +325,39 @@ export default function ExplorationScreen() {
       })),
     ]);
   }, [latestBattleDrops, latestBattleExplorationSeed, latestBattleSessionId, result]);
+
+  useEffect(() => {
+    if (!result) return;
+    if (!latestBattlePartySync) return;
+    if (latestBattlePartySync.explorationSeed !== result.seed) return;
+    if (latestBattlePartySync.partyId && latestBattlePartySync.partyId !== resolvedPartyId) return;
+    if (!latestBattlePartySync.battleSessionId) return;
+    if (processedBattlePartySyncSessionIdsRef.current.has(latestBattlePartySync.battleSessionId)) return;
+
+    processedBattlePartySyncSessionIdsRef.current.add(latestBattlePartySync.battleSessionId);
+    replaceExplorationMembersForRun({
+      explorationSeed: result.seed,
+      partyId: resolvedPartyId,
+      members: latestBattlePartySync.members,
+    });
+  }, [latestBattlePartySync, replaceExplorationMembersForRun, resolvedPartyId, result]);
+
+  useEffect(() => {
+    if (!result) return;
+    for (let i = 0; i < result.events.length; i += 1) {
+      const event = result.events[i];
+      if (event.tick > currentTick) break;
+      if (event.type !== "TRAP") continue;
+      const eventKey = `${result.seed}:${i}`;
+      if (processedTrapDamageEventKeysRef.current.has(eventKey)) continue;
+      processedTrapDamageEventKeysRef.current.add(eventKey);
+      applyPartyWideTrapDamage({
+        explorationSeed: result.seed,
+        partyId: resolvedPartyId,
+        damage: Math.max(0, Math.floor(event.payload?.damage ?? 0)),
+      });
+    }
+  }, [applyPartyWideTrapDamage, currentTick, resolvedPartyId, result]);
 
   useEffect(() => {
     if (!result) return;
@@ -394,6 +439,12 @@ export default function ExplorationScreen() {
     const encounterPayload = JSON.stringify(nextEncounter);
     setNextEncounterIndex((prev) => prev + 1);
     setIsNavigating(true);
+    setPendingExplorationPartySync({
+      battleSessionId: null,
+      explorationSeed: result.seed,
+      partyId: resolvedPartyId,
+      members: explorationRunMembers,
+    });
     router.push({
       pathname: "/dungeon/battle",
       params: {
@@ -414,6 +465,8 @@ export default function ExplorationScreen() {
     resolvedPartyId,
     result,
     router,
+    explorationRunMembers,
+    setPendingExplorationPartySync,
     session?.currentFloor,
   ]);
 
@@ -499,30 +552,18 @@ export default function ExplorationScreen() {
         explorationPercent: Math.floor(session.floorProgressMap[floorNum]?.explorationPercent ?? 0),
       }));
   }, [session]);
-  const displayedPartyMembers = useMemo<PartyStatusStripMember[]>(() => {
-    if (partySnapshot.length === 0) return [];
-    const members = partySnapshot.map((member) => ({
-      id: member.id,
-      name: member.name,
-      classId: member.classId,
-      hp: member.baseHp,
-      mp: member.baseMp,
-      level: member.level,
-    }));
-    if (!result) return members;
-
-    for (const event of result.events) {
-      if (event.tick > currentTick) break;
-      if (event.type !== "TRAP") continue;
-      const damage = Math.max(0, Math.floor(event.payload?.damage ?? 0));
-      if (damage <= 0) continue;
-      for (const member of members) {
-        member.hp = Math.max(0, member.hp - damage);
-      }
-    }
-
-    return members;
-  }, [currentTick, partySnapshot, result]);
+  const displayedPartyMembers = useMemo<PartyStatusStripMember[]>(
+    () =>
+      explorationRunMembers.map((member) => ({
+        id: member.id,
+        name: member.name,
+        classId: member.classId,
+        hp: member.hp,
+        mp: member.mp,
+        level: member.level,
+      })),
+    [explorationRunMembers]
+  );
 
   useEffect(() => {
     if (!isFocused) return;
@@ -539,6 +580,12 @@ export default function ExplorationScreen() {
     awaitingBossBattleReturnRef.current = true;
     setBattleStoreStatus("IDLE");
     setIsNavigating(true);
+    setPendingExplorationPartySync({
+      battleSessionId: null,
+      explorationSeed: result?.seed ?? 0,
+      partyId: resolvedPartyId,
+      members: explorationRunMembers,
+    });
     router.push({
       pathname: "/dungeon/battle",
       params: {
@@ -549,7 +596,17 @@ export default function ExplorationScreen() {
         encounter: JSON.stringify(bossEncounter),
       },
     });
-  }, [floor, resolvedDungeonId, resolvedPartyId, result?.seed, router, session, setBattleStoreStatus]);
+  }, [
+    floor,
+    explorationRunMembers,
+    resolvedDungeonId,
+    resolvedPartyId,
+    result?.seed,
+    router,
+    session,
+    setBattleStoreStatus,
+    setPendingExplorationPartySync,
+  ]);
 
   if (error) {
     return (
