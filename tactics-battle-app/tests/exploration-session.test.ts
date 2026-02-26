@@ -3,6 +3,8 @@ import { DUNGEONS } from "@/constants/dungeons";
 import { findBundleByFloor } from "@/game/dungeonBundles";
 import {
   advanceExplorationStep,
+  applyBossBattleResult,
+  applyBossEncounterDecision,
   applyFloorDecision,
   buildShortcutTraversalPlan,
   createExplorationSession,
@@ -154,5 +156,99 @@ describe("game/explorationSession", () => {
     expect(state.floorProgressMap[1]?.explorationPercent).toBe(100);
     expect(state.status).toBe("BUNDLE_CLEARED");
     expect(state.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(true);
+  });
+
+  it("on hakusla B5, reaching 100% triggers boss encounter decision instead of immediate clear", () => {
+    const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 501,
+      config: { explorationPercentGainPerStep: 50, fullExplorationPercent: 100, stepsPerRun: 10 },
+    });
+    state = advanceExplorationStep(state);
+    state = advanceExplorationStep(state);
+
+    expect(state.floorProgressMap[5]?.explorationPercent).toBe(100);
+    expect(state.status).toBe("AWAITING_BOSS_DECISION");
+    expect(state.pendingBossEncounter?.enemies).toHaveLength(1);
+    expect(state.pendingBossEncounter?.enemies[0]?.name).toBe("レプス");
+    expect(state.events.some((event) => event.type === "BOSS_ENCOUNTER")).toBe(true);
+    expect(state.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(false);
+  });
+
+  it("does not re-offer B5 boss in the same run after skipping", () => {
+    const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 502,
+      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+    });
+    state = advanceExplorationStep(state);
+    expect(state.status).toBe("AWAITING_BOSS_DECISION");
+
+    state = applyBossEncounterDecision(state, "CONTINUE");
+    expect(state.status).toBe("RUNNING");
+
+    const bossEventCountBefore = state.events.filter((event) => event.type === "BOSS_ENCOUNTER").length;
+    state = advanceExplorationStep(state);
+    const bossEventCountAfter = state.events.filter((event) => event.type === "BOSS_ENCOUNTER").length;
+
+    expect(bossEventCountAfter).toBe(bossEventCountBefore);
+    expect(state.status).not.toBe("AWAITING_BOSS_DECISION");
+    expect(state.status).not.toBe("BUNDLE_CLEARED");
+  });
+
+  it("clears bundle and discovers stairs when B5 boss is defeated", () => {
+    const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 503,
+      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+    });
+    state = advanceExplorationStep(state);
+    state = applyBossEncounterDecision(state, "FIGHT");
+    state = applyBossBattleResult(state, "WIN");
+
+    expect(state.floorProgressMap[5]?.stairsDiscovered).toBe(true);
+    expect(state.status).toBe("BUNDLE_CLEARED");
+    expect(state.events.some((event) => event.type === "STAIRS_DISCOVERED")).toBe(true);
+    expect(state.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(true);
+  });
+
+  it("does not clear bundle when B5 boss battle outcome is not WIN", () => {
+    const bossOnlyBundle = { startFloor: 5, bossFloor: 5 };
+    let loseState = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 504,
+      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+    });
+    loseState = advanceExplorationStep(loseState);
+    loseState = applyBossEncounterDecision(loseState, "FIGHT");
+    loseState = applyBossBattleResult(loseState, "LOSE");
+    expect(loseState.status).toBe("RUNNING");
+    expect(loseState.floorProgressMap[5]?.stairsDiscovered).toBe(false);
+    expect(loseState.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(false);
+
+    let drawState = createExplorationSession({
+      dungeon,
+      party,
+      bundle: bossOnlyBundle,
+      seed: 505,
+      config: { explorationPercentGainPerStep: 100, fullExplorationPercent: 100, stepsPerRun: 10 },
+    });
+    drawState = advanceExplorationStep(drawState);
+    drawState = applyBossEncounterDecision(drawState, "FIGHT");
+    drawState = applyBossBattleResult(drawState, "DRAW");
+    expect(drawState.status).toBe("RUNNING");
+    expect(drawState.floorProgressMap[5]?.stairsDiscovered).toBe(false);
+    expect(drawState.events.some((event) => event.type === "BUNDLE_CLEAR")).toBe(false);
   });
 });

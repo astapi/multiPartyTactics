@@ -11,6 +11,7 @@ const cfg = difficultyConfig.exploration;
 export type ExplorationEventType =
   | "LOG"
   | "ENCOUNTER"
+  | "BOSS_ENCOUNTER"
   | "TREASURE"
   | "TRAP"
   | "STAIRS_DISCOVERED"
@@ -25,6 +26,7 @@ export type ExplorationMessageId =
   | "exploration.event.log.watch_footing"
   | "exploration.event.log.distant_noise"
   | "exploration.event.encounter.spotted_enemy"
+  | "exploration.event.boss.encounter"
   | "exploration.event.treasure.found_chest"
   | "exploration.event.trap.triggered"
   | "exploration.event.stairs.discovered"
@@ -43,6 +45,7 @@ export type ExplorationEvent = {
     reward?: EquipmentReward;
     damage?: number;
     debuffType?: string;
+    bossName?: string;
     fromFloor?: number;
     toFloor?: number;
     explorationPercent?: number;

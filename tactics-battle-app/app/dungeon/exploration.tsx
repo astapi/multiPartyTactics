@@ -14,12 +14,15 @@ import { ExplorationEvent, ExplorationResult } from "@/game/exploration";
 import {
   ExplorationSessionState,
   advanceExplorationStep,
+  applyBossBattleResult,
+  applyBossEncounterDecision,
   applyFloorDecision,
   createExplorationSession,
   toExplorationResult,
 } from "@/game/explorationSession";
 import { useI18n } from "@/i18n";
 import { useBattleStore } from "@/stores/battleStore";
+import type { BattleStatus } from "@/types/models";
 import type { EquipmentReward } from "@/types/equipment";
 import { toUnit } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
@@ -31,6 +34,7 @@ const DEFAULT_EXPLORATION_STEP_COUNT = 40;
 const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   LOG: "⋄",
   ENCOUNTER: "✖",
+  BOSS_ENCOUNTER: "☠",
   TREASURE: "✦",
   TRAP: "⚠",
   STAIRS_DISCOVERED: "⇣",
@@ -81,6 +85,9 @@ const formatEvent = (
       damage: event.payload?.damage ?? 0,
       debuffType: getTrapDebuffLabel(event.payload?.debuffType, t),
     });
+  }
+  if (event.type === "BOSS_ENCOUNTER") {
+    return `B${event.floor ?? "?"}Fでボス「${event.payload?.bossName ?? "?"}」が出現`;
   }
   if (event.type === "STAIRS_DISCOVERED") {
     return `B${event.floor ?? "?"}Fで下り階段を発見`;
@@ -141,12 +148,15 @@ export default function ExplorationScreen() {
   const appliedRewardGrantKeysRef = useRef<Set<string>>(new Set());
   const processedBattleRewardSessionIdsRef = useRef<Set<string>>(new Set());
   const hasAppliedBundleClearRef = useRef(false);
+  const awaitingBossBattleReturnRef = useRef(false);
   const [partySnapshot, setPartySnapshot] = useState<ExplorationPartySnapshotMember[]>([]);
   const [bundleRange, setBundleRange] = useState<DungeonBundleRange | null>(null);
   const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
   const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
   const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
   const latestBattleDrops = useBattleStore((s) => s.latestBattleDrops);
+  const latestBattleStatus = useBattleStore((s) => s.status);
+  const setBattleStoreStatus = useBattleStore((s) => s.setStatus);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -212,6 +222,7 @@ export default function ExplorationScreen() {
         appliedRewardGrantKeysRef.current = new Set();
         processedBattleRewardSessionIdsRef.current = new Set();
         hasAppliedBundleClearRef.current = false;
+        awaitingBossBattleReturnRef.current = false;
         setSession(nextSession);
         setBundleRange(bundle);
         setPartySnapshot(nextPartySnapshot);
@@ -359,6 +370,20 @@ export default function ExplorationScreen() {
   }, [currentTick, floor, locale, resolvedDungeonId, result, t]);
 
   useEffect(() => {
+    if (!session || !result) return;
+    if (session.status !== "AWAITING_BOSS_RESULT") return;
+    if (!awaitingBossBattleReturnRef.current) return;
+    if (latestBattleExplorationSeed !== result.seed) return;
+    if (!["WIN", "LOSE", "DRAW"].includes(latestBattleStatus)) return;
+
+    awaitingBossBattleReturnRef.current = false;
+    setSession((prev) => {
+      if (!prev) return prev;
+      return applyBossBattleResult(prev, latestBattleStatus as Exclude<BattleStatus, "IDLE" | "IN_PROGRESS">);
+    });
+  }, [latestBattleExplorationSeed, latestBattleStatus, result, session]);
+
+  useEffect(() => {
     if (!result || isNavigating) return;
     if (!isFocused) return;
     const nextTick = result.encounterTicks[nextEncounterIndex];
@@ -456,10 +481,13 @@ export default function ExplorationScreen() {
   const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
   const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
   const isAwaitingFloorDecision = session?.status === "AWAITING_DECISION";
+  const isAwaitingBossDecision = session?.status === "AWAITING_BOSS_DECISION";
   const canDescend = isAwaitingFloorDecision && !!bundleRange && currentFloor < bundleRange.bossFloor;
   const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "BUNDLE_CLEARED";
   const isFloorDecisionModalVisible = isFocused && !isNavigating && isAwaitingFloorDecision && !isExplorationResultVisible;
+  const isBossDecisionModalVisible = isFocused && !isNavigating && isAwaitingBossDecision && !isExplorationResultVisible;
   const isExplorationResultModalVisible = isFocused && !isNavigating && !!isExplorationResultVisible;
+  const pendingBossEncounter = session?.pendingBossEncounter ?? null;
   const exploredFloorProgressRows = useMemo(() => {
     if (!session) return [];
     return Object.entries(session.floorStepsThisRunMap)
@@ -503,6 +531,25 @@ export default function ExplorationScreen() {
       logScrollRef.current?.scrollToEnd({ animated: false });
     });
   }, [displayedEvents.length, isFocused]);
+
+  const handleStartBossBattle = useCallback(() => {
+    if (!session?.pendingBossEncounter) return;
+    const bossEncounter = session.pendingBossEncounter;
+    setSession((prev) => (prev ? applyBossEncounterDecision(prev, "FIGHT") : prev));
+    awaitingBossBattleReturnRef.current = true;
+    setBattleStoreStatus("IDLE");
+    setIsNavigating(true);
+    router.push({
+      pathname: "/dungeon/battle",
+      params: {
+        dungeonId: resolvedDungeonId,
+        floor: String(session.currentFloor ?? floor),
+        partyId: resolvedPartyId,
+        explorationSeed: String(result?.seed ?? 0),
+        encounter: JSON.stringify(bossEncounter),
+      },
+    });
+  }, [floor, resolvedDungeonId, resolvedPartyId, result?.seed, router, session, setBattleStoreStatus]);
 
   if (error) {
     return (
@@ -646,6 +693,33 @@ export default function ExplorationScreen() {
                 onPress={() => setSession((prev) => (prev ? applyFloorDecision(prev, "CONTINUE") : prev))}
               >
                 <Text style={styles.decisionTextButtonSecondary}>探索継続</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={isBossDecisionModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => {
+            /* ボス遭遇中は明示選択 */
+          }}
+        >
+          <View style={styles.decisionModalBackdrop}>
+            <View style={styles.decisionModalSheet}>
+              <Text style={styles.decisionModalTitle}>ボスが現れた</Text>
+              <Text style={styles.decisionModalSub}>
+                {`B${currentFloor}Fでボス「${pendingBossEncounter?.rollMeta.bossName ?? "レプス"}」と遭遇。戦いますか？`}
+              </Text>
+              <Pressable style={styles.decisionTextButton} onPress={handleStartBossBattle}>
+                <Text style={styles.decisionTextButtonPrimary}>戦う</Text>
+              </Pressable>
+              <Pressable
+                style={styles.decisionTextButton}
+                onPress={() => setSession((prev) => (prev ? applyBossEncounterDecision(prev, "CONTINUE") : prev))}
+              >
+                <Text style={styles.decisionTextButtonSecondary}>見送る</Text>
               </Pressable>
             </View>
           </View>
