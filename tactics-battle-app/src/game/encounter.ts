@@ -13,6 +13,7 @@ export type EncounterEnemy = {
   enemyId: string;
   name: string;
   stats: Stats;
+  level?: number;
 };
 
 export type EncounterKind = "NORMAL" | "BOSS";
@@ -49,6 +50,8 @@ type FloorTable = {
     enemyId: string;
     weight: number;
     statScale?: number;
+    hpScale?: number;
+    level?: number;
   }>;
 };
 
@@ -66,31 +69,44 @@ const DUNGEON_TABLE = dungeonEnemyTableData.dungeons as DungeonTable[];
 const LEPUS_BOSS_ID = "boss_lepus";
 const LEPUS_BOSS_NAME = "レプス";
 const LEPUS_BOSS_STATS: Stats = {
-  maxHp: 120,
-  atk: 24,
-  def: 12,
-  spd: 12,
-  maxMp: 18,
-  mpRegen: 2,
+  maxHp: 240,
+  atk: 59,
+  def: 16,
+  spd: 14,
+  maxMp: 24,
+  mpRegen: 3,
 };
 
 type WeightedEncounterEntry = {
   enemyId: string;
   weight: number;
   statScale?: number;
+  hpScale?: number;
+  level?: number;
 };
 
-const scaleStats = (stats: Stats, scale = 1): Stats => {
-  if (!Number.isFinite(scale) || scale <= 0 || scale === 1) {
-    return { ...stats };
-  }
+const normalizeScale = (value: number | undefined): number => {
+  if (value === undefined) return 1;
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  return value;
+};
+
+const scaleStats = (
+  stats: Stats,
+  scales: { statScale?: number; hpScale?: number } = {}
+): Stats => {
+  const statScale = normalizeScale(scales.statScale);
+  const hpScale = normalizeScale(scales.hpScale);
+  const hasScaling = statScale !== 1 || hpScale !== 1;
+  if (!hasScaling) return { ...stats };
+
   return {
-    maxHp: Math.max(1, Math.round(stats.maxHp * scale)),
-    atk: Math.max(1, Math.round(stats.atk * scale)),
-    def: Math.max(0, Math.round(stats.def * scale)),
-    spd: Math.max(1, Math.round(stats.spd * scale)),
-    maxMp: Math.max(0, Math.round(stats.maxMp * scale)),
-    mpRegen: stats.maxMp <= 0 ? 0 : Math.max(1, Math.round(stats.mpRegen * scale)),
+    maxHp: Math.max(1, Math.round(stats.maxHp * statScale * hpScale)),
+    atk: Math.max(1, Math.round(stats.atk * statScale)),
+    def: Math.max(0, Math.round(stats.def * statScale)),
+    spd: Math.max(1, Math.round(stats.spd * statScale)),
+    maxMp: Math.max(0, Math.round(stats.maxMp * statScale)),
+    mpRegen: stats.maxMp <= 0 ? 0 : Math.max(1, Math.round(stats.mpRegen * statScale)),
   };
 };
 
@@ -135,7 +151,8 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
     enemies.push({
       enemyId: picked.enemyId,
       name: enemyMaster.name,
-      stats: scaleStats(enemyMaster.stats, picked.statScale ?? 1),
+      stats: scaleStats(enemyMaster.stats, picked),
+      level: picked.level,
     });
   }
 

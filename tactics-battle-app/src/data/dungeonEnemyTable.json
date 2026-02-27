@@ -38,19 +38,31 @@
           "encounters": [
             {
               "enemyId": "slime",
-              "weight": 40
+              "weight": 40,
+              "level": 1,
+              "statScale": 1,
+              "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
-              "weight": 35
+              "weight": 35,
+              "level": 1,
+              "statScale": 1,
+              "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
-              "weight": 15
+              "weight": 15,
+              "level": 1,
+              "statScale": 1,
+              "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
-              "weight": 10
+              "weight": 10,
+              "level": 1,
+              "statScale": 1,
+              "hpScale": 2
             }
           ]
         },
@@ -62,22 +74,30 @@
             {
               "enemyId": "slime",
               "weight": 40,
-              "statScale": 1.02
+              "level": 2,
+              "statScale": 1.05,
+              "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
               "weight": 35,
-              "statScale": 1.02
+              "level": 2,
+              "statScale": 1.05,
+              "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
               "weight": 15,
-              "statScale": 1.02
+              "level": 2,
+              "statScale": 1.05,
+              "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 10,
-              "statScale": 1.02
+              "level": 2,
+              "statScale": 1.05,
+              "hpScale": 2
             }
           ]
         },
@@ -89,22 +109,30 @@
             {
               "enemyId": "slime",
               "weight": 40,
-              "statScale": 1.04
+              "level": 3,
+              "statScale": 1.1,
+              "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
               "weight": 35,
-              "statScale": 1.04
+              "level": 3,
+              "statScale": 1.1,
+              "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
               "weight": 15,
-              "statScale": 1.04
+              "level": 3,
+              "statScale": 1.1,
+              "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 10,
-              "statScale": 1.04
+              "level": 3,
+              "statScale": 1.1,
+              "hpScale": 2
             }
           ]
         },
@@ -116,22 +144,30 @@
             {
               "enemyId": "slime",
               "weight": 40,
-              "statScale": 1.06
+              "level": 4,
+              "statScale": 1.15,
+              "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
               "weight": 35,
-              "statScale": 1.06
+              "level": 4,
+              "statScale": 1.15,
+              "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
               "weight": 15,
-              "statScale": 1.06
+              "level": 4,
+              "statScale": 1.15,
+              "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 10,
-              "statScale": 1.06
+              "level": 4,
+              "statScale": 1.15,
+              "hpScale": 2
             }
           ]
         },
@@ -143,22 +179,30 @@
             {
               "enemyId": "slime",
               "weight": 40,
-              "statScale": 1.06
+              "level": 5,
+              "statScale": 1.2,
+              "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
               "weight": 35,
-              "statScale": 1.06
+              "level": 5,
+              "statScale": 1.2,
+              "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
               "weight": 15,
-              "statScale": 1.06
+              "level": 5,
+              "statScale": 1.2,
+              "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 10,
-              "statScale": 1.06
+              "level": 5,
+              "statScale": 1.2,
+              "hpScale": 2
             }
           ]
         },
