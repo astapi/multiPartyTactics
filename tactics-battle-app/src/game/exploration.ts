@@ -2,7 +2,6 @@ import { DungeonOption } from "@/constants/dungeons";
 import difficultyConfig from "@/data/difficultyConfig.json";
 import dungeonEnemyTableData from "@/data/dungeonEnemyTable.json";
 import { Unit } from "@/game/battle";
-import { findBundleByFloor } from "@/game/dungeonBundles";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { rollTreasureChestEquipment } from "@/game/loot/equipmentLootRoller";
 import type { EquipmentReward } from "@/types/equipment";
@@ -21,34 +20,6 @@ type DungeonEncounterRateTable = {
 const DUNGEON_ENCOUNTER_RATE_TABLES = dungeonEnemyTableData.dungeons as DungeonEncounterRateTable[];
 const CRESTORIA_DUNGEON_ID = "crestoria_dungeon_1_200";
 const CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE = 0.16;
-const CRESTORIA_BUNDLE_ENCOUNTER_CHANCE_BY_BOSS_FLOOR: Record<number, number> = {
-  5: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  10: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  20: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  25: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  30: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  40: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  50: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  55: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  60: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  70: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  80: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  90: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  95: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  100: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  110: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  120: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  130: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  140: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  145: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  150: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  160: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  170: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  180: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  190: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  195: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-  200: CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE,
-};
 
 export type ExplorationEventType =
   | "LOG"
@@ -61,7 +32,7 @@ export type ExplorationEventType =
   | "SHORTCUT"
   | "FLOOR_DESCEND"
   | "FLOOR_COMPLETE"
-  | "BUNDLE_CLEAR";
+  | "FLOOR_CLEAR";
 export type ExplorationMessageId =
   | "exploration.event.log.cautious_advance"
   | "exploration.event.log.advance_in_silence"
@@ -76,7 +47,7 @@ export type ExplorationMessageId =
   | "exploration.event.shortcut.used"
   | "exploration.event.floor.descend"
   | "exploration.event.floor.complete"
-  | "exploration.event.bundle.clear";
+  | "exploration.event.floor.clear";
 
 export type ExplorationEvent = {
   tick: number;
@@ -146,8 +117,7 @@ const getFloorEncounterChanceOverride = (dungeonId: string, floor: number): numb
 
 const getBundleEncounterChanceOverride = (dungeonId: string, floor: number): number | null => {
   if (dungeonId !== CRESTORIA_DUNGEON_ID) return null;
-  const bundle = findBundleByFloor(dungeonId, floor);
-  const configured = CRESTORIA_BUNDLE_ENCOUNTER_CHANCE_BY_BOSS_FLOOR[bundle.bossFloor];
+  const configured = CRESTORIA_FIXED_BUNDLE_ENCOUNTER_CHANCE;
   if (!Number.isFinite(configured)) return null;
   return clamp(configured, 0, 1);
 };

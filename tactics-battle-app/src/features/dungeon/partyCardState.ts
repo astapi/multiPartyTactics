@@ -30,14 +30,14 @@ export type DungeonPartyCardViewModel = {
 export type BuildDungeonPartyCardStateInput = {
   selectedFloor: number | null;
   mode: DungeonPartyUiMode;
-  maxClearedFloor: number;
+  maxUnlockedFloor: number;
 };
 
 export const buildDungeonPartyCardState = (
   input: BuildDungeonPartyCardStateInput
 ): DungeonPartyCardViewModel => {
   const { selectedFloor, mode } = input;
-  const maxClearedFloor = Math.max(0, input.maxClearedFloor);
+  const maxUnlockedFloor = Math.max(1, input.maxUnlockedFloor);
 
   if (selectedFloor === null || selectedFloor <= 0) {
     return {
@@ -54,8 +54,8 @@ export const buildDungeonPartyCardState = (
     };
   }
 
-  if (selectedFloor > maxClearedFloor) {
-    const isFrontier = selectedFloor === maxClearedFloor + 1;
+  if (selectedFloor >= maxUnlockedFloor) {
+    const isFrontier = selectedFloor === maxUnlockedFloor;
     return {
       displayStatus: isFrontier ? "explore-frontier" : "explore-uncleared",
       floor: selectedFloor,

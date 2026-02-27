@@ -5,13 +5,12 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DUNGEONS } from "@/constants/dungeons";
-import { dungeonRepository } from "@/db/repositories/dungeonRepository";
+import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonPartyUiRepository } from "@/db/repositories/dungeonPartyUiRepository";
 import { partiesRepository } from "@/db/repositories/partiesRepository";
 import { buildDungeonPartyCardState, DungeonPartyCardAction } from "@/features/dungeon/partyCardState";
-import { buildDungeonBundles, findBundleByFloor, formatBundleLabel } from "@/game/dungeonBundles";
 import { useI18n } from "@/i18n";
-import { DungeonPartyUiStateRecord, DungeonProgressRecord, PartyWithMembers } from "@/types/models";
+import { DungeonFloorExplorationProgressRecord, DungeonPartyUiStateRecord, PartyWithMembers } from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -49,19 +48,14 @@ const getPartyIcon = (kind: PartyIconKey) => {
 };
 
 const clampFloor = (floor: number, maxFloor: number) => Math.max(1, Math.min(Math.max(1, maxFloor), floor));
-const getMaxSelectableStartFloor = (dungeonId: string, maxClearedFloor: number): number =>
-  findBundleByFloor(dungeonId, Math.max(1, maxClearedFloor + 1)).startFloor;
-const isSelectableStartFloor = (dungeonId: string, floor: number, maxClearedFloor: number): boolean =>
-  normalizeSelectableFloor(dungeonId, floor) <= getMaxSelectableStartFloor(dungeonId, maxClearedFloor);
 const sanitizeSelectedFloor = (params: {
-  dungeonId: string;
   floor: number | null;
-  maxClearedFloor: number;
+  maxUnlockedFloor: number;
   maxFloor: number;
 }): number | null => {
   if (params.floor === null) return null;
-  const normalized = normalizeSelectableFloor(params.dungeonId, clampFloor(params.floor, params.maxFloor));
-  return isSelectableStartFloor(params.dungeonId, normalized, params.maxClearedFloor) ? normalized : null;
+  const normalized = clampFloor(params.floor, params.maxFloor);
+  return normalized <= params.maxUnlockedFloor ? normalized : null;
 };
 
 const formatElapsedShort = (totalSeconds: number): string => {
@@ -75,61 +69,38 @@ const formatElapsedShort = (totalSeconds: number): string => {
 
 const buildFloorCandidates = (params: {
   maxFloor: number;
-  maxClearedFloor: number;
+  maxUnlockedFloor: number;
   selectedFloor: number | null;
-  maxSelectableFloor?: number;
 }): number[] => {
   const maxFloor = Math.max(1, params.maxFloor);
-  const anchorBase = params.selectedFloor ?? (params.maxClearedFloor + 1);
+  const anchorBase = params.selectedFloor ?? params.maxUnlockedFloor;
   const anchor = clampFloor(anchorBase || 1, maxFloor);
-  const frontier = clampFloor(params.maxClearedFloor + 1, maxFloor);
-  const deepest = clampFloor(Math.max(1, params.maxClearedFloor), maxFloor);
-  const selectableMax = clampFloor(params.maxSelectableFloor ?? maxFloor, maxFloor);
-  const values = new Set<number>([1, deepest, frontier, anchor]);
+  const frontier = clampFloor(params.maxUnlockedFloor, maxFloor);
+  const values = new Set<number>([1, frontier, anchor]);
   for (let delta = -5; delta <= 5; delta += 1) {
     values.add(clampFloor(anchor + delta, maxFloor));
   }
   return Array.from(values)
-    .filter((value) => value <= selectableMax)
+    .filter((value) => value <= params.maxUnlockedFloor)
     .sort((a, b) => a - b);
 };
 
-const buildBundleStartCandidates = (params: {
-  dungeonId: string;
-  maxClearedFloor: number;
-  selectedFloor: number | null;
-}): number[] => {
-  const bundles = buildDungeonBundles(params.dungeonId);
-  const maxSelectableStartFloor = getMaxSelectableStartFloor(params.dungeonId, params.maxClearedFloor);
-  if (bundles.length === 0 || bundles.every((bundle) => bundle.startFloor === bundle.bossFloor)) {
-    const maxFloor = bundles.at(-1)?.bossFloor ?? Math.max(1, params.maxClearedFloor + 1);
-    return buildFloorCandidates({
-      maxFloor,
-      maxClearedFloor: params.maxClearedFloor,
-      selectedFloor: params.selectedFloor,
-      maxSelectableFloor: Math.max(1, Math.min(maxFloor, params.maxClearedFloor + 1)),
-    });
+const computeMaxUnlockedFloor = (params: {
+  maxFloor: number;
+  floorProgressList: DungeonFloorExplorationProgressRecord[];
+}): number => {
+  const maxFloor = Math.max(1, params.maxFloor);
+  const progressMap = new Map(params.floorProgressList.map((row) => [row.floor, row] as const));
+  let unlockedFloor = 1;
+  for (let floor = 1; floor < maxFloor; floor += 1) {
+    if (progressMap.get(floor)?.stairsDiscovered) {
+      unlockedFloor = floor + 1;
+      continue;
+    }
+    break;
   }
-  const starts = bundles.map((bundle) => bundle.startFloor);
-  const frontierStart = maxSelectableStartFloor;
-  const selectedStart = Math.min(maxSelectableStartFloor, params.selectedFloor ?? frontierStart);
-  const anchorIndex = Math.max(
-    0,
-    starts.findIndex((start) => start >= selectedStart)
-  );
-  const values = new Set<number>([starts[0] ?? 1, frontierStart, selectedStart]);
-  for (let delta = -5; delta <= 5; delta += 1) {
-    const index = Math.max(0, Math.min(starts.length - 1, anchorIndex + delta));
-    const start = starts[index];
-    if (start) values.add(start);
-  }
-  return Array.from(values)
-    .filter((start) => start <= maxSelectableStartFloor)
-    .sort((a, b) => a - b);
+  return clampFloor(unlockedFloor, maxFloor);
 };
-
-const normalizeSelectableFloor = (dungeonId: string, floor: number): number =>
-  findBundleByFloor(dungeonId, floor).startFloor;
 const normalizeStepCount = (value: number | null | undefined): number => {
   const parsed = Math.max(1, Math.floor(value ?? DEFAULT_EXPLORATION_STEP_COUNT));
   return EXPLORATION_STEP_COUNT_OPTIONS.includes(parsed as (typeof EXPLORATION_STEP_COUNT_OPTIONS)[number])
@@ -153,7 +124,7 @@ export default function DungeonScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const [parties, setParties] = useState<PartyWithMembers[]>([]);
-  const [progressList, setProgressList] = useState<DungeonProgressRecord[]>([]);
+  const [floorProgressList, setFloorProgressList] = useState<DungeonFloorExplorationProgressRecord[]>([]);
   const [uiStateMap, setUiStateMap] = useState<Record<string, DungeonPartyUiStateRecord>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,9 +137,9 @@ export default function DungeonScreen() {
         setIsLoading(true);
         setError(null);
         try {
-          const [partyRows, progressRows] = await Promise.all([
+          const [partyRows, floorProgressRows] = await Promise.all([
             partiesRepository.listWithMembers(),
-            dungeonRepository.list(),
+            dungeonExplorationProgressRepository.listByDungeon(DEFAULT_DUNGEON_ID),
           ]);
 
           await dungeonPartyUiRepository.ensureDefaultsForParties({
@@ -178,7 +149,7 @@ export default function DungeonScreen() {
           const uiRows = await dungeonPartyUiRepository.listByDungeon(DEFAULT_DUNGEON_ID);
           if (!active) return;
           setParties(partyRows);
-          setProgressList(progressRows);
+          setFloorProgressList(floorProgressRows);
           setUiStateMap(
             uiRows.reduce<Record<string, DungeonPartyUiStateRecord>>((acc, row) => {
               acc[row.partyId] = row;
@@ -202,11 +173,16 @@ export default function DungeonScreen() {
     }, [])
   );
 
-  const progressMap = useMemo(() => new Map(progressList.map((p) => [p.dungeonId, p])), [progressList]);
   const selectedDungeon = DUNGEONS.find((d) => d.id === DEFAULT_DUNGEON_ID) ?? DUNGEONS[0];
   const maxFloor = selectedDungeon?.floors ?? 1;
-  const progress = progressMap.get(DEFAULT_DUNGEON_ID);
-  const maxClearedFloor = progress?.maxClearedFloor ?? 0;
+  const maxUnlockedFloor = useMemo(
+    () => computeMaxUnlockedFloor({ maxFloor, floorProgressList }),
+    [floorProgressList, maxFloor]
+  );
+  const floorProgressMap = useMemo(
+    () => new Map(floorProgressList.map((row) => [row.floor, row] as const)),
+    [floorProgressList]
+  );
   const partyById = useMemo(
     () => new Map(parties.map((entry) => [entry.party.id, entry] as const)),
     [parties]
@@ -214,28 +190,23 @@ export default function DungeonScreen() {
   const pickerParty = pickerPartyId ? partyById.get(pickerPartyId) ?? null : null;
   const pickerUiState = pickerPartyId ? uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID) : null;
   const pickerStepCount = normalizeStepCount(pickerUiState?.stepCount);
-  const maxSelectableStartFloor = useMemo(
-    () => getMaxSelectableStartFloor(selectedDungeon?.id ?? DEFAULT_DUNGEON_ID, maxClearedFloor),
-    [maxClearedFloor, selectedDungeon?.id]
-  );
   const pickerSelectedFloor = useMemo(
     () =>
       sanitizeSelectedFloor({
-        dungeonId: selectedDungeon?.id ?? DEFAULT_DUNGEON_ID,
         floor: pickerUiState?.selectedFloor ?? null,
-        maxClearedFloor,
+        maxUnlockedFloor,
         maxFloor,
       }),
-    [maxClearedFloor, maxFloor, pickerUiState?.selectedFloor, selectedDungeon?.id]
+    [maxFloor, maxUnlockedFloor, pickerUiState?.selectedFloor]
   );
   const floorCandidates = useMemo(
     () =>
-      buildBundleStartCandidates({
-        dungeonId: selectedDungeon?.id ?? DEFAULT_DUNGEON_ID,
-        maxClearedFloor,
+      buildFloorCandidates({
+        maxFloor,
+        maxUnlockedFloor,
         selectedFloor: pickerSelectedFloor,
       }),
-    [maxClearedFloor, pickerSelectedFloor, selectedDungeon?.id]
+    [maxFloor, maxUnlockedFloor, pickerSelectedFloor]
   );
 
   const upsertUiState = useCallback(
@@ -263,8 +234,8 @@ export default function DungeonScreen() {
   const handleSelectFloor = useCallback(
     async (partyId: string, floor: number) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
-      const clampedFloor = normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(floor, maxFloor));
-      if (!isSelectableStartFloor(DEFAULT_DUNGEON_ID, clampedFloor, maxClearedFloor)) {
+      const clampedFloor = clampFloor(floor, maxFloor);
+      if (clampedFloor > maxUnlockedFloor) {
         return;
       }
       await upsertUiState({
@@ -279,7 +250,7 @@ export default function DungeonScreen() {
       });
       setPickerPartyId(null);
     },
-    [maxClearedFloor, maxFloor, uiStateMap, upsertUiState]
+    [maxFloor, maxUnlockedFloor, uiStateMap, upsertUiState]
   );
 
   const handleSelectStepCount = useCallback(
@@ -299,9 +270,8 @@ export default function DungeonScreen() {
     async (partyId: string, action: DungeonPartyCardAction) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
       const selectedFloor = sanitizeSelectedFloor({
-        dungeonId: DEFAULT_DUNGEON_ID,
         floor: current.selectedFloor,
-        maxClearedFloor,
+        maxUnlockedFloor,
         maxFloor,
       });
 
@@ -358,7 +328,7 @@ export default function DungeonScreen() {
         });
       }
     },
-    [maxClearedFloor, maxFloor, openFloorPicker, router, uiStateMap, upsertUiState]
+    [maxFloor, maxUnlockedFloor, openFloorPicker, router, uiStateMap, upsertUiState]
   );
 
   const renderActionButton = useCallback(
@@ -441,7 +411,7 @@ export default function DungeonScreen() {
             <View style={styles.sharedDungeonCard}>
               <View style={styles.sharedDungeonTop}>
                 <Text style={styles.sharedDungeonTitle}>{t("dungeon.ui.shared.title")}</Text>
-                <Text style={styles.sharedDungeonMeta}>B1-???F</Text>
+                <Text style={styles.sharedDungeonMeta}>{`B1-B${maxUnlockedFloor}F`}</Text>
               </View>
             </View>
           </View>
@@ -465,15 +435,14 @@ export default function DungeonScreen() {
           const uiState = uiStateMap[entry.party.id] ?? defaultUiState(entry.party.id, DEFAULT_DUNGEON_ID);
           const stepCount = normalizeStepCount(uiState.stepCount);
           const safeSelectedFloor = sanitizeSelectedFloor({
-            dungeonId: DEFAULT_DUNGEON_ID,
             floor: uiState.selectedFloor,
-            maxClearedFloor,
+            maxUnlockedFloor,
             maxFloor,
           });
           const cardState = buildDungeonPartyCardState({
             selectedFloor: safeSelectedFloor,
             mode: uiState.mode,
-            maxClearedFloor,
+            maxUnlockedFloor,
           });
           const memberCount = entry.members.length;
           const avgLv =
@@ -594,7 +563,7 @@ export default function DungeonScreen() {
               <Pressable
                 style={styles.quickButton}
                 onPress={() =>
-                  pickerPartyId && void handleSelectFloor(pickerPartyId, normalizeSelectableFloor(DEFAULT_DUNGEON_ID, 1))
+                  pickerPartyId && void handleSelectFloor(pickerPartyId, 1)
                 }
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickB1")}</Text>
@@ -603,10 +572,7 @@ export default function DungeonScreen() {
                 style={styles.quickButton}
                 onPress={() =>
                   pickerPartyId &&
-                  void handleSelectFloor(
-                    pickerPartyId,
-                    normalizeSelectableFloor(DEFAULT_DUNGEON_ID, clampFloor(maxClearedFloor + 1, maxFloor))
-                  )
+                  void handleSelectFloor(pickerPartyId, maxUnlockedFloor)
                 }
               >
                 <Text style={styles.quickButtonText}>{t("dungeon.ui.floorPicker.quickFrontier")}</Text>
@@ -635,10 +601,10 @@ export default function DungeonScreen() {
 
             <ScrollView style={styles.floorList} contentContainerStyle={styles.floorListContent}>
               {floorCandidates.map((floor) => {
-                const bundleRange = findBundleByFloor(DEFAULT_DUNGEON_ID, floor);
                 const active = floor === pickerSelectedFloor;
-                const isCleared = bundleRange.bossFloor <= maxClearedFloor;
-                const isFrontier = bundleRange.startFloor === maxSelectableStartFloor;
+                const row = floorProgressMap.get(floor);
+                const isCleared = (row?.explorationPercent ?? 0) >= 100;
+                const isFrontier = floor === maxUnlockedFloor;
                 return (
                   <Pressable
                     key={`picker-floor-${floor}`}
@@ -646,7 +612,7 @@ export default function DungeonScreen() {
                     onPress={() => pickerPartyId && void handleSelectFloor(pickerPartyId, floor)}
                   >
                     <Text style={[styles.floorListItemTitle, active ? styles.floorListItemTitleActive : null]}>
-                      {formatBundleLabel(bundleRange)}
+                      {`B${floor}`}
                     </Text>
                     <Text style={[styles.floorListItemSub, active ? styles.floorListItemSubActive : null]}>
                       {isFrontier
