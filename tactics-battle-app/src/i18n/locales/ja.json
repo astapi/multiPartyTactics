@@ -110,6 +110,8 @@
   "settings.audio": "AUDIO",
   "settings.audio.bgm": "BGM",
   "settings.audio.sfx": "SFX",
+  "settings.battle": "BATTLE",
+  "settings.battle.speed": "戦闘速度",
   "settings.account": "ACCOUNT",
   "settings.debug": "DEBUG",
   "settings.debug.createDefaults": "デフォルトキャラクターを作成（6人編成）",

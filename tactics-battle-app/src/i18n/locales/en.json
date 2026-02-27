@@ -110,6 +110,8 @@
   "settings.audio": "AUDIO",
   "settings.audio.bgm": "BGM",
   "settings.audio.sfx": "SFX",
+  "settings.battle": "BATTLE",
+  "settings.battle.speed": "Battle Speed",
   "settings.account": "ACCOUNT",
   "settings.debug": "DEBUG",
   "settings.debug.createDefaults": "Create Default Characters (6-slot party)",

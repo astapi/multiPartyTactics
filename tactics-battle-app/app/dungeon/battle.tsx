@@ -25,6 +25,7 @@ import { preloadBattleSounds, unloadBattleSounds } from "@/features/battle/audio
 import { battleRepository } from "@/db/repositories/battleRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
+import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { getAttackTrailPreset } from "@/features/battle/animation/presets";
@@ -43,6 +44,7 @@ import { toUnit } from "@/game/partyMapper";
 import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
 import { useI18n } from "@/i18n";
 import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
+import { BATTLE_SPEED_OPTIONS, BattleSpeedMultiplier } from "@/constants/battleSpeed";
 import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
@@ -65,12 +67,6 @@ const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg")
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 const RESULT_AUTO_RETURN_DELAY_MS = 1200;
 const BATTLE_LOG_BASE_REVEAL_INTERVAL_MS = 900;
-const BATTLE_SPEED_OPTIONS = [1, 1.5, 2] as const;
-type BattleSpeedMultiplier = (typeof BATTLE_SPEED_OPTIONS)[number];
-
-const DUNGEON_NAME_I18N_KEY = {
-  crestoria_dungeon_1_200: "dungeon.name.crestoria_dungeon_1_200",
-} as const;
 const BATTLE_RESULT_I18N_KEY = {
   WIN: "battle.result.win",
   LOSE: "battle.result.lose",
@@ -245,10 +241,6 @@ export default function BattleScreen() {
   const setLatestBattlePartySync = useBattleStore((s) => s.setLatestBattlePartySync);
   const logs = useBattleStore((s) => s.logs);
   const reset = useBattleStore((s) => s.reset);
-  const dungeonTitle = t(
-    DUNGEON_NAME_I18N_KEY[resolvedDungeonId as keyof typeof DUNGEON_NAME_I18N_KEY] ??
-      "dungeon.name.crestoria_dungeon_1_200"
-  );
   const isOutcomeBadgeVisible =
     phase === "RESULT" &&
     finalOutcome !== null &&
@@ -257,8 +249,35 @@ export default function BattleScreen() {
   const resultLabel =
     isOutcomeBadgeVisible && finalOutcome ? t(BATTLE_RESULT_I18N_KEY[finalOutcome]) : null;
   const logRevealIntervalMs = Math.round(BATTLE_LOG_BASE_REVEAL_INTERVAL_MS / battleSpeedMultiplier);
+  const handleCycleBattleSpeed = () => {
+    const currentIndex = BATTLE_SPEED_OPTIONS.indexOf(battleSpeedMultiplier);
+    const nextIndex = (currentIndex + 1) % BATTLE_SPEED_OPTIONS.length;
+    const nextSpeed = BATTLE_SPEED_OPTIONS[nextIndex];
+    setBattleSpeedMultiplier(nextSpeed);
+    void settingsRepository.setBattleSpeedMultiplier(nextSpeed).catch((error) => {
+      console.error("Failed to persist battle speed setting:", error);
+    });
+  };
 
   const skillMap = useMemo(() => createSkillMap(DEFAULT_SKILLS), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadBattleSpeed = async () => {
+      try {
+        const saved = await settingsRepository.getBattleSpeedMultiplier();
+        if (!cancelled) {
+          setBattleSpeedMultiplier(saved);
+        }
+      } catch (error) {
+        console.error("Failed to load battle speed setting:", error);
+      }
+    };
+    void loadBattleSpeed();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     void preloadBattleSounds();
@@ -331,7 +350,6 @@ export default function BattleScreen() {
         setBattleCompleted(false);
         setRevealedLogCount(0);
         setIsPaused(false);
-        setBattleSpeedMultiplier(1);
         setReplayStates([]);
         setVisualEvents([]);
         setEnemyRectsById({});
@@ -689,7 +707,6 @@ export default function BattleScreen() {
     if (encounterData) {
       return renderBattleLayout({
         floor: encounterData.rollMeta.floor,
-        title: dungeonTitle,
         enemies: encounterData.enemies.map((enemy, idx) => ({
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
@@ -712,7 +729,6 @@ export default function BattleScreen() {
     if (encounterData) {
       return renderBattleLayout({
         floor: encounterData.rollMeta.floor,
-        title: dungeonTitle,
         enemies: encounterData.enemies.map((enemy, idx) => ({
           id: `${enemy.enemyId}-${idx}`,
           name: enemy.name,
@@ -745,7 +761,6 @@ export default function BattleScreen() {
   if (phase === "ENCOUNTER" && encounterData) {
     return renderBattleLayout({
       floor: encounterData.rollMeta.floor,
-      title: dungeonTitle,
       enemies: encounterData.enemies.map((enemy, idx) => ({
         id: `${enemy.enemyId}-${idx}`,
         name: enemy.name,
@@ -771,7 +786,6 @@ export default function BattleScreen() {
   const displayTurn = activeReplayState?.turn ?? turns;
   return renderBattleLayout({
     floor: resolvedFloor,
-    title: dungeonTitle,
     enemies: displayEnemies.map((enemy) => ({
       id: enemy.id,
       name: enemy.name,
@@ -789,7 +803,6 @@ export default function BattleScreen() {
 
   function renderBattleLayout(params: {
     floor: number;
-    title: string;
     enemies: BattleEnemyViewModel[];
     party: Unit[];
     logs: typeof logs;
@@ -803,10 +816,7 @@ export default function BattleScreen() {
         <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.header}>
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorBadgeText}>{`B${params.floor}F`}</Text>
-            </View>
-            <Text style={styles.headerTitle}>{params.title}</Text>
+            <Text style={styles.headerTitle}>{`B${params.floor}`}</Text>
             {resultLabel ? (
               <View
                 style={[
@@ -822,23 +832,15 @@ export default function BattleScreen() {
             <View style={styles.headerRightControls}>
               <View style={styles.speedControl}>
                 <Text style={styles.speedLabel}>{t("battle.ui.speedLabel")}</Text>
-                <View style={styles.speedButtons}>
-                  {BATTLE_SPEED_OPTIONS.map((speedOption) => {
-                    const isActive = speedOption === battleSpeedMultiplier;
-                    return (
-                      <Pressable
-                        key={speedOption}
-                        onPress={() => setBattleSpeedMultiplier(speedOption)}
-                        style={[styles.speedButton, isActive && styles.speedButtonActive]}
-                        hitSlop={6}
-                      >
-                        <Text style={[styles.speedButtonText, isActive && styles.speedButtonTextActive]}>
-                          {`${speedOption}x`}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <Pressable
+                  onPress={handleCycleBattleSpeed}
+                  style={[styles.speedButton, styles.speedButtonActive]}
+                  hitSlop={6}
+                >
+                  <Text style={[styles.speedButtonText, styles.speedButtonTextActive]}>
+                    {`${battleSpeedMultiplier}x`}
+                  </Text>
+                </Pressable>
               </View>
               <Pressable
                 onPress={params.onPausePress}
