@@ -1,5 +1,6 @@
 node_modules
 /dist
 .DS_Store
+/images/
 tactics-battle-app/ios/
 tactics-battle-app/.expo/
