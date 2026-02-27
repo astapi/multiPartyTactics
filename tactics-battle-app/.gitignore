@@ -4,4 +4,5 @@
 
 expo-env.d.ts
 coverage/
+.expo/
 # @end expo-cli
