@@ -64,6 +64,9 @@ type BattleResultSummary = {
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
 const RESULT_AUTO_RETURN_DELAY_MS = 1200;
+const BATTLE_LOG_BASE_REVEAL_INTERVAL_MS = 900;
+const BATTLE_SPEED_OPTIONS = [1, 1.5, 2] as const;
+type BattleSpeedMultiplier = (typeof BATTLE_SPEED_OPTIONS)[number];
 
 const DUNGEON_NAME_I18N_KEY = {
   crestoria_dungeon_1_200: "dungeon.name.crestoria_dungeon_1_200",
@@ -219,6 +222,7 @@ export default function BattleScreen() {
   const [battleCompleted, setBattleCompleted] = useState(false);
   const [revealedLogCount, setRevealedLogCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [battleSpeedMultiplier, setBattleSpeedMultiplier] = useState<BattleSpeedMultiplier>(1);
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
@@ -252,6 +256,7 @@ export default function BattleScreen() {
     revealedLogCount >= combatOutcomeRevealLogCount;
   const resultLabel =
     isOutcomeBadgeVisible && finalOutcome ? t(BATTLE_RESULT_I18N_KEY[finalOutcome]) : null;
+  const logRevealIntervalMs = Math.round(BATTLE_LOG_BASE_REVEAL_INTERVAL_MS / battleSpeedMultiplier);
 
   const skillMap = useMemo(() => createSkillMap(DEFAULT_SKILLS), []);
 
@@ -326,6 +331,7 @@ export default function BattleScreen() {
         setBattleCompleted(false);
         setRevealedLogCount(0);
         setIsPaused(false);
+        setBattleSpeedMultiplier(1);
         setReplayStates([]);
         setVisualEvents([]);
         setEnemyRectsById({});
@@ -599,9 +605,9 @@ export default function BattleScreen() {
     if (revealedLogCount >= logs.length) return;
     const timer = setInterval(() => {
       setRevealedLogCount((prev) => Math.min(prev + 1, logs.length));
-    }, 50);
+    }, logRevealIntervalMs);
     return () => clearInterval(timer);
-  }, [battleCompleted, isPaused, logs.length, phase, revealedLogCount]);
+  }, [battleCompleted, isPaused, logRevealIntervalMs, logs.length, phase, revealedLogCount]);
 
   useEffect(() => {
     if (!encounterData || phase !== "ENCOUNTER") return;
@@ -813,14 +819,36 @@ export default function BattleScreen() {
                 <Text style={styles.resultBadgeText}>{resultLabel}</Text>
               </View>
             ) : null}
-            <Pressable
-              onPress={params.onPausePress}
-              style={[styles.autoBadge, params.isPaused && styles.autoBadgePaused]}
-              hitSlop={8}
-            >
-              {params.isPaused ? <Play size={10} color="#555555" /> : <Pause size={10} color="#555555" />}
-              <Text style={styles.autoBadgeText}>AUTO</Text>
-            </Pressable>
+            <View style={styles.headerRightControls}>
+              <View style={styles.speedControl}>
+                <Text style={styles.speedLabel}>{t("battle.ui.speedLabel")}</Text>
+                <View style={styles.speedButtons}>
+                  {BATTLE_SPEED_OPTIONS.map((speedOption) => {
+                    const isActive = speedOption === battleSpeedMultiplier;
+                    return (
+                      <Pressable
+                        key={speedOption}
+                        onPress={() => setBattleSpeedMultiplier(speedOption)}
+                        style={[styles.speedButton, isActive && styles.speedButtonActive]}
+                        hitSlop={6}
+                      >
+                        <Text style={[styles.speedButtonText, isActive && styles.speedButtonTextActive]}>
+                          {`${speedOption}x`}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+              <Pressable
+                onPress={params.onPausePress}
+                style={[styles.autoBadge, params.isPaused && styles.autoBadgePaused]}
+                hitSlop={8}
+              >
+                {params.isPaused ? <Play size={10} color="#555555" /> : <Pause size={10} color="#555555" />}
+                <Text style={styles.autoBadgeText}>AUTO</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View style={styles.logSection}>
@@ -999,6 +1027,49 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
     letterSpacing: 0.4,
+  },
+  headerRightControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  speedControl: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  speedLabel: {
+    color: "#555555",
+    fontWeight: "600",
+    fontSize: 9,
+  },
+  speedButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  speedButton: {
+    borderRadius: 6,
+    backgroundColor: "#ececec",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  speedButtonActive: {
+    backgroundColor: "#111111",
+  },
+  speedButtonText: {
+    color: "#555555",
+    fontWeight: "600",
+    fontSize: 9,
+  },
+  speedButtonTextActive: {
+    color: "#f5f5f5",
   },
   autoBadge: {
     flexDirection: "row",

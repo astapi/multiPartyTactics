@@ -183,6 +183,7 @@
   "guild.hire.empty": "まだ冒険者がいません",
   "battle.ui.logTitle": "戦闘ログ",
   "battle.ui.logWaiting": "指示待機中...",
+  "battle.ui.speedLabel": "速度",
   "battle.ui.enemyHp": "HP {hp}/{maxHp}",
   "battle.result.win": "勝利",
   "battle.result.lose": "敗北",
