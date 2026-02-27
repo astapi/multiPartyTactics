@@ -30,9 +30,19 @@ const safeInt = (value: number): number => {
   return Math.floor(value);
 };
 
+const EXP_CURVE_PIVOT_LEVEL = 10;
+const EXP_CURVE_FACTOR = 2.5;
+const EARLY_EXP_CURVE_FACTOR = 0.08;
+
 const getRequiredExpForLevelUp = (level: number): number => {
   const lv = clamp(safeInt(level), 1, MAX_CHARACTER_LEVEL);
-  return Math.floor(20 + 7 * lv + 0.02 * lv * lv);
+  const baseRequiredExp = Math.floor(20 + 7 * lv + 0.02 * lv * lv);
+  const earlyLevel = Math.min(lv, EXP_CURVE_PIVOT_LEVEL);
+  const earlyBonus = Math.floor(earlyLevel * earlyLevel * EARLY_EXP_CURVE_FACTOR);
+  if (lv <= EXP_CURVE_PIVOT_LEVEL) return baseRequiredExp + earlyBonus;
+  const lateLevelOffset = lv - EXP_CURVE_PIVOT_LEVEL;
+  const lateBonus = Math.floor(lateLevelOffset * lateLevelOffset * EXP_CURVE_FACTOR);
+  return baseRequiredExp + earlyBonus + lateBonus;
 };
 
 const GROWTH_RATE_BY_CLASS: Record<ClassId, GrowthRate> = {
