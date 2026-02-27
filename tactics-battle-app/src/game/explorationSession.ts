@@ -65,7 +65,7 @@ const DEFAULT_CONFIG: ExplorationSessionConfig = {
   stepsPerRun: difficultyConfig.exploration.maxTicks,
   stairsDiscoveryThresholdPercent: 40,
   fullExplorationPercent: 100,
-  explorationPercentGainPerStep: 0.25,
+  explorationPercentGainPerStep: 0.4,
   shortcutStepCostPerDiscoveredFloor: 2,
   discoveredStairsArrivalMinSteps: 3,
   discoveredStairsArrivalMaxSteps: 20,
@@ -73,6 +73,16 @@ const DEFAULT_CONFIG: ExplorationSessionConfig = {
 
 const SPECIAL_B5_BOSS_DUNGEON_ID = "crestoria_dungeon_1_200";
 const SPECIAL_B5_BOSS_FLOOR = 5;
+
+const mixSeed32 = (value: number): number => {
+  let x = value >>> 0;
+  x ^= x >>> 16;
+  x = Math.imul(x, 0x7feb352d);
+  x ^= x >>> 15;
+  x = Math.imul(x, 0x846ca68b);
+  x ^= x >>> 16;
+  return x >>> 0;
+};
 
 const clampPercent = (value: number): number => {
   const clamped = Math.max(0, Math.min(100, value));
@@ -277,7 +287,10 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
   };
   nextState = withFloorProgress(nextState, nextFloorProgress);
 
-  const rng = createSeededRng((state.seed + nextTick * 2654435761 + floor * 97) >>> 0);
+  const tickSeed = mixSeed32(
+    (state.seed ^ Math.imul(nextTick, 0x9e3779b1) ^ Math.imul(floor, 0x85ebca6b)) >>> 0
+  );
+  const rng = createSeededRng(tickSeed);
   const rolled = rollExplorationEvent({
     party: state.party,
     dungeon: state.dungeon,

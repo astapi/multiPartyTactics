@@ -36,6 +36,42 @@ describe("game/explorationSession", () => {
     expect(state.status).toBe("AWAITING_DECISION");
   });
 
+  it("does not frequently produce 7+ consecutive encounters across nearby seeds", () => {
+    let longStreakRuns = 0;
+
+    for (let seed = 1; seed <= 200; seed += 1) {
+      let state = createExplorationSession({
+        dungeon,
+        party,
+        bundle,
+        seed,
+        config: {
+          stepsPerRun: 40,
+          explorationPercentGainPerStep: 0,
+          stairsDiscoveryThresholdPercent: 101,
+        },
+      });
+
+      while (state.status === "RUNNING") {
+        state = advanceExplorationStep(state);
+      }
+
+      let streak = 0;
+      let maxStreak = 0;
+      for (const event of state.events) {
+        if (event.type === "ENCOUNTER") {
+          streak += 1;
+          if (streak > maxStreak) maxStreak = streak;
+        } else {
+          streak = 0;
+        }
+      }
+      if (maxStreak >= 7) longStreakRuns += 1;
+    }
+
+    expect(longStreakRuns).toBeLessThan(10);
+  });
+
   it("emits only one event per tick even when stair discovery also triggers", () => {
     let state = createExplorationSession({
       dungeon,
