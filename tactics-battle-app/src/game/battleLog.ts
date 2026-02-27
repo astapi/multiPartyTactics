@@ -69,6 +69,15 @@ export const formatBattleLogMessage = (
         targetName: log.targetName ?? "-",
       });
       break;
+    case "battle.log.result_win":
+      message = t("battle.log.result_win");
+      break;
+    case "battle.log.result_lose":
+      message = t("battle.log.result_lose");
+      break;
+    case "battle.log.result_draw":
+      message = t("battle.log.result_draw");
+      break;
     default:
       message = log.logMessage;
       break;

@@ -11,11 +11,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   Easing,
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -65,9 +63,7 @@ type BattleResultSummary = {
 
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
-const RESULT_SHEET_COLLAPSED_PEEK_HEIGHT = 44;
-const RESULT_SHEET_ANIMATION_MS = 220;
-const RESULT_SHEET_PARTY_STRIP_OFFSET = 10;
+const RESULT_AUTO_RETURN_DELAY_MS = 1200;
 
 const DUNGEON_NAME_I18N_KEY = {
   crestoria_dungeon_1_200: "dungeon.name.crestoria_dungeon_1_200",
@@ -204,7 +200,6 @@ const BattleEnemyCard = ({
 export default function BattleScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const insets = useSafeAreaInsets();
   const { dungeonId, floor, explorationSeed, encounter, partyId } = useLocalSearchParams<{
     dungeonId?: string;
     floor?: string;
@@ -224,7 +219,6 @@ export default function BattleScreen() {
   const [battleCompleted, setBattleCompleted] = useState(false);
   const [revealedLogCount, setRevealedLogCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [battleResultSummary, setBattleResultSummary] = useState<BattleResultSummary | null>(null);
   const [party, setParty] = useState<Unit[]>([]);
   const [enemies, setEnemies] = useState<Unit[]>([]);
   const [turns, setTurns] = useState(0);
@@ -236,12 +230,8 @@ export default function BattleScreen() {
   const [enemyLastHitStyleById, setEnemyLastHitStyleById] = useState<Record<string, BattleAttackStyle>>({});
   const [combatOutcomeRevealLogCount, setCombatOutcomeRevealLogCount] = useState<number | null>(null);
   const [finalOutcome, setFinalOutcome] = useState<BattleOutcome | null>(null);
-  const [resultSheetHeight, setResultSheetHeight] = useState(0);
   const logScrollRef = useRef<ScrollView | null>(null);
-  const prevCanOpenResultSummaryRef = useRef(false);
-  const resultSheetTranslateY = useSharedValue(0);
-  const resultSheetMaxTranslateY = useSharedValue(0);
-  const resultSheetDragStartY = useSharedValue(0);
+  const autoReturnTriggeredRef = useRef(false);
   const setSessionId = useBattleStore((s) => s.setSessionId);
   const setLogs = useBattleStore((s) => s.setLogs);
   const setStatus = useBattleStore((s) => s.setStatus);
@@ -336,7 +326,6 @@ export default function BattleScreen() {
         setBattleCompleted(false);
         setRevealedLogCount(0);
         setIsPaused(false);
-        setBattleResultSummary(null);
         setReplayStates([]);
         setVisualEvents([]);
         setEnemyRectsById({});
@@ -344,9 +333,7 @@ export default function BattleScreen() {
         setEnemyLastHitStyleById({});
         setCombatOutcomeRevealLogCount(null);
         setFinalOutcome(null);
-        setResultSheetHeight(0);
-        resultSheetTranslateY.value = 0;
-        resultSheetMaxTranslateY.value = 0;
+        autoReturnTriggeredRef.current = false;
         setPhase("ENCOUNTER");
       } catch (error) {
         console.error("Failed to load battle:", error);
@@ -421,6 +408,14 @@ export default function BattleScreen() {
       const nextPartyUiMetaById: Record<string, { level: number }> = {
         ...partyUiMetaById,
       };
+      const resultStatLabelByKeyForLog: Record<LevelUpStatKey, string> = {
+        maxHp: t("battle.result.stat.maxHp"),
+        atk: t("battle.result.stat.atk"),
+        def: t("battle.result.stat.def"),
+        spd: t("battle.result.stat.spd"),
+        maxMp: t("battle.result.stat.maxMp"),
+        mpRegen: t("battle.result.stat.mpRegen"),
+      };
       if (result.outcome === "WIN") {
         const alivePartyIds = new Set(
           result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
@@ -456,7 +451,6 @@ export default function BattleScreen() {
           encounter: encounterData,
           seed: (resolvedSeed ?? Date.now()) >>> 0,
         });
-        const lootLogRecords: typeof result.logs = [];
         for (const drop of dropResults) {
           if (!drop.reward) continue;
           const applyResult = await equipmentInventoryRepository.applyGrantIfAbsent({
@@ -477,31 +471,70 @@ export default function BattleScreen() {
           if (!applyResult.applied) continue;
           const itemName = locale === "ja" ? drop.reward.displayName.jp : drop.reward.displayName.en;
           nextResultSummary.drops.push(itemName);
-          lootLogRecords.push({
-            battleSessionId: nextSessionId,
+        }
+      }
+
+      const resultSummaryLogRecords: typeof result.logs = [];
+      const resultLogTurn = Math.max(0, result.turns);
+      resultSummaryLogRecords.push({
+        battleSessionId: nextSessionId,
+        turn: resultLogTurn,
+        actorName: "RESULT",
+        actionType: "RESULT_EXP",
+        targetName: null,
+        damage: 0,
+        healing: 0,
+        logMessage:
+          locale === "ja"
+            ? `獲得EXP: +${nextResultSummary.expGained} EXP`
+            : `EXP Gained: +${nextResultSummary.expGained} EXP`,
+      });
+      for (const levelUp of nextResultSummary.levelUps) {
+        const levelLine = t("battle.result.levelUpName", {
+          name: levelUp.name,
+          prev: levelUp.previousLevel,
+          next: levelUp.newLevel,
+        });
+        const statLine = levelUp.statUps
+          .map((stat) => `${resultStatLabelByKeyForLog[stat.statKey]} +${stat.amount}`)
+          .join(" / ");
+        resultSummaryLogRecords.push({
+          battleSessionId: nextSessionId,
+          turn: resultLogTurn,
+          actorName: "RESULT",
+          actionType: "RESULT_LEVEL_UP",
+          targetName: levelUp.name,
+          damage: 0,
+          healing: 0,
+          logMessage: statLine.length > 0 ? `${levelLine} (${statLine})` : levelLine,
+        });
+      }
+      for (const dropName of nextResultSummary.drops) {
+        resultSummaryLogRecords.push({
+          battleSessionId: nextSessionId,
+          turn: resultLogTurn,
+          actorName: "RESULT",
+          actionType: "RESULT_DROP",
+          targetName: null,
+          damage: 0,
+          healing: 0,
+          logMessage: `${t("battle.result.dropTitle")}: ${dropName}`,
+        });
+      }
+      if (resultSummaryLogRecords.length > 0) {
+        await battleRepository.appendLogs(resultSummaryLogRecords);
+        combinedLogs = [...combinedLogs, ...resultSummaryLogRecords];
+        const lastReplayState =
+          combinedReplayStates[combinedReplayStates.length - 1] ??
+          ({
             turn: result.turns,
-            actorName: "LOOT",
-            actionType: "loot",
-            targetName: null,
-            damage: 0,
-            healing: 0,
-            logMessage: locale === "ja" ? `獲得: ${itemName}` : `Loot: ${itemName}`,
-          });
-        }
-        combinedLogs = [...result.logs, ...lootLogRecords];
-        if (lootLogRecords.length > 0) {
-          const lastReplayState =
-            combinedReplayStates[combinedReplayStates.length - 1] ??
-            ({
-              turn: result.turns,
-              party: result.finalParty,
-              enemies: result.finalEnemies,
-            } satisfies BattleReplayState);
-          combinedReplayStates = [
-            ...combinedReplayStates,
-            ...lootLogRecords.map(() => cloneReplayState(lastReplayState)),
-          ];
-        }
+            party: result.finalParty,
+            enemies: result.finalEnemies,
+          } satisfies BattleReplayState);
+        combinedReplayStates = [
+          ...combinedReplayStates,
+          ...resultSummaryLogRecords.map(() => cloneReplayState(lastReplayState)),
+        ];
       }
 
       for (const record of partyRecords) {
@@ -548,12 +581,9 @@ export default function BattleScreen() {
       setFinalOutcome(result.outcome);
       setTurns(result.turns);
       setRevealedLogCount(0);
-      setBattleResultSummary(nextResultSummary);
-      setResultSheetHeight(0);
       setEnemyHitPulseById({});
       setEnemyLastHitStyleById({});
-      resultSheetTranslateY.value = 0;
-      resultSheetMaxTranslateY.value = 0;
+      autoReturnTriggeredRef.current = false;
       setBattleCompleted(true);
       setPhase("RESULT");
     } catch (startError) {
@@ -588,21 +618,7 @@ export default function BattleScreen() {
   }, [encounterData, phase]);
 
   const renderedLogCount = phase === "RESULT" ? Math.min(revealedLogCount, logs.length) : logs.length;
-  const canOpenResultSummary =
-    phase === "RESULT" && battleCompleted && (logs.length === 0 || revealedLogCount >= logs.length);
-  const isResultSheetVisible = canOpenResultSummary;
-  const resultSheetTravel = Math.max(0, resultSheetHeight - RESULT_SHEET_COLLAPSED_PEEK_HEIGHT - insets.bottom);
-  const resultSheetCollapsedReservedSpace = isResultSheetVisible
-    ? Math.max(0, RESULT_SHEET_COLLAPSED_PEEK_HEIGHT + Math.max(0, insets.bottom) - RESULT_SHEET_PARTY_STRIP_OFFSET)
-    : 0;
-  const resultStatLabelByKey: Record<LevelUpStatKey, string> = {
-    maxHp: t("battle.result.stat.maxHp"),
-    atk: t("battle.result.stat.atk"),
-    def: t("battle.result.stat.def"),
-    spd: t("battle.result.stat.spd"),
-    maxMp: t("battle.result.stat.maxMp"),
-    mpRegen: t("battle.result.stat.mpRegen"),
-  };
+  const canAutoReturn = phase === "RESULT" && battleCompleted && (logs.length === 0 || revealedLogCount >= logs.length);
 
   useEffect(() => {
     if (renderedLogCount <= 0) return;
@@ -612,63 +628,14 @@ export default function BattleScreen() {
   }, [renderedLogCount]);
 
   useEffect(() => {
-    resultSheetMaxTranslateY.value = resultSheetTravel;
-    if (!isResultSheetVisible) {
-      resultSheetTranslateY.value = 0;
-      return;
-    }
-    if (resultSheetTravel <= 0) {
-      resultSheetTranslateY.value = 0;
-      return;
-    }
-    resultSheetTranslateY.value = Math.max(0, Math.min(resultSheetTranslateY.value, resultSheetTravel));
-  }, [insets.bottom, isResultSheetVisible, resultSheetTravel, resultSheetMaxTranslateY, resultSheetTranslateY]);
-
-  useEffect(() => {
-    if (isResultSheetVisible && !prevCanOpenResultSummaryRef.current) {
-      resultSheetTranslateY.value = withTiming(0, {
-        duration: RESULT_SHEET_ANIMATION_MS,
-        easing: Easing.out(Easing.cubic),
-      });
-    }
-    if (!isResultSheetVisible) {
-      resultSheetTranslateY.value = 0;
-    }
-    prevCanOpenResultSummaryRef.current = isResultSheetVisible;
-  }, [isResultSheetVisible, resultSheetTranslateY]);
-
-  const resultSheetBackdropStyle = useAnimatedStyle(() => {
-    const max = Math.max(1, resultSheetMaxTranslateY.value);
-    const opacity = interpolate(resultSheetTranslateY.value, [0, max], [1, 0]);
-    return {
-      opacity,
-    };
-  });
-
-  const resultSheetContainerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: resultSheetTranslateY.value }],
-  }));
-
-  const resultSheetPanGesture = Gesture.Pan()
-    .enabled(isResultSheetVisible)
-    .onBegin(() => {
-      resultSheetDragStartY.value = resultSheetTranslateY.value;
-    })
-    .onUpdate((event) => {
-      const max = resultSheetMaxTranslateY.value;
-      if (max <= 0) return;
-      const next = resultSheetDragStartY.value + event.translationY;
-      resultSheetTranslateY.value = Math.max(0, Math.min(max, next));
-    })
-    .onEnd((event) => {
-      const max = resultSheetMaxTranslateY.value;
-      if (max <= 0) return;
-      const shouldCollapse = event.velocityY > 700 || resultSheetTranslateY.value > max * 0.4;
-      resultSheetTranslateY.value = withTiming(shouldCollapse ? max : 0, {
-        duration: RESULT_SHEET_ANIMATION_MS,
-        easing: Easing.out(Easing.cubic),
-      });
-    });
+    if (!canAutoReturn || phase !== "RESULT") return;
+    if (autoReturnTriggeredRef.current) return;
+    autoReturnTriggeredRef.current = true;
+    const timer = setTimeout(() => {
+      router.back();
+    }, RESULT_AUTO_RETURN_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [canAutoReturn, phase, router]);
 
   const handleEnemyItemLayout = (enemyId: string, event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout;
@@ -911,93 +878,7 @@ export default function BattleScreen() {
               mp: member.mp,
               level: partyUiMetaById[member.id]?.level,
             }))}
-            containerStyle={{ marginBottom: resultSheetCollapsedReservedSpace }}
           />
-
-          {isResultSheetVisible ? (
-            <>
-              <Animated.View pointerEvents="none" style={[styles.resultSheetBackdrop, resultSheetBackdropStyle]} />
-              <Animated.View
-                style={[styles.resultSheetContainer, { bottom: -insets.bottom }, resultSheetContainerStyle]}
-                onLayout={(event) => {
-                  const height = Math.round(event.nativeEvent.layout.height);
-                  if (height > 0 && height !== resultSheetHeight) {
-                    setResultSheetHeight(height);
-                  }
-                }}
-              >
-                <View style={styles.resultPanel}>
-                  <GestureDetector gesture={resultSheetPanGesture}>
-                    <View style={styles.resultSheetHandleArea}>
-                      <View style={styles.resultSheetGrabber} />
-                    </View>
-                  </GestureDetector>
-
-                  <Text style={styles.resultPanelTitle}>{t("battle.result.summaryTitle")}</Text>
-                  <ScrollView
-                    style={styles.resultPanelScroll}
-                    contentContainerStyle={styles.resultPanelContent}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    <View style={styles.resultSection}>
-                      <Text style={styles.resultSectionTitle}>{t("battle.result.expTitle")}</Text>
-                      <Text style={styles.resultPrimaryLine}>
-                        {t("battle.result.expValue", {
-                          exp: battleResultSummary?.expGained ?? 0,
-                        })}
-                      </Text>
-                    </View>
-
-                    {(battleResultSummary?.levelUps.length ?? 0) > 0 ? (
-                      <View style={styles.resultSection}>
-                        <Text style={styles.resultSectionTitle}>{t("battle.result.levelUpTitle")}</Text>
-                        {battleResultSummary?.levelUps.map((levelUp) => (
-                          <View key={levelUp.characterId} style={styles.levelUpCard}>
-                            <Text style={styles.levelUpName}>
-                              {t("battle.result.levelUpName", {
-                                name: levelUp.name,
-                                prev: levelUp.previousLevel,
-                                next: levelUp.newLevel,
-                              })}
-                            </Text>
-                            <View style={styles.levelUpStatsRow}>
-                              {levelUp.statUps.map((stat) => (
-                                <View key={`${levelUp.characterId}-${stat.statKey}`} style={styles.levelUpStatChip}>
-                                  <Text style={styles.levelUpStatChipText}>
-                                    {resultStatLabelByKey[stat.statKey]} +{stat.amount}
-                                  </Text>
-                                </View>
-                              ))}
-                            </View>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-
-                    {(battleResultSummary?.drops.length ?? 0) > 0 ? (
-                      <View style={styles.resultSection}>
-                        <Text style={styles.resultSectionTitle}>{t("battle.result.dropTitle")}</Text>
-                        {battleResultSummary?.drops.map((dropName, idx) => (
-                          <Text key={`${dropName}-${idx}`} style={styles.resultListLine}>
-                            ・{dropName}
-                          </Text>
-                        ))}
-                      </View>
-                    ) : null}
-                  </ScrollView>
-
-                  <Pressable
-                    onPress={() => router.back()}
-                    style={[styles.resultContinueButton, { marginBottom: 16 + insets.bottom }]}
-                  >
-                    <Text style={styles.resultContinueButtonText}>
-                      {t("battle.result.continueExploration")}
-                    </Text>
-                  </Pressable>
-                </View>
-              </Animated.View>
-            </>
-          ) : null}
         </View>
       </SafeAreaView>
     );
@@ -1232,133 +1113,6 @@ const styles = StyleSheet.create({
     textShadowColor: "#000000",
     textShadowRadius: 3,
     fontSize: 9,
-  },
-  resultSheetBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(17,24,39,0.38)",
-  },
-  resultSheetContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    maxHeight: "88%",
-  },
-  resultPanel: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    overflow: "hidden",
-    shadowColor: "#000000",
-    shadowOpacity: 0.14,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 5,
-  },
-  resultSheetHandleArea: {
-    height: RESULT_SHEET_COLLAPSED_PEEK_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eef0f3",
-    backgroundColor: "#ffffff",
-  },
-  resultSheetGrabber: {
-    width: 44,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: "#d1d5db",
-  },
-  resultPanelTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#111827",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  resultPanelScroll: {
-    maxHeight: 360,
-  },
-  resultPanelContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  resultSection: {
-    gap: 6,
-  },
-  resultSectionTitle: {
-    color: "#4b5563",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-  resultPrimaryLine: {
-    color: "#111827",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  resultMutedLine: {
-    color: "#6b7280",
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  resultListLine: {
-    color: "#111827",
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  levelUpCard: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    backgroundColor: "#f9fafb",
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    gap: 7,
-  },
-  levelUpName: {
-    color: "#111827",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  levelUpStatsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  levelUpStatChip: {
-    borderRadius: 999,
-    backgroundColor: "#eef2ff",
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  levelUpStatChipText: {
-    color: "#1f2937",
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  resultContinueButton: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    marginTop: 4,
-    borderRadius: 12,
-    backgroundColor: "#111827",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-  },
-  resultContinueButtonText: {
-    color: "#ffffff",
-    fontWeight: "700",
-    fontSize: 14,
   },
   skeletonBlock: {
     backgroundColor: "#e7e7e7",

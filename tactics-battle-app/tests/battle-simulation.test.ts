@@ -142,9 +142,15 @@ describe("game/battleSimulation", () => {
     });
 
     expect(result).toMatchObject({ outcome: "DRAW", turns: 0 });
-    expect(result.logs).toEqual([]);
-    expect(result.replayStates).toHaveLength(1);
-    expect(result.outcomeRevealLogCount).toBe(0);
+    expect(result.logs).toHaveLength(1);
+    expect(result.logs[0]).toMatchObject({
+      actionType: "RESULT_DRAW",
+      actorName: "SYSTEM",
+      logMessage: "battle.log.result_draw",
+      turn: 0,
+    });
+    expect(result.replayStates).toHaveLength(2);
+    expect(result.outcomeRevealLogCount).toBe(1);
   });
 
   it("logs poison tick and stun skip when statuses are present", () => {

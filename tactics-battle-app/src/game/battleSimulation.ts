@@ -147,6 +147,19 @@ const createBattleLog = (
   logMessage: message,
 });
 
+const getBattleOutcomeLogKey = (outcome: BattleOutcome): string => {
+  switch (outcome) {
+    case "WIN":
+      return "battle.log.result_win";
+    case "LOSE":
+      return "battle.log.result_lose";
+    case "DRAW":
+      return "battle.log.result_draw";
+    default:
+      return "battle.log.result_draw";
+  }
+};
+
 export const simulateBattle = (params: BattleSimulationParams): BattleSimulationResult => {
   const maxTurns = params.maxTurns ?? 50;
   const rng = createSeededRng(params.seed);
@@ -167,6 +180,32 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
       visualEvents.push(...buildVisualEvents(logIndex));
     }
     replayStates.push(snapshotState(turn, party, enemies));
+  };
+
+  const finalizeBattle = (outcome: BattleOutcome, turn: number): BattleSimulationResult => {
+    pushLog(
+      createBattleLog(
+        params.sessionId,
+        turn,
+        "SYSTEM",
+        `RESULT_${outcome}`,
+        null,
+        0,
+        0,
+        getBattleOutcomeLogKey(outcome)
+      ),
+      turn
+    );
+    return {
+      outcome,
+      turns: turn,
+      logs,
+      visualEvents,
+      finalParty: party,
+      finalEnemies: enemies,
+      replayStates,
+      outcomeRevealLogCount: logs.length,
+    };
   };
 
   for (let turn = 1; turn <= maxTurns; turn += 1) {
@@ -221,16 +260,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
         const aliveParty = getAlive(party);
         const aliveEnemies = getAlive(enemies);
         if (aliveEnemies.length === 0) {
-          return {
-            outcome: "WIN",
-            turns: turn,
-            logs,
-            visualEvents,
-            finalParty: party,
-            finalEnemies: enemies,
-            replayStates,
-            outcomeRevealLogCount: logs.length,
-          };
+          return finalizeBattle("WIN", turn);
         }
         const rules = params.tacticsByCharacter[actor.id] ?? [];
         const resolution = evaluateTactics(
@@ -293,16 +323,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
       } else {
         const aliveParty = getAlive(party);
         if (aliveParty.length === 0) {
-          return {
-            outcome: "LOSE",
-            turns: turn,
-            logs,
-            visualEvents,
-            finalParty: party,
-            finalEnemies: enemies,
-            replayStates,
-            outcomeRevealLogCount: logs.length,
-          };
+          return finalizeBattle("LOSE", turn);
         }
         const target = pickWeightedPartyTarget(aliveParty, rng);
         const aliveEnemies = getAlive(enemies);
@@ -337,30 +358,12 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
       const partyAlive = getAlive(party).length > 0;
       const enemiesAlive = getAlive(enemies).length > 0;
       if (!partyAlive || !enemiesAlive) {
-        return {
-          outcome: partyAlive ? "WIN" : "LOSE",
-          turns: turn,
-          logs,
-          visualEvents,
-          finalParty: party,
-          finalEnemies: enemies,
-          replayStates,
-          outcomeRevealLogCount: logs.length,
-        };
+        return finalizeBattle(partyAlive ? "WIN" : "LOSE", turn);
       }
     }
   }
 
-  return {
-    outcome: "DRAW",
-    turns: maxTurns,
-    logs,
-    visualEvents,
-    finalParty: party,
-    finalEnemies: enemies,
-    replayStates,
-    outcomeRevealLogCount: logs.length,
-  };
+  return finalizeBattle("DRAW", maxTurns);
 };
 
 const createBasicAttackVisualEvents = (params: {
