@@ -25,9 +25,11 @@ describe("game/explorationSession", () => {
       state = advanceExplorationStep(state);
     }
 
+    const discoveredEvent = state.events.find((event) => event.type === "STAIRS_DISCOVERED");
     expect(state.currentFloor).toBe(1);
     expect(state.floorProgressMap[1]?.stairsDiscovered).toBe(true);
-    expect(state.events.some((event) => event.type === "STAIRS_DISCOVERED")).toBe(true);
+    expect(discoveredEvent).toBeTruthy();
+    expect(discoveredEvent?.payload?.toFloor).toBe(2);
     expect(state.status).toBe("RUNNING");
   });
 
@@ -106,9 +108,11 @@ describe("game/explorationSession", () => {
       if (state.events.some((event) => event.type === "STAIRS_REACHED")) break;
     }
 
+    const reachedEvent = state.events.find((event) => event.type === "STAIRS_REACHED");
     expect(stepsSpent).toBeGreaterThanOrEqual(5);
     expect(stepsSpent).toBeLessThanOrEqual(18);
-    expect(state.events.some((event) => event.type === "STAIRS_REACHED")).toBe(true);
+    expect(reachedEvent).toBeTruthy();
+    expect(reachedEvent?.payload?.toFloor).toBe(2);
     expect(state.status).toBe("RUNNING");
   });
 

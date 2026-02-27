@@ -267,6 +267,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
 
   const hasNextFloor = floor < state.dungeon.floors;
   const canProcessStairs = hasNextFloor && !isSpecialBossGateFloor(state, floor);
+  const stairsToFloor = hasNextFloor ? floor + 1 : undefined;
   const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
   const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
   let nextDiscoveredArrivalTargetMap = nextState.discoveredStairsArrivalTargetMap;
@@ -304,7 +305,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
         type: "STAIRS_DISCOVERED",
         floor,
         messageId: "exploration.event.stairs.discovered",
-        payload: { explorationPercent: nextFloorProgress.explorationPercent },
+        payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor: stairsToFloor },
       };
     } else {
       stairsEvent = {
@@ -312,7 +313,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
         type: "STAIRS_REACHED",
         floor,
         messageId: "exploration.event.stairs.reached",
-        payload: { explorationPercent: nextFloorProgress.explorationPercent },
+        payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor: stairsToFloor },
       };
     }
   }
@@ -447,7 +448,10 @@ export const applyBossBattleResult = (
     type: "STAIRS_DISCOVERED",
     floor,
     messageId: "exploration.event.stairs.discovered",
-    payload: { explorationPercent: nextFloorProgress.explorationPercent },
+    payload: {
+      explorationPercent: nextFloorProgress.explorationPercent,
+      toFloor: floor < state.dungeon.floors ? floor + 1 : undefined,
+    },
   });
   nextState = appendEvent(nextState, {
     tick: state.currentStep,

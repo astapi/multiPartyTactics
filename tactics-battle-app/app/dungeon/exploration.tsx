@@ -75,6 +75,8 @@ const formatEvent = (
   locale: ReturnType<typeof useI18n>["locale"],
   t: ReturnType<typeof useI18n>["t"]
 ): string => {
+  const stairsToFloor =
+    typeof event.payload?.toFloor === "number" ? event.payload.toFloor : typeof event.floor === "number" ? event.floor + 1 : "?";
   if (event.type === "TREASURE") {
     return t(event.messageId as any, {
       itemId: getTreasureItemLabel(event.payload?.reward, locale, t),
@@ -90,10 +92,10 @@ const formatEvent = (
     return `B${event.floor ?? "?"}Fでボス「${event.payload?.bossName ?? "?"}」が出現`;
   }
   if (event.type === "STAIRS_DISCOVERED") {
-    return `B${event.floor ?? "?"}Fで下り階段を発見`;
+    return `B${stairsToFloor}Fへの下り階段を発見`;
   }
   if (event.type === "STAIRS_REACHED") {
-    return `B${event.floor ?? "?"}Fの下り階段に到着`;
+    return `B${stairsToFloor}Fへの下り階段に到着`;
   }
   if (event.type === "SHORTCUT") {
     return `発見済み階段でB${event.payload?.toFloor ?? "?"}Fへ移動 (-${event.payload?.stepCost ?? 0}step)`;
