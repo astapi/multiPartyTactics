@@ -9,14 +9,12 @@ import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charac
 import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
-import { DungeonBundleRange, findBundleByFloor, formatBundleLabel } from "@/game/dungeonBundles";
 import { ExplorationEvent, ExplorationResult } from "@/game/exploration";
 import {
   ExplorationSessionState,
   advanceExplorationStep,
   applyBossBattleResult,
   applyBossEncounterDecision,
-  applyFloorDecision,
   createExplorationSession,
   toExplorationResult,
 } from "@/game/explorationSession";
@@ -44,7 +42,7 @@ const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   SHORTCUT: "➜",
   FLOOR_DESCEND: "↓",
   FLOOR_COMPLETE: "✓",
-  BUNDLE_CLEAR: "★",
+  FLOOR_CLEAR: "★",
 };
 
 const getTreasureItemLabel = (
@@ -106,8 +104,8 @@ const formatEvent = (
   if (event.type === "FLOOR_COMPLETE") {
     return `B${event.floor ?? "?"}F の探索度が ${event.payload?.explorationPercent ?? 100}% に到達`;
   }
-  if (event.type === "BUNDLE_CLEAR") {
-    return "区間探索を完了した";
+  if (event.type === "FLOOR_CLEAR") {
+    return "階層探索を完了した";
   }
   return t(event.messageId as any);
 };
@@ -149,9 +147,8 @@ export default function ExplorationScreen() {
   const processedBattleRewardSessionIdsRef = useRef<Set<string>>(new Set());
   const processedTrapDamageEventKeysRef = useRef<Set<string>>(new Set());
   const processedBattlePartySyncSessionIdsRef = useRef<Set<string>>(new Set());
-  const hasAppliedBundleClearRef = useRef(false);
+  const hasAppliedFloorClearRef = useRef(false);
   const awaitingBossBattleReturnRef = useRef(false);
-  const [bundleRange, setBundleRange] = useState<DungeonBundleRange | null>(null);
   const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
   const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
   const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
@@ -204,23 +201,23 @@ export default function ExplorationScreen() {
         const party = partyRecords.map(toUnit);
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
-        const bundle = findBundleByFloor(dungeon.id, floor);
-        const persistedBundleProgress = await dungeonExplorationProgressRepository.listByDungeonAndRange({
-          dungeonId: resolvedDungeonId,
-          startFloor: bundle.startFloor,
-          endFloor: bundle.bossFloor,
-        });
+        const persistedProgressList = await dungeonExplorationProgressRepository.listByDungeon(resolvedDungeonId);
+        const persistedProgress = persistedProgressList.find((row) => row.floor === floor);
         const nextSession = createExplorationSession({
           party,
           dungeon,
-          bundle,
+          floor,
           seed,
           config: { stepsPerRun: explorationStepCount },
-          persistedProgress: persistedBundleProgress.map((row) => ({
-            floor: row.floor,
-            explorationPercent: row.explorationPercent,
-            stairsDiscovered: row.stairsDiscovered,
-          })),
+          persistedProgress: persistedProgress
+            ? [
+                {
+                  floor: persistedProgress.floor,
+                  explorationPercent: persistedProgress.explorationPercent,
+                  stairsDiscovered: persistedProgress.stairsDiscovered,
+                },
+              ]
+            : [],
         });
 
         if (!mounted) return;
@@ -228,11 +225,10 @@ export default function ExplorationScreen() {
         processedBattleRewardSessionIdsRef.current = new Set();
         processedTrapDamageEventKeysRef.current = new Set();
         processedBattlePartySyncSessionIdsRef.current = new Set();
-        hasAppliedBundleClearRef.current = false;
+        hasAppliedFloorClearRef.current = false;
         awaitingBossBattleReturnRef.current = false;
         setPendingExplorationPartySync(null);
         setSession(nextSession);
-        setBundleRange(bundle);
         startExplorationRun({
           explorationSeed: nextSession.seed,
           partyId: resolvedPartyId,
@@ -279,13 +275,12 @@ export default function ExplorationScreen() {
   }, [isFocused, isNavigating, isPaused, session]);
 
   useEffect(() => {
-    if (!session || !bundleRange) return;
+    if (!session) return;
     let cancelled = false;
     const persist = async () => {
       try {
         await dungeonExplorationProgressRepository.upsertMany(
           Object.values(session.floorProgressMap)
-            .filter((row) => row.floor >= bundleRange.startFloor && row.floor <= bundleRange.bossFloor)
             .map((row) => ({
               dungeonId: resolvedDungeonId,
               floor: row.floor,
@@ -303,7 +298,7 @@ export default function ExplorationScreen() {
     return () => {
       cancelled = true;
     };
-  }, [bundleRange, resolvedDungeonId, session]);
+  }, [resolvedDungeonId, session]);
 
   const result = useMemo<ExplorationResult | null>(() => (session ? toExplorationResult(session) : null), [session]);
   const currentTick = session?.currentStep ?? 0;
@@ -471,10 +466,10 @@ export default function ExplorationScreen() {
   ]);
 
   useEffect(() => {
-    if (!session || !bundleRange) return;
-    if (session.status !== "BUNDLE_CLEARED") return;
-    if (hasAppliedBundleClearRef.current) return;
-    hasAppliedBundleClearRef.current = true;
+    if (!session) return;
+    if (session.status !== "FLOOR_CLEARED") return;
+    if (hasAppliedFloorClearRef.current) return;
+    hasAppliedFloorClearRef.current = true;
 
     let cancelled = false;
     const persistClear = async () => {
@@ -483,17 +478,17 @@ export default function ExplorationScreen() {
         const found = list.find((row) => row.dungeonId === resolvedDungeonId);
         const nextProgress = found ?? {
           dungeonId: resolvedDungeonId,
-          lastEnteredFloor: bundleRange.startFloor,
+          lastEnteredFloor: floor,
           maxClearedFloor: 0,
           clearCount: 0,
           updatedAt: "",
         };
         await dungeonRepository.upsert({
           ...nextProgress,
-          lastEnteredFloor: bundleRange.startFloor,
-          maxClearedFloor: Math.max(nextProgress.maxClearedFloor, bundleRange.bossFloor),
+          lastEnteredFloor: floor,
+          maxClearedFloor: Math.max(nextProgress.maxClearedFloor, floor),
           clearCount:
-            bundleRange.bossFloor > nextProgress.maxClearedFloor
+            floor > nextProgress.maxClearedFloor
               ? nextProgress.clearCount
               : nextProgress.clearCount + 1,
         });
@@ -502,7 +497,7 @@ export default function ExplorationScreen() {
         }
       } catch (persistError) {
         if (!cancelled) {
-          console.error("Failed to persist bundle clear:", persistError);
+          console.error("Failed to persist floor clear:", persistError);
         }
       }
     };
@@ -510,7 +505,7 @@ export default function ExplorationScreen() {
     return () => {
       cancelled = true;
     };
-  }, [bundleRange, resolvedDungeonId, session]);
+  }, [floor, resolvedDungeonId, session]);
 
   const displayedEvents = useMemo(
     () => (result ? result.events.filter((event) => event.tick <= currentTick).slice(-30) : []),
@@ -533,11 +528,8 @@ export default function ExplorationScreen() {
   const currentFloorExplorationPercent = currentFloorProgress?.explorationPercent ?? 0;
   const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
   const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
-  const isAwaitingFloorDecision = session?.status === "AWAITING_DECISION";
   const isAwaitingBossDecision = session?.status === "AWAITING_BOSS_DECISION";
-  const canDescend = isAwaitingFloorDecision && !!bundleRange && currentFloor < bundleRange.bossFloor;
-  const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "BUNDLE_CLEARED";
-  const isFloorDecisionModalVisible = isFocused && !isNavigating && isAwaitingFloorDecision && !isExplorationResultVisible;
+  const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "FLOOR_CLEARED";
   const isBossDecisionModalVisible = isFocused && !isNavigating && isAwaitingBossDecision && !isExplorationResultVisible;
   const isExplorationResultModalVisible = isFocused && !isNavigating && !!isExplorationResultVisible;
   const pendingBossEncounter = session?.pendingBossEncounter ?? null;
@@ -641,7 +633,7 @@ export default function ExplorationScreen() {
         <View style={styles.headerSection}>
           <View style={styles.topRow}>
             <Text style={styles.title}>
-              {bundleRange ? `${formatBundleLabel(bundleRange)} 探索` : `B${floor}F - Exploring`}
+              {`B${floor}F 探索`}
             </Text>
             <View style={styles.timeBadge}>
               <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
@@ -652,9 +644,7 @@ export default function ExplorationScreen() {
         <ImageBackground source={HERO_IMAGE} style={styles.hero} imageStyle={styles.heroImage}>
           <View style={styles.heroOverlay}>
             <Text style={styles.heroMain}>
-              {bundleRange
-                ? `${formatBundleLabel(bundleRange)} / 現在 B${currentFloor}F`
-                : `現在 B${currentFloor}F`}
+              {`現在 B${currentFloor}F`}
             </Text>
             <View style={styles.heroProgressWrap}>
               <Text style={styles.heroProgressLabel}>{`${currentTick} / ${result.totalTicks} steps`}</Text>
@@ -712,10 +702,10 @@ export default function ExplorationScreen() {
             <Pressable
               style={[styles.actionButton, styles.pauseButton]}
               onPress={() => setIsPaused((prev) => !prev)}
-              disabled={session?.status === "BUNDLE_CLEARED" || session?.status === "RUN_COMPLETE"}
+              disabled={session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"}
             >
               <Text style={styles.pauseText}>
-                {session?.status === "BUNDLE_CLEARED" || session?.status === "RUN_COMPLETE"
+                {session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"
                   ? "Complete"
                   : isPaused
                     ? "Resume"
@@ -724,36 +714,6 @@ export default function ExplorationScreen() {
             </Pressable>
           </View>
         </View>
-
-        <Modal
-          visible={isFloorDecisionModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => {
-            /* 階段選択中は明示的に選択させる */
-          }}
-        >
-          <View style={styles.decisionModalBackdrop}>
-            <View style={styles.decisionModalSheet}>
-              <Text style={styles.decisionModalTitle}>下り階段に到着しました</Text>
-              <Text style={styles.decisionModalSub}>{`B${currentFloor}Fを降りますか？`}</Text>
-              {canDescend ? (
-                <Pressable
-                  style={styles.decisionTextButton}
-                  onPress={() => setSession((prev) => (prev ? applyFloorDecision(prev, "DESCEND") : prev))}
-                >
-                  <Text style={styles.decisionTextButtonPrimary}>降りる</Text>
-                </Pressable>
-              ) : null}
-              <Pressable
-                style={styles.decisionTextButton}
-                onPress={() => setSession((prev) => (prev ? applyFloorDecision(prev, "CONTINUE") : prev))}
-              >
-                <Text style={styles.decisionTextButtonSecondary}>探索継続</Text>
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
 
         <Modal
           visible={isBossDecisionModalVisible}
@@ -793,10 +753,10 @@ export default function ExplorationScreen() {
           <View style={styles.resultModalBackdrop}>
             <View style={styles.resultModalCard}>
               <Text style={styles.resultModalTitle}>
-                {session?.status === "BUNDLE_CLEARED" ? "区間探索完了" : "探索リザルト"}
+                {session?.status === "FLOOR_CLEARED" ? "階層探索完了" : "探索リザルト"}
               </Text>
               <Text style={styles.resultModalSub}>
-                {bundleRange ? formatBundleLabel(bundleRange) : `B${floor}F`} / {currentTick} step
+                {`B${floor}F / ${currentTick} step`}
               </Text>
 
               <Text style={styles.resultSectionTitle}>探索した階の探索度</Text>
