@@ -183,6 +183,7 @@
   "guild.hire.empty": "No adventurers yet",
   "battle.ui.logTitle": "Battle Log",
   "battle.ui.logWaiting": "Waiting for command...",
+  "battle.ui.speedLabel": "Speed",
   "battle.ui.enemyHp": "HP {hp}/{maxHp}",
   "battle.result.win": "WIN",
   "battle.result.lose": "LOSE",
