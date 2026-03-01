@@ -6,7 +6,7 @@
       "stats": {
         "maxHp": 673,
         "atk": 159,
-        "def": 111,
+        "def": 52,
         "spd": 24,
         "maxMp": 170,
         "mpRegen": 9
@@ -18,7 +18,7 @@
       "stats": {
         "maxHp": 9,
         "atk": 15,
-        "def": 16,
+        "def": 6,
         "spd": 8,
         "maxMp": 7,
         "mpRegen": 1
@@ -30,7 +30,7 @@
       "stats": {
         "maxHp": 528,
         "atk": 121,
-        "def": 77,
+        "def": 42,
         "spd": 17,
         "maxMp": 81,
         "mpRegen": 5
@@ -42,7 +42,7 @@
       "stats": {
         "maxHp": 404,
         "atk": 102,
-        "def": 62,
+        "def": 35,
         "spd": 12,
         "maxMp": 21,
         "mpRegen": 1
@@ -54,7 +54,7 @@
       "stats": {
         "maxHp": 215,
         "atk": 41,
-        "def": 30,
+        "def": 22,
         "spd": 13,
         "maxMp": 130,
         "mpRegen": 7
@@ -66,7 +66,7 @@
       "stats": {
         "maxHp": 98,
         "atk": 39,
-        "def": 24,
+        "def": 17,
         "spd": 10,
         "maxMp": 0,
         "mpRegen": 0
@@ -78,7 +78,7 @@
       "stats": {
         "maxHp": 171,
         "atk": 57,
-        "def": 32,
+        "def": 24,
         "spd": 9,
         "maxMp": 70,
         "mpRegen": 5
@@ -90,7 +90,7 @@
       "stats": {
         "maxHp": 257,
         "atk": 71,
-        "def": 51,
+        "def": 33,
         "spd": 12,
         "maxMp": 98,
         "mpRegen": 7
@@ -102,7 +102,7 @@
       "stats": {
         "maxHp": 162,
         "atk": 47,
-        "def": 32,
+        "def": 24,
         "spd": 9,
         "maxMp": 50,
         "mpRegen": 4
@@ -114,7 +114,7 @@
       "stats": {
         "maxHp": 216,
         "atk": 49,
-        "def": 49,
+        "def": 32,
         "spd": 8,
         "maxMp": 56,
         "mpRegen": 4
@@ -126,7 +126,7 @@
       "stats": {
         "maxHp": 228,
         "atk": 63,
-        "def": 46,
+        "def": 30,
         "spd": 11,
         "maxMp": 87,
         "mpRegen": 6
@@ -138,7 +138,7 @@
       "stats": {
         "maxHp": 316,
         "atk": 84,
-        "def": 48,
+        "def": 32,
         "spd": 17,
         "maxMp": 55,
         "mpRegen": 3
@@ -150,7 +150,7 @@
       "stats": {
         "maxHp": 187,
         "atk": 46,
-        "def": 28,
+        "def": 22,
         "spd": 15,
         "maxMp": 70,
         "mpRegen": 4
@@ -162,7 +162,7 @@
       "stats": {
         "maxHp": 242,
         "atk": 70,
-        "def": 39,
+        "def": 28,
         "spd": 14,
         "maxMp": 43,
         "mpRegen": 3
@@ -174,7 +174,7 @@
       "stats": {
         "maxHp": 446,
         "atk": 114,
-        "def": 63,
+        "def": 38,
         "spd": 24,
         "maxMp": 72,
         "mpRegen": 5
@@ -186,7 +186,7 @@
       "stats": {
         "maxHp": 306,
         "atk": 76,
-        "def": 50,
+        "def": 33,
         "spd": 13,
         "maxMp": 63,
         "mpRegen": 4
@@ -198,7 +198,7 @@
       "stats": {
         "maxHp": 597,
         "atk": 137,
-        "def": 87,
+        "def": 46,
         "spd": 19,
         "maxMp": 91,
         "mpRegen": 5
@@ -210,7 +210,7 @@
       "stats": {
         "maxHp": 12,
         "atk": 18,
-        "def": 5,
+        "def": 4,
         "spd": 15,
         "maxMp": 0,
         "mpRegen": 0
@@ -222,7 +222,7 @@
       "stats": {
         "maxHp": 10,
         "atk": 14,
-        "def": 6,
+        "def": 5,
         "spd": 14,
         "maxMp": 0,
         "mpRegen": 0
@@ -234,7 +234,7 @@
       "stats": {
         "maxHp": 7,
         "atk": 18,
-        "def": 8,
+        "def": 6,
         "spd": 14,
         "maxMp": 10,
         "mpRegen": 1
@@ -246,7 +246,7 @@
       "stats": {
         "maxHp": 15,
         "atk": 19,
-        "def": 7,
+        "def": 6,
         "spd": 16,
         "maxMp": 7,
         "mpRegen": 1
@@ -258,7 +258,7 @@
       "stats": {
         "maxHp": 14,
         "atk": 14,
-        "def": 6,
+        "def": 5,
         "spd": 14,
         "maxMp": 12,
         "mpRegen": 1
@@ -270,7 +270,7 @@
       "stats": {
         "maxHp": 14,
         "atk": 16,
-        "def": 6,
+        "def": 5,
         "spd": 18,
         "maxMp": 6,
         "mpRegen": 1
@@ -282,7 +282,7 @@
       "stats": {
         "maxHp": 17,
         "atk": 18,
-        "def": 9,
+        "def": 7,
         "spd": 15,
         "maxMp": 12,
         "mpRegen": 1
@@ -294,7 +294,7 @@
       "stats": {
         "maxHp": 18,
         "atk": 21,
-        "def": 9,
+        "def": 7,
         "spd": 13,
         "maxMp": 7,
         "mpRegen": 1
@@ -306,7 +306,7 @@
       "stats": {
         "maxHp": 386,
         "atk": 99,
-        "def": 55,
+        "def": 34,
         "spd": 20,
         "maxMp": 62,
         "mpRegen": 4
@@ -318,7 +318,7 @@
       "stats": {
         "maxHp": 230,
         "atk": 63,
-        "def": 40,
+        "def": 28,
         "spd": 9,
         "maxMp": 16,
         "mpRegen": 1
@@ -330,7 +330,7 @@
       "stats": {
         "maxHp": 20,
         "atk": 24,
-        "def": 10,
+        "def": 8,
         "spd": 15,
         "maxMp": 8,
         "mpRegen": 1
@@ -342,7 +342,7 @@
       "stats": {
         "maxHp": 124,
         "atk": 44,
-        "def": 43,
+        "def": 25,
         "spd": 11,
         "maxMp": 17,
         "mpRegen": 1
@@ -354,7 +354,7 @@
       "stats": {
         "maxHp": 21,
         "atk": 22,
-        "def": 10,
+        "def": 8,
         "spd": 15,
         "maxMp": 8,
         "mpRegen": 1
@@ -366,7 +366,7 @@
       "stats": {
         "maxHp": 13,
         "atk": 13,
-        "def": 6,
+        "def": 5,
         "spd": 15,
         "maxMp": 12,
         "mpRegen": 1
@@ -378,7 +378,7 @@
       "stats": {
         "maxHp": 14,
         "atk": 15,
-        "def": 6,
+        "def": 5,
         "spd": 19,
         "maxMp": 6,
         "mpRegen": 1
@@ -390,7 +390,7 @@
       "stats": {
         "maxHp": 17,
         "atk": 20,
-        "def": 8,
+        "def": 6,
         "spd": 14,
         "maxMp": 7,
         "mpRegen": 1
@@ -402,7 +402,7 @@
       "stats": {
         "maxHp": 14,
         "atk": 14,
-        "def": 7,
+        "def": 5,
         "spd": 15,
         "maxMp": 11,
         "mpRegen": 1
@@ -414,7 +414,7 @@
       "stats": {
         "maxHp": 198,
         "atk": 55,
-        "def": 32,
+        "def": 25,
         "spd": 14,
         "maxMp": 43,
         "mpRegen": 3
@@ -426,7 +426,7 @@
       "stats": {
         "maxHp": 130,
         "atk": 23,
-        "def": 17,
+        "def": 14,
         "spd": 11,
         "maxMp": 110,
         "mpRegen": 6
@@ -438,7 +438,7 @@
       "stats": {
         "maxHp": 243,
         "atk": 46,
-        "def": 34,
+        "def": 25,
         "spd": 15,
         "maxMp": 147,
         "mpRegen": 8
@@ -450,7 +450,7 @@
       "stats": {
         "maxHp": 145,
         "atk": 26,
-        "def": 19,
+        "def": 16,
         "spd": 12,
         "maxMp": 122,
         "mpRegen": 7
@@ -462,7 +462,7 @@
       "stats": {
         "maxHp": 95,
         "atk": 50,
-        "def": 28,
+        "def": 19,
         "spd": 18,
         "maxMp": 16,
         "mpRegen": 1
@@ -474,7 +474,7 @@
       "stats": {
         "maxHp": 75,
         "atk": 39,
-        "def": 27,
+        "def": 18,
         "spd": 13,
         "maxMp": 12,
         "mpRegen": 1
@@ -486,7 +486,7 @@
       "stats": {
         "maxHp": 51,
         "atk": 33,
-        "def": 16,
+        "def": 12,
         "spd": 15,
         "maxMp": 11,
         "mpRegen": 1
@@ -498,7 +498,7 @@
       "stats": {
         "maxHp": 59,
         "atk": 30,
-        "def": 20,
+        "def": 14,
         "spd": 14,
         "maxMp": 18,
         "mpRegen": 1
@@ -510,7 +510,7 @@
       "stats": {
         "maxHp": 68,
         "atk": 41,
-        "def": 23,
+        "def": 16,
         "spd": 14,
         "maxMp": 12,
         "mpRegen": 1
@@ -522,7 +522,7 @@
       "stats": {
         "maxHp": 59,
         "atk": 36,
-        "def": 20,
+        "def": 14,
         "spd": 12,
         "maxMp": 11,
         "mpRegen": 1
@@ -534,7 +534,7 @@
       "stats": {
         "maxHp": 175,
         "atk": 62,
-        "def": 39,
+        "def": 25,
         "spd": 13,
         "maxMp": 12,
         "mpRegen": 1
@@ -546,7 +546,7 @@
       "stats": {
         "maxHp": 183,
         "atk": 70,
-        "def": 32,
+        "def": 21,
         "spd": 14,
         "maxMp": 11,
         "mpRegen": 1
@@ -558,7 +558,7 @@
       "stats": {
         "maxHp": 242,
         "atk": 76,
-        "def": 48,
+        "def": 30,
         "spd": 16,
         "maxMp": 16,
         "mpRegen": 1
@@ -570,7 +570,7 @@
       "stats": {
         "maxHp": 166,
         "atk": 52,
-        "def": 40,
+        "def": 25,
         "spd": 10,
         "maxMp": 11,
         "mpRegen": 1
@@ -582,7 +582,7 @@
       "stats": {
         "maxHp": 151,
         "atk": 46,
-        "def": 34,
+        "def": 22,
         "spd": 13,
         "maxMp": 17,
         "mpRegen": 1
@@ -594,7 +594,7 @@
       "stats": {
         "maxHp": 152,
         "atk": 54,
-        "def": 34,
+        "def": 22,
         "spd": 11,
         "maxMp": 11,
         "mpRegen": 1
@@ -606,7 +606,7 @@
       "stats": {
         "maxHp": 140,
         "atk": 50,
-        "def": 49,
+        "def": 28,
         "spd": 12,
         "maxMp": 19,
         "mpRegen": 1
@@ -618,7 +618,7 @@
       "stats": {
         "maxHp": 58,
         "atk": 42,
-        "def": 17,
+        "def": 12,
         "spd": 14,
         "maxMp": 9,
         "mpRegen": 1
@@ -630,7 +630,7 @@
       "stats": {
         "maxHp": 69,
         "atk": 40,
-        "def": 27,
+        "def": 18,
         "spd": 13,
         "maxMp": 12,
         "mpRegen": 1
@@ -642,7 +642,7 @@
       "stats": {
         "maxHp": 42,
         "atk": 29,
-        "def": 14,
+        "def": 10,
         "spd": 14,
         "maxMp": 9,
         "mpRegen": 1
@@ -654,7 +654,7 @@
       "stats": {
         "maxHp": 37,
         "atk": 21,
-        "def": 13,
+        "def": 10,
         "spd": 12,
         "maxMp": 15,
         "mpRegen": 1
@@ -666,7 +666,7 @@
       "stats": {
         "maxHp": 48,
         "atk": 27,
-        "def": 17,
+        "def": 12,
         "spd": 13,
         "maxMp": 15,
         "mpRegen": 1
@@ -678,7 +678,7 @@
       "stats": {
         "maxHp": 61,
         "atk": 35,
-        "def": 24,
+        "def": 16,
         "spd": 12,
         "maxMp": 10,
         "mpRegen": 1
@@ -690,7 +690,7 @@
       "stats": {
         "maxHp": 48,
         "atk": 32,
-        "def": 18,
+        "def": 13,
         "spd": 11,
         "maxMp": 9,
         "mpRegen": 1
@@ -702,7 +702,7 @@
       "stats": {
         "maxHp": 10,
         "atk": 12,
-        "def": 6,
+        "def": 4,
         "spd": 13,
         "maxMp": 0,
         "mpRegen": 0
@@ -714,7 +714,7 @@
       "stats": {
         "maxHp": 118,
         "atk": 21,
-        "def": 12,
+        "def": 9,
         "spd": 11,
         "maxMp": 16,
         "mpRegen": 2
@@ -726,7 +726,7 @@
       "stats": {
         "maxHp": 135,
         "atk": 49,
-        "def": 36,
+        "def": 22,
         "spd": 10,
         "maxMp": 0,
         "mpRegen": 0
@@ -738,7 +738,7 @@
       "stats": {
         "maxHp": 10,
         "atk": 14,
-        "def": 6,
+        "def": 5,
         "spd": 20,
         "maxMp": 0,
         "mpRegen": 0
@@ -750,7 +750,7 @@
       "stats": {
         "maxHp": 21,
         "atk": 21,
-        "def": 11,
+        "def": 8,
         "spd": 10,
         "maxMp": 0,
         "mpRegen": 0
@@ -762,7 +762,7 @@
       "stats": {
         "maxHp": 30,
         "atk": 25,
-        "def": 18,
+        "def": 12,
         "spd": 9,
         "maxMp": 0,
         "mpRegen": 0
@@ -774,7 +774,7 @@
       "stats": {
         "maxHp": 22,
         "atk": 17,
-        "def": 11,
+        "def": 8,
         "spd": 10,
         "maxMp": 0,
         "mpRegen": 0
@@ -786,7 +786,7 @@
       "stats": {
         "maxHp": 24,
         "atk": 23,
-        "def": 13,
+        "def": 9,
         "spd": 9,
         "maxMp": 0,
         "mpRegen": 0
@@ -798,7 +798,7 @@
       "stats": {
         "maxHp": 5,
         "atk": 12,
-        "def": 14,
+        "def": 4,
         "spd": 7,
         "maxMp": 8,
         "mpRegen": 1
@@ -810,7 +810,7 @@
       "stats": {
         "maxHp": 108,
         "atk": 39,
-        "def": 38,
+        "def": 22,
         "spd": 9,
         "maxMp": 14,
         "mpRegen": 1
@@ -822,7 +822,7 @@
       "stats": {
         "maxHp": 317,
         "atk": 80,
-        "def": 60,
+        "def": 33,
         "spd": 9,
         "maxMp": 17,
         "mpRegen": 1
@@ -834,7 +834,7 @@
       "stats": {
         "maxHp": 9,
         "atk": 12,
-        "def": 14,
+        "def": 5,
         "spd": 8,
         "maxMp": 9,
         "mpRegen": 1
@@ -846,7 +846,7 @@
       "stats": {
         "maxHp": 291,
         "atk": 83,
-        "def": 51,
+        "def": 30,
         "spd": 10,
         "maxMp": 17,
         "mpRegen": 1
@@ -858,7 +858,7 @@
       "stats": {
         "maxHp": 124,
         "atk": 52,
-        "def": 30,
+        "def": 20,
         "spd": 11,
         "maxMp": 0,
         "mpRegen": 0
@@ -870,7 +870,7 @@
       "stats": {
         "maxHp": 340,
         "atk": 84,
-        "def": 56,
+        "def": 36,
         "spd": 14,
         "maxMp": 70,
         "mpRegen": 4
