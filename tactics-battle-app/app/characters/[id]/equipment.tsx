@@ -7,6 +7,7 @@ import { characterEquipmentRepository } from "@/db/repositories/characterEquipme
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { canCharacterEquipItem, getEquipSlotForCategory } from "@/game/equipment/equipmentRules";
+import { formatStatSummary } from "@/game/equipment/equipmentStatsService";
 import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
 import { useI18n } from "@/i18n";
 import type { EquipmentSlot, EquipmentStackRecord } from "@/types/equipment";
@@ -24,13 +25,14 @@ const colors = {
   accent: "#2563EB",
 } as const;
 
-type EquipTab = "weapon" | "armor" | "accessory";
+type EquipTab = "weapon" | "armor";
 
 type EquippedBySlot = Awaited<ReturnType<typeof characterEquipmentRepository.getByCharacterId>>;
 
 type InventoryViewRow = EquipmentStackRecord & {
   displayName: { jp: string; en: string };
   slotType: EquipmentSlot | null;
+  statSummary: string;
 };
 
 const getSlotIcon = (slot: EquipTab) => {
@@ -84,16 +86,19 @@ export default function EquipmentChangeScreen() {
   );
 
   const inventoryRows = useMemo<InventoryViewRow[]>(() => {
-    return inventoryStacks.map((stack) => ({
-      ...stack,
-      displayName: buildEquipmentDisplayName(stack.baseItemId, stack.mutationPrefixId),
-      slotType: getEquipSlotForCategory(getEquipmentById(stack.baseItemId).category),
-    }));
-  }, [inventoryStacks]);
+    return inventoryStacks.map((stack) => {
+      const item = getEquipmentById(stack.baseItemId);
+      return {
+        ...stack,
+        displayName: buildEquipmentDisplayName(stack.baseItemId, stack.mutationPrefixId),
+        slotType: getEquipSlotForCategory(item.category),
+        statSummary: formatStatSummary(item.stats, locale),
+      };
+    });
+  }, [inventoryStacks, locale]);
 
   const filteredInventory = useMemo(() => {
     if (!character) return [] as InventoryViewRow[];
-    if (tab === "accessory") return [] as InventoryViewRow[];
     return inventoryRows
       .filter((row) => {
         const item = getEquipmentById(row.baseItemId);
@@ -106,16 +111,20 @@ export default function EquipmentChangeScreen() {
       });
   }, [character, inventoryRows, locale, tab]);
 
-  const currentEquipped = tab === "accessory" ? null : equippedBySlot[tab];
+  const currentEquipped = equippedBySlot[tab];
   const currentEquippedName = useMemo(() => {
     if (!currentEquipped) return locale === "ja" ? "未装備" : "Unequipped";
     const name = buildEquipmentDisplayName(currentEquipped.baseItemId, currentEquipped.mutationPrefixId);
     return locale === "ja" ? name.jp : name.en;
   }, [currentEquipped, locale]);
+  const currentEquippedStatSummary = useMemo(() => {
+    if (!currentEquipped) return "--";
+    return formatStatSummary(getEquipmentById(currentEquipped.baseItemId).stats, locale) || "--";
+  }, [currentEquipped, locale]);
 
   const onEquip = useCallback(
     async (row: InventoryViewRow) => {
-      if (!id || tab === "accessory" || busy) return;
+      if (!id || busy) return;
       setBusy(true);
       try {
         await characterEquipmentRepository.equip({
@@ -139,7 +148,7 @@ export default function EquipmentChangeScreen() {
   );
 
   const onUnequip = useCallback(async () => {
-    if (!id || tab === "accessory" || busy) return;
+    if (!id || busy) return;
     setBusy(true);
     try {
       await characterEquipmentRepository.unequip({ characterId: id, slotType: tab });
@@ -155,7 +164,6 @@ export default function EquipmentChangeScreen() {
     }
   }, [busy, id, load, locale, tab]);
 
-  const accessoryMessage = locale === "ja" ? "アクセサリは未実装です。" : "Accessory slot is not implemented yet.";
   const emptyInventoryMessage = locale === "ja" ? "装備可能な所持装備がありません。" : "No compatible equipment in inventory.";
 
   return (
@@ -179,10 +187,6 @@ export default function EquipmentChangeScreen() {
           <Text style={[styles.tabText, tab === "armor" ? styles.tabTextActive : null]}>{t("equip.tab.armor")}</Text>
           <View style={[styles.tabBorder, tab === "armor" ? styles.tabBorderActive : null]} />
         </Pressable>
-        <Pressable style={styles.tabItem} onPress={() => setTab("accessory")}>
-          <Text style={[styles.tabText, tab === "accessory" ? styles.tabTextActive : null]}>{t("equip.tab.accessory")}</Text>
-          <View style={[styles.tabBorder, tab === "accessory" ? styles.tabBorderActive : null]} />
-        </Pressable>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -192,6 +196,7 @@ export default function EquipmentChangeScreen() {
           <View style={styles.currentTextWrap}>
             <Text style={styles.currentName}>{currentEquippedName}</Text>
             <Text style={styles.currentSub}>{currentEquipped ? t("equip.equipped") : (locale === "ja" ? "未装備" : "Unequipped")}</Text>
+            <Text style={styles.currentSub}>{currentEquippedStatSummary}</Text>
           </View>
         </View>
 
@@ -201,8 +206,6 @@ export default function EquipmentChangeScreen() {
         <View style={styles.listWrap}>
           {loading ? (
             <Text style={styles.helperText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
-          ) : tab === "accessory" ? (
-            <Text style={styles.helperText}>{accessoryMessage}</Text>
           ) : filteredInventory.length === 0 ? (
             <Text style={styles.helperText}>{emptyInventoryMessage}</Text>
           ) : (
@@ -213,6 +216,7 @@ export default function EquipmentChangeScreen() {
                   <View style={styles.itemIcon}>{getInventoryIcon(tab)}</View>
                   <View style={styles.currentTextWrap}>
                     <Text style={styles.itemName}>{itemName}</Text>
+                    <Text style={styles.itemSub}>{row.statSummary || "--"}</Text>
                     <Text style={styles.itemSub}>{`${t("equip.tap")} ×${row.quantity}`}</Text>
                   </View>
                 </Pressable>
@@ -220,13 +224,11 @@ export default function EquipmentChangeScreen() {
             })
           )}
 
-          {tab !== "accessory" ? (
-            <View style={styles.unequipRow}>
-              <Pressable onPress={() => void onUnequip()} disabled={busy || !currentEquipped}>
-                <Text style={[styles.unequipText, !currentEquipped ? styles.unequipDisabled : null]}>{t("equip.unequip")}</Text>
-              </Pressable>
-            </View>
-          ) : null}
+          <View style={styles.unequipRow}>
+            <Pressable onPress={() => void onUnequip()} disabled={busy || !currentEquipped}>
+              <Text style={[styles.unequipText, !currentEquipped ? styles.unequipDisabled : null]}>{t("equip.unequip")}</Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link, Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Gem, GripVertical, Plus, RefreshCw, Shield, Sword } from "lucide-react-native";
+import { ArrowLeft, GripVertical, Plus, RefreshCw, Shield, Sword } from "lucide-react-native";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getClassById } from "@/constants/classes";
 import { getConstellationDisplayName } from "@/constants/constellations";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
-import { buildEquipmentDisplayName } from "@/game/loot/equipmentMasterService";
+import { computeCharacterDerivedStats, formatStatSummary } from "@/game/equipment/equipmentStatsService";
+import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
 import {
   getConditionTypeLabel,
   getSkillIdDisplayName,
@@ -43,7 +44,7 @@ const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
 const PRIORITY_BADGE_COLORS = ["#333333", "#666666", "#999999"] as const;
 
 type EquipmentRowView = {
-  key: "weapon" | "armor" | "accessory";
+  key: "weapon" | "armor";
   slotLabel: string;
   itemName: string;
   hint: string;
@@ -83,6 +84,15 @@ export default function CharacterDetailScreen() {
     locale === "ja"
       ? "ルールは順番に実行されます。ドラッグで優先度を並び替え。"
       : "Rules are executed in order. Drag to reorder priority.";
+  const statBreakdownTemplate =
+    locale === "ja"
+      ? (base: number, bonus: number) => `基礎 ${base} / 装備 ${bonus >= 0 ? `+${bonus}` : bonus}`
+      : (base: number, bonus: number) => `Base ${base} / Equip ${bonus >= 0 ? `+${bonus}` : bonus}`;
+
+  const derivedStats = useMemo(
+    () => (character ? computeCharacterDerivedStats(character, equippedBySlot) : null),
+    [character, equippedBySlot]
+  );
 
   const weaponLabel = useMemo(() => {
     const weapon = equippedBySlot.weapon;
@@ -104,22 +114,20 @@ export default function CharacterDetailScreen() {
         key: "weapon",
         slotLabel: "Weapon",
         itemName: weaponLabel,
-        hint: equippedBySlot.weapon ? "ATK" : "--",
+        hint: equippedBySlot.weapon
+          ? formatStatSummary(getEquipmentById(equippedBySlot.weapon.baseItemId).stats, locale) || "--"
+          : "--",
       },
       {
         key: "armor",
         slotLabel: "Armor",
         itemName: armorLabel,
-        hint: equippedBySlot.armor ? "DEF" : "--",
-      },
-      {
-        key: "accessory",
-        slotLabel: "Accessory",
-        itemName: unequippedLabel,
-        hint: "--",
+        hint: equippedBySlot.armor
+          ? formatStatSummary(getEquipmentById(equippedBySlot.armor.baseItemId).stats, locale) || "--"
+          : "--",
       },
     ],
-    [armorLabel, equippedBySlot.armor, equippedBySlot.weapon, unequippedLabel, weaponLabel]
+    [armorLabel, equippedBySlot.armor, equippedBySlot.weapon, locale, weaponLabel]
   );
 
   if (!character) {
@@ -134,6 +142,44 @@ export default function CharacterDetailScreen() {
   }
 
   const classInfo = getClassById(character.classId);
+  const statCards = [
+    {
+      key: "hp",
+      label: "HP",
+      total: derivedStats?.total.hp ?? character.baseMaxHp,
+      breakdown: statBreakdownTemplate(character.baseMaxHp, derivedStats?.bonus.hp ?? 0),
+    },
+    {
+      key: "mp",
+      label: "MP",
+      total: derivedStats?.total.mp ?? character.baseMaxMp,
+      breakdown: statBreakdownTemplate(character.baseMaxMp, derivedStats?.bonus.mp ?? 0),
+    },
+    {
+      key: "atk",
+      label: "ATK",
+      total: derivedStats?.total.atk ?? character.baseAtk,
+      breakdown: statBreakdownTemplate(character.baseAtk, derivedStats?.bonus.atk ?? 0),
+    },
+    {
+      key: "def",
+      label: "DEF",
+      total: derivedStats?.total.def ?? character.baseDef,
+      breakdown: statBreakdownTemplate(character.baseDef, derivedStats?.bonus.def ?? 0),
+    },
+    {
+      key: "spd",
+      label: "SPD",
+      total: derivedStats?.total.spd ?? character.baseSpd,
+      breakdown: statBreakdownTemplate(character.baseSpd, derivedStats?.bonus.spd ?? 0),
+    },
+    {
+      key: "mpRegen",
+      label: locale === "ja" ? "MP回復" : "MP Regen",
+      total: derivedStats?.total.mpRegen ?? character.baseMpRegen,
+      breakdown: statBreakdownTemplate(character.baseMpRegen, derivedStats?.bonus.mpRegen ?? 0),
+    },
+  ] as const;
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -169,22 +215,15 @@ export default function CharacterDetailScreen() {
         </View>
 
         <View style={styles.statRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>HP</Text>
-            <Text style={styles.statValue}>{character.baseMaxHp}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>MP</Text>
-            <Text style={styles.statValue}>{character.baseMaxMp}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>ATK</Text>
-            <Text style={styles.statValue}>{character.baseAtk}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>DEF</Text>
-            <Text style={styles.statValue}>{character.baseDef}</Text>
-          </View>
+          {statCards.map((stat) => (
+            <View key={stat.key} style={styles.statCard}>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+              <Text style={styles.statValue}>{stat.total}</Text>
+              <Text style={styles.statSub} numberOfLines={1}>
+                {stat.breakdown}
+              </Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.section}>
@@ -200,13 +239,7 @@ export default function CharacterDetailScreen() {
           <View style={styles.sectionList}>
             {equipmentRows.map((row) => {
               const leftIcon =
-                row.key === "weapon" ? (
-                  <Sword size={14} stroke="#ffffff" />
-                ) : row.key === "armor" ? (
-                  <Shield size={14} stroke="#ffffff" />
-                ) : (
-                  <Gem size={14} stroke="#ffffff" />
-                );
+                row.key === "weapon" ? <Sword size={14} stroke="#ffffff" /> : <Shield size={14} stroke="#ffffff" />;
 
               return (
                 <View key={row.key} style={styles.equipmentRowCard}>
@@ -355,12 +388,13 @@ const styles = StyleSheet.create({
   },
   statRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     paddingHorizontal: 20,
   },
   statCard: {
-    flex: 1,
-    alignItems: "center",
+    width: "48%",
+    alignItems: "flex-start",
     gap: 4,
     borderRadius: 12,
     borderWidth: 1,
@@ -379,6 +413,10 @@ const styles = StyleSheet.create({
     color: colors.textStrong,
     fontSize: 18,
     fontWeight: "700",
+  },
+  statSub: {
+    color: colors.textTertiary,
+    fontSize: 10,
   },
   section: {
     paddingTop: 14,

@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { ArrowLeft, Package, Shield, Sword } from "lucide-react-native";
+import { ArrowLeft, Shield, Sword } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
+import { formatStatSummary } from "@/game/equipment/equipmentStatsService";
 import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
 import { useI18n } from "@/i18n";
 import type { EquipmentCategory, EquipmentSlot, EquipmentStackRecord } from "@/types/equipment";
@@ -18,12 +19,10 @@ const colors = {
   textSecondary: "#666666",
   textTertiary: "#888888",
   borderDefault: "#e0e0e0",
-  iconSecondary: "#999999",
   chipActiveBg: "#111827",
   chipActiveText: "#ffffff",
 } as const;
 
-type InventoryTab = "items" | "equipment";
 type CategoryFilter = "all" | EquipmentCategory;
 
 type OwnedEquipmentRow = {
@@ -32,6 +31,7 @@ type OwnedEquipmentRow = {
   displayName: string;
   quantity: number;
   source: string;
+  statSummary: string;
 };
 
 type EquippedEquipmentRow = {
@@ -40,6 +40,7 @@ type EquippedEquipmentRow = {
   displayName: string;
   characterName: string;
   slotType: EquipmentSlot;
+  statSummary: string;
 };
 
 const CATEGORY_ORDER: EquipmentCategory[] = [
@@ -66,7 +67,6 @@ const groupByCategory = <T extends { category: EquipmentCategory }>(rows: T[]) =
 export default function InventoryScreen() {
   const router = useRouter();
   const { locale } = useI18n();
-  const [tab, setTab] = useState<InventoryTab>("equipment");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [ownedEquipment, setOwnedEquipment] = useState<OwnedEquipmentRow[]>([]);
   const [equippedEquipment, setEquippedEquipment] = useState<EquippedEquipmentRow[]>([]);
@@ -75,16 +75,6 @@ export default function InventoryScreen() {
   const strings = useMemo(
     () => ({
       title: locale === "ja" ? "インベントリ" : "Inventory",
-      tabs: {
-        items: locale === "ja" ? "アイテム" : "Items",
-        equipment: locale === "ja" ? "装備" : "Equipment",
-      },
-      itemsNotImplemented: locale === "ja"
-        ? "アイテム所持の実データ表示はまだ未実装です。"
-        : "Item inventory data view is not implemented yet.",
-      itemsHint: locale === "ja"
-        ? "現在は装備インベントリのみ管理されています。"
-        : "Currently only equipment inventory is tracked.",
       categoryAll: locale === "ja" ? "すべて" : "All",
       ownedSection: locale === "ja" ? "所持装備" : "Owned Equipment",
       equippedSection: locale === "ja" ? "装備中" : "Equipped",
@@ -103,9 +93,9 @@ export default function InventoryScreen() {
       const mapJa: Record<EquipmentCategory, string> = {
         one_handed_sword: "剣",
         dagger: "短剣",
-        throwing_knife: "スローナイフ",
+        throwing_knife: "投刃",
         two_handed_axe: "両手斧",
-        two_handed_hammer: "両手ハンマー",
+        two_handed_hammer: "両手槌",
         bow: "弓",
         staff: "杖",
         shield: "盾",
@@ -154,33 +144,31 @@ export default function InventoryScreen() {
           displayName: locale === "ja" ? display.jp : display.en,
           quantity: stack.quantity,
           source: item.source,
+          statSummary: formatStatSummary(item.stats, locale),
         };
       });
 
-      const equippedPerCharacter = await Promise.all(
-        characters.map(async (character) => ({
-          character,
-          equipment: await characterEquipmentRepository.getByCharacterId(character.id),
-        }))
+      const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
+        characters.map((character) => character.id)
       );
-
-      const equippedRows: EquippedEquipmentRow[] = equippedPerCharacter.flatMap(({ character, equipment }) => {
-        const rows: EquippedEquipmentRow[] = [];
+      const equippedRows: EquippedEquipmentRow[] = [];
+      for (const character of characters) {
+        const equipment = equippedByCharacterId[character.id] ?? {};
         for (const slotType of ["weapon", "armor"] as const) {
           const entry = equipment[slotType];
           if (!entry) continue;
           const item = getEquipmentById(entry.baseItemId);
           const display = buildEquipmentDisplayName(entry.baseItemId, entry.mutationPrefixId);
-          rows.push({
+          equippedRows.push({
             key: `${character.id}:${slotType}`,
             category: item.category,
             displayName: locale === "ja" ? display.jp : display.en,
             characterName: character.name,
             slotType,
+            statSummary: formatStatSummary(item.stats, locale),
           });
         }
-        return rows;
-      });
+      }
 
       setOwnedEquipment(ownedRows);
       setEquippedEquipment(equippedRows);
@@ -245,84 +233,63 @@ export default function InventoryScreen() {
         </View>
       </View>
 
-      <View style={styles.tabRow}>
-        <Pressable style={styles.tabButton} onPress={() => setTab("items")}>
-          <Text style={[styles.tabText, tab === "items" ? styles.tabTextActive : null]}>{strings.tabs.items}</Text>
-          <View style={[styles.tabBorder, tab === "items" ? styles.tabBorderActive : null]} />
-        </Pressable>
-        <Pressable style={styles.tabButton} onPress={() => setTab("equipment")}>
-          <Text style={[styles.tabText, tab === "equipment" ? styles.tabTextActive : null]}>{strings.tabs.equipment}</Text>
-          <View style={[styles.tabBorder, tab === "equipment" ? styles.tabBorderActive : null]} />
-        </Pressable>
-      </View>
-
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {tab === "items" ? (
-          <View style={styles.card}>
-            <View style={styles.rowIcon}><Package size={16} stroke={colors.textSecondary} /></View>
-            <View style={styles.cardTextWrap}>
-              <Text style={styles.cardTitle}>{strings.itemsNotImplemented}</Text>
-              <Text style={styles.cardSub}>{strings.itemsHint}</Text>
-            </View>
-          </View>
-        ) : (
-          <>
-            <View style={styles.filterWrap}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
-                <Pressable
-                  style={[styles.filterChip, categoryFilter === "all" ? styles.filterChipActive : null]}
-                  onPress={() => setCategoryFilter("all")}
-                >
-                  <Text style={[styles.filterChipText, categoryFilter === "all" ? styles.filterChipTextActive : null]}>{strings.categoryAll}</Text>
-                </Pressable>
-                {categories.map((category) => (
-                  <Pressable
-                    key={category}
-                    style={[styles.filterChip, categoryFilter === category ? styles.filterChipActive : null]}
-                    onPress={() => setCategoryFilter(category)}
-                  >
-                    <Text style={[styles.filterChipText, categoryFilter === category ? styles.filterChipTextActive : null]}>{categoryLabel(category)}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
+        <View style={styles.filterWrap}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
+            <Pressable
+              style={[styles.filterChip, categoryFilter === "all" ? styles.filterChipActive : null]}
+              onPress={() => setCategoryFilter("all")}
+            >
+              <Text style={[styles.filterChipText, categoryFilter === "all" ? styles.filterChipTextActive : null]}>{strings.categoryAll}</Text>
+            </Pressable>
+            {categories.map((category) => (
+              <Pressable
+                key={category}
+                style={[styles.filterChip, categoryFilter === category ? styles.filterChipActive : null]}
+                onPress={() => setCategoryFilter(category)}
+              >
+                <Text style={[styles.filterChipText, categoryFilter === category ? styles.filterChipTextActive : null]}>{categoryLabel(category)}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{strings.ownedSection}</Text>
-              {loading ? (
-                <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
-              ) : (
-                renderCategoryGroups(ownedGroups, (row) => (
-                  <View key={row.key} style={styles.card}>
-                    <View style={styles.rowIcon}><Sword size={15} stroke={colors.textSecondary} /></View>
-                    <View style={styles.cardTextWrap}>
-                      <Text style={styles.cardTitle}>{row.displayName}</Text>
-                      <Text style={styles.cardSub}>{`${strings.sourceLabel}: ${sourceLabel(row.source)}`}</Text>
-                    </View>
-                    <Text style={styles.quantityText}>x{row.quantity}</Text>
-                  </View>
-                ), strings.emptyOwned)
-              )}
-            </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{strings.ownedSection}</Text>
+          {loading ? (
+            <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+          ) : (
+            renderCategoryGroups(ownedGroups, (row) => (
+              <View key={row.key} style={styles.card}>
+                <View style={styles.rowIcon}><Sword size={15} stroke={colors.textSecondary} /></View>
+                <View style={styles.cardTextWrap}>
+                  <Text style={styles.cardTitle}>{row.displayName}</Text>
+                  <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
+                  <Text style={styles.cardSub}>{`${strings.sourceLabel}: ${sourceLabel(row.source)}`}</Text>
+                </View>
+                <Text style={styles.quantityText}>x{row.quantity}</Text>
+              </View>
+            ), strings.emptyOwned)
+          )}
+        </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{strings.equippedSection}</Text>
-              {loading ? (
-                <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
-              ) : (
-                renderCategoryGroups(equippedGroups, (row) => (
-                  <View key={row.key} style={styles.card}>
-                    <View style={styles.rowIcon}>{row.slotType === "armor" ? <Shield size={15} stroke={colors.textSecondary} /> : <Sword size={15} stroke={colors.textSecondary} />}</View>
-                    <View style={styles.cardTextWrap}>
-                      <Text style={styles.cardTitle}>{row.displayName}</Text>
-                      <Text style={styles.cardSub}>{`${strings.ownerLabel}: ${row.characterName} / ${row.slotType === "weapon" ? strings.slotWeapon : strings.slotArmor}`}</Text>
-                    </View>
-                  </View>
-                ), strings.emptyEquipped)
-              )}
-            </View>
-          </>
-        )}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{strings.equippedSection}</Text>
+          {loading ? (
+            <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+          ) : (
+            renderCategoryGroups(equippedGroups, (row) => (
+              <View key={row.key} style={styles.card}>
+                <View style={styles.rowIcon}>{row.slotType === "armor" ? <Shield size={15} stroke={colors.textSecondary} /> : <Sword size={15} stroke={colors.textSecondary} />}</View>
+                <View style={styles.cardTextWrap}>
+                  <Text style={styles.cardTitle}>{row.displayName}</Text>
+                  <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
+                  <Text style={styles.cardSub}>{`${strings.ownerLabel}: ${row.characterName} / ${row.slotType === "weapon" ? strings.slotWeapon : strings.slotArmor}`}</Text>
+                </View>
+              </View>
+            ), strings.emptyEquipped)
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -341,12 +308,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
-  tabRow: { flexDirection: "row", paddingHorizontal: 20 },
-  tabButton: { flex: 1, alignItems: "center" },
-  tabText: { color: colors.textTertiary, fontSize: 14, fontWeight: "500", paddingVertical: 10 },
-  tabTextActive: { color: colors.textPrimary, fontWeight: "700" },
-  tabBorder: { width: "100%", height: 1, backgroundColor: colors.borderDefault },
-  tabBorderActive: { height: 2, backgroundColor: colors.textPrimary },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24, gap: 14 },
   filterWrap: { marginBottom: 2 },

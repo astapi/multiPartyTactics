@@ -1,9 +1,15 @@
-import { useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ArrowLeft, Coins, Shield, Sword } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TranslationKey, useI18n } from "@/i18n";
+import { shopEquipmentRepository } from "@/db/repositories/shopEquipmentRepository";
+import { walletRepository } from "@/db/repositories/walletRepository";
+import { getEquipSlotForCategory } from "@/game/equipment/equipmentRules";
+import { formatStatSummary } from "@/game/equipment/equipmentStatsService";
+import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
+import { useI18n } from "@/i18n";
+import type { ShopCatalogItem } from "@/types/equipment";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -14,20 +20,90 @@ const colors = {
   borderDefault: "#e0e0e0",
 } as const;
 
-type ShopTab = "weapons" | "armor" | "accessories";
-type ShopItem = { nameKey: TranslationKey; statKey: TranslationKey; price: number };
+type ShopTab = "weapons" | "armor";
+
+type ShopViewRow = ShopCatalogItem & {
+  name: string;
+  slotType: "weapon" | "armor";
+  statSummary: string;
+};
 
 export default function EquipmentShopScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [tab, setTab] = useState<ShopTab>("weapons");
+  const [walletGold, setWalletGold] = useState(0);
+  const [items, setItems] = useState<ShopViewRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [buyingBaseItemId, setBuyingBaseItemId] = useState<string | null>(null);
 
-  const items: ShopItem[] = [
-    { nameKey: "shop.equip.item.silverBlade.name", statKey: "shop.equip.item.silverBlade.stat", price: 3200 },
-    { nameKey: "shop.equip.item.knightGuard.name", statKey: "shop.equip.item.knightGuard.stat", price: 2600 },
-    { nameKey: "shop.equip.item.runeDagger.name", statKey: "shop.equip.item.runeDagger.stat", price: 1900 },
-    { nameKey: "shop.equip.item.warAxe.name", statKey: "shop.equip.item.warAxe.stat", price: 3900 },
-  ];
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [wallet, catalog] = await Promise.all([
+        walletRepository.getMainWallet(),
+        shopEquipmentRepository.listCatalogWithOwnedCounts(),
+      ]);
+      const rows: ShopViewRow[] = catalog
+        .map((row) => {
+          const item = getEquipmentById(row.baseItemId);
+          const slotType = getEquipSlotForCategory(item.category);
+          if (!slotType) return null;
+          const name = buildEquipmentDisplayName(item.id, null);
+          return {
+            ...row,
+            name: locale === "ja" ? name.jp : name.en,
+            slotType,
+            statSummary: formatStatSummary(item.stats, locale),
+          };
+        })
+        .filter((row): row is ShopViewRow => Boolean(row));
+      setWalletGold(wallet.gold);
+      setItems(rows);
+    } finally {
+      setLoading(false);
+    }
+  }, [locale]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
+
+  const filteredItems = useMemo(
+    () => items.filter((item) => (tab === "weapons" ? item.slotType === "weapon" : item.slotType === "armor")),
+    [items, tab]
+  );
+
+  const onBuy = useCallback(
+    async (baseItemId: string) => {
+      if (buyingBaseItemId) return;
+      setBuyingBaseItemId(baseItemId);
+      try {
+        const result = await shopEquipmentRepository.purchase(baseItemId);
+        if (!result.ok) {
+          Alert.alert(
+            locale === "ja" ? "ゴールド不足" : "Insufficient Gold",
+            locale === "ja"
+              ? `必要: ${result.priceGold}G / 所持: ${result.walletGold}G`
+              : `Need: ${result.priceGold}G / Have: ${result.walletGold}G`
+          );
+          return;
+        }
+        await load();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        Alert.alert(
+          locale === "ja" ? "購入失敗" : "Purchase Failed",
+          locale === "ja" ? `購入に失敗しました。\n${message}` : `Failed to purchase item.\n${message}`
+        );
+      } finally {
+        setBuyingBaseItemId(null);
+      }
+    },
+    [buyingBaseItemId, load, locale]
+  );
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -45,22 +121,50 @@ export default function EquipmentShopScreen() {
       </View>
 
       <View style={styles.tabs}>
-        <Pressable style={styles.tabItem} onPress={() => setTab("weapons")}><Text style={[styles.tabText, tab === "weapons" ? styles.tabTextActive : null]}>{t("shop.equip.tab.weapons")}</Text><View style={[styles.tabBorder, tab === "weapons" ? styles.tabBorderActive : null]} /></Pressable>
-        <Pressable style={styles.tabItem} onPress={() => setTab("armor")}><Text style={[styles.tabText, tab === "armor" ? styles.tabTextActive : null]}>{t("shop.equip.tab.armor")}</Text><View style={[styles.tabBorder, tab === "armor" ? styles.tabBorderActive : null]} /></Pressable>
-        <Pressable style={styles.tabItem} onPress={() => setTab("accessories")}><Text style={[styles.tabText, tab === "accessories" ? styles.tabTextActive : null]}>{t("shop.equip.tab.accessories")}</Text><View style={[styles.tabBorder, tab === "accessories" ? styles.tabBorderActive : null]} /></Pressable>
+        <Pressable style={styles.tabItem} onPress={() => setTab("weapons")}>
+          <Text style={[styles.tabText, tab === "weapons" ? styles.tabTextActive : null]}>{t("shop.equip.tab.weapons")}</Text>
+          <View style={[styles.tabBorder, tab === "weapons" ? styles.tabBorderActive : null]} />
+        </Pressable>
+        <Pressable style={styles.tabItem} onPress={() => setTab("armor")}>
+          <Text style={[styles.tabText, tab === "armor" ? styles.tabTextActive : null]}>{t("shop.equip.tab.armor")}</Text>
+          <View style={[styles.tabBorder, tab === "armor" ? styles.tabBorderActive : null]} />
+        </Pressable>
       </View>
 
-      <View style={styles.goldBar}><View style={styles.goldPill}><Coins size={14} stroke={colors.textSecondary} /><Text style={styles.goldText}>{t("shop.equip.gold", { amount: (12450).toLocaleString() })}</Text></View></View>
+      <View style={styles.goldBar}>
+        <View style={styles.goldPill}>
+          <Coins size={14} stroke={colors.textSecondary} />
+          <Text style={styles.goldText}>{t("shop.equip.gold", { amount: walletGold.toLocaleString() })}</Text>
+        </View>
+      </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {items.map((item) => (
-          <Pressable key={item.nameKey} style={styles.itemCard}>
-            <View style={styles.itemIcon}>{tab === "armor" ? <Shield size={18} stroke="#ffffff" /> : <Sword size={18} stroke="#ffffff" />}</View>
-            <View style={styles.itemTextWrap}><Text style={styles.itemName}>{t(item.nameKey)}</Text><Text style={styles.itemSub}>{t(item.statKey)}</Text></View>
-            <View style={styles.priceWrap}><Text style={styles.price}>{t("shop.equip.gold", { amount: item.price.toLocaleString() })}</Text><Text style={styles.buy}>{t("shop.equip.buy")}</Text></View>
-          </Pressable>
-        ))}
-        <View style={styles.sellSection}><Pressable style={styles.sellBtn}><Text style={styles.sellText}>{t("shop.equip.sell")}</Text></Pressable></View>
+        {loading ? (
+          <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+        ) : filteredItems.length === 0 ? (
+          <Text style={styles.emptyText}>{locale === "ja" ? "販売中の装備はありません。" : "No equipment available."}</Text>
+        ) : (
+          filteredItems.map((item) => (
+            <View key={item.baseItemId} style={styles.itemCard}>
+              <View style={styles.itemIcon}>{item.slotType === "armor" ? <Shield size={18} stroke="#ffffff" /> : <Sword size={18} stroke="#ffffff" />}</View>
+              <View style={styles.itemTextWrap}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemSub}>{item.statSummary || "--"}</Text>
+                <Text style={styles.itemSub}>{`${locale === "ja" ? "所持" : "Owned"}: ${item.ownedQuantity}`}</Text>
+              </View>
+              <View style={styles.priceWrap}>
+                <Text style={styles.price}>{t("shop.equip.gold", { amount: item.priceGold.toLocaleString() })}</Text>
+                <Pressable
+                  style={[styles.buyButton, buyingBaseItemId === item.baseItemId ? styles.buyButtonDisabled : null]}
+                  onPress={() => void onBuy(item.baseItemId)}
+                  disabled={Boolean(buyingBaseItemId)}
+                >
+                  <Text style={styles.buy}>{t("shop.equip.buy")}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -88,10 +192,19 @@ const styles = StyleSheet.create({
   itemTextWrap: { flex: 1, gap: 2 },
   itemName: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
   itemSub: { color: colors.textTertiary, fontSize: 11 },
-  priceWrap: { alignItems: "flex-end", gap: 2 },
+  priceWrap: { alignItems: "flex-end", gap: 6 },
   price: { color: colors.textPrimary, fontSize: 12, fontWeight: "700" },
-  buy: { color: colors.textSecondary, fontSize: 11 },
-  sellSection: { alignItems: "center", paddingVertical: 12 },
-  sellBtn: { borderRadius: 12, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, paddingHorizontal: 24, paddingVertical: 12 },
-  sellText: { color: colors.textPrimary, fontWeight: "600" },
+  buyButton: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: "#ffffff",
+  },
+  buyButtonDisabled: {
+    opacity: 0.5,
+  },
+  buy: { color: colors.textSecondary, fontSize: 11, fontWeight: "600" },
+  emptyText: { color: colors.textTertiary, fontSize: 12, paddingTop: 8 },
 });

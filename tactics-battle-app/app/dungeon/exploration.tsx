@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Package } from "lucide-react-native";
 import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/PartyStatusStrip";
 import { DUNGEONS } from "@/constants/dungeons";
+import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
@@ -200,7 +201,10 @@ export default function ExplorationScreen() {
           mp: record.currentMp,
           level: record.level,
         }));
-        const party = partyRecords.map(toUnit);
+        const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
+          partyRecords.map((record) => record.id)
+        );
+        const party = partyRecords.map((record) => toUnit(record, equippedByCharacterId[record.id] ?? {}));
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
         const persistedProgressList = await dungeonExplorationProgressRepository.listByDungeon(resolvedDungeonId);

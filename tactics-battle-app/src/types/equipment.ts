@@ -27,6 +27,17 @@ export type EquipmentStats = {
   mpRegen?: number;
 };
 
+export type ResolvedEquipmentStats = {
+  hp: number;
+  atk: number;
+  def: number;
+  spi: number;
+  mp: number;
+  spd: number;
+  hpRegen: number;
+  mpRegen: number;
+};
+
 export type EquipmentMasterItem = {
   id: string;
   category: EquipmentCategory;
@@ -97,6 +108,19 @@ export type EquipmentGrantRecord = {
   quantity: number;
   contextJson: string;
   createdAt?: string;
+};
+
+export type ShopCatalogItem = {
+  baseItemId: string;
+  priceGold: number;
+  isEnabled: boolean;
+  ownedQuantity: number;
+};
+
+export type WalletRecord = {
+  id: string;
+  gold: number;
+  updatedAt: string;
 };
 
 export type TreasureChestRollParams = {

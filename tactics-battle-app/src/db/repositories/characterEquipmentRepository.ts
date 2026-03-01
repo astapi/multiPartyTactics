@@ -2,13 +2,10 @@ import { isClassId } from "@/constants/classes";
 import { getDb } from "@/db/database";
 import { canCharacterEquipItem, getEquipSlotForCategory } from "@/game/equipment/equipmentRules";
 import { getEquipmentById } from "@/game/loot/equipmentMasterService";
-import type {
-  CharacterEquipmentRecord,
-  EquipmentSlot,
-} from "@/types/equipment";
+import type { CharacterEquipmentRecord, EquipmentSlot } from "@/types/equipment";
 import type { ClassId } from "@/types/models";
 
-type EquipmentBySlot = Partial<Record<EquipmentSlot, CharacterEquipmentRecord>>;
+export type EquipmentBySlot = Partial<Record<EquipmentSlot, CharacterEquipmentRecord>>;
 
 type EquipInput = {
   characterId: string;
@@ -150,6 +147,30 @@ export const characterEquipmentRepository = {
     return out;
   },
 
+  async getByCharacterIds(characterIds: string[]): Promise<Record<string, EquipmentBySlot>> {
+    if (characterIds.length === 0) return {};
+    const db = await getDb();
+    const placeholders = characterIds.map(() => "?").join(", ");
+    const rows = await db.getAllAsync<any>(
+      `SELECT *
+       FROM character_equipment_slots
+       WHERE character_id IN (${placeholders})`,
+      characterIds
+    );
+    const byCharacterId: Record<string, EquipmentBySlot> = {};
+    for (const row of rows) {
+      const slotType = assertSlotType(row.slot_type);
+      if (!byCharacterId[row.character_id]) {
+        byCharacterId[row.character_id] = {};
+      }
+      byCharacterId[row.character_id][slotType] = {
+        ...mapCharacterEquipment(row),
+        slotType,
+      };
+    }
+    return byCharacterId;
+  },
+
   async equip(input: EquipInput): Promise<void> {
     const item = getEquipmentById(input.baseItemId);
     const derivedSlot = getEquipSlotForCategory(item.category);
@@ -244,4 +265,3 @@ export const characterEquipmentRepository = {
     }
   },
 };
-
