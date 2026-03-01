@@ -39,6 +39,47 @@ describe("misc testable logic", () => {
     });
   });
 
+  it("applies equipped item bonuses when mapping units", () => {
+    const unit = toUnit(
+      {
+        id: "c2",
+        slotIndex: 1,
+        name: "Rune",
+        classId: "SWORDMAN",
+        constellationId: "ARIES",
+        level: 1,
+        exp: 0,
+        baseMaxHp: 100,
+        baseAtk: 11,
+        baseDef: 8,
+        baseSpd: 10,
+        baseMaxMp: 22,
+        baseMpRegen: 2,
+        currentHp: 80,
+        currentMp: 10,
+      },
+      {
+        weapon: {
+          characterId: "c2",
+          slotType: "weapon",
+          baseItemId: "bronze_sword",
+          mutationPrefixId: null,
+          equippedAt: "2026-03-01T00:00:00.000Z",
+        },
+        armor: {
+          characterId: "c2",
+          slotType: "armor",
+          baseItemId: "iron_shield",
+          mutationPrefixId: null,
+          equippedAt: "2026-03-01T00:00:00.000Z",
+        },
+      }
+    );
+    expect(unit.stats).toEqual({ maxHp: 103, atk: 16, def: 13, spd: 10, maxMp: 22, mpRegen: 2 });
+    expect(unit.hp).toBe(83);
+    expect(unit.mp).toBe(10);
+  });
+
   it("builds a skill map and keeps the last duplicate entry", () => {
     const a1 = makeSkill({ id: "dup", name: "First" });
     const a2 = makeSkill({ id: "dup", name: "Second" });

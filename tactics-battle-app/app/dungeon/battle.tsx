@@ -23,6 +23,7 @@ import { Pause, Play } from "lucide-react-native";
 import { BattleEffectLayer } from "@/components/battle/BattleEffectLayer";
 import { preloadBattleSounds, unloadBattleSounds } from "@/features/battle/audio/battleSounds";
 import { battleRepository } from "@/db/repositories/battleRepository";
+import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
@@ -39,6 +40,7 @@ import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
 import { BattleOutcome, BattleReplayState, simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
+import { computeCharacterDerivedStats, toBaseResource } from "@/game/equipment/equipmentStatsService";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { toUnit } from "@/game/partyMapper";
 import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
@@ -320,7 +322,12 @@ export default function BattleScreen() {
           acc[member.id] = { level: member.level };
           return acc;
         }, {});
-        const units = syncedSelected.map(toUnit);
+        const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
+          syncedSelected.map((member) => member.id)
+        );
+        const units = syncedSelected.map((member) =>
+          toUnit(member, equippedByCharacterId[member.id] ?? {})
+        );
         const map: Record<string, TacticsRuleRecord[]> = {};
         for (const unit of units) {
           map[unit.id] = await tacticsRepository.listByCharacter(unit.id);
@@ -419,6 +426,9 @@ export default function BattleScreen() {
       };
       const currentPartyId = partyId ?? DEFAULT_PARTY_ID;
       const partyRecords = await charactersRepository.listPartyMembers(currentPartyId);
+      const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
+        partyRecords.map((record) => record.id)
+      );
       const persistedPartyById = new Map<string, CharacterRecord>(
         partyRecords.map((record) => [record.id, record] as const)
       );
@@ -559,10 +569,14 @@ export default function BattleScreen() {
         const finalMember = finalPartyById.get(record.id);
         if (!finalMember) continue;
         const baseRecord = persistedPartyById.get(record.id) ?? record;
+        const derived = computeCharacterDerivedStats(
+          baseRecord,
+          equippedByCharacterId[record.id] ?? {}
+        );
         const nextRecord = {
           ...baseRecord,
-          currentHp: Math.max(0, Math.min(baseRecord.baseMaxHp, Math.floor(finalMember.hp))),
-          currentMp: Math.max(0, Math.min(baseRecord.baseMaxMp, Math.floor(finalMember.mp))),
+          currentHp: toBaseResource(finalMember.hp, baseRecord.baseMaxHp, derived.bonus.hp),
+          currentMp: toBaseResource(finalMember.mp, baseRecord.baseMaxMp, derived.bonus.mp),
         };
         await charactersRepository.upsert(nextRecord);
         persistedPartyById.set(record.id, nextRecord);
@@ -585,11 +599,18 @@ export default function BattleScreen() {
         explorationSeed: resolvedSeed,
         partyId: currentPartyId,
         members: result.finalParty.map((member) => ({
+          ...(persistedPartyById.get(member.id)
+            ? {
+                hp: persistedPartyById.get(member.id)!.currentHp,
+                mp: persistedPartyById.get(member.id)!.currentMp,
+              }
+            : {
+                hp: Math.max(0, Math.floor(member.hp)),
+                mp: Math.max(0, Math.floor(member.mp)),
+              }),
           id: member.id,
           name: member.name,
           classId: member.classId,
-          hp: Math.max(0, Math.floor(member.hp)),
-          mp: Math.max(0, Math.floor(member.mp)),
           level: nextPartyUiMetaById[member.id]?.level ?? null,
         })),
       });
