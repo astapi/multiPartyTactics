@@ -16,6 +16,17 @@ export type ShieldSize = "small" | "large";
 
 export type EquipmentSource = "shop" | "monster" | "chest";
 
+export type EquipmentStats = {
+  hp?: number;
+  atk?: number;
+  def?: number;
+  spi?: number;
+  mp?: number;
+  spd?: number;
+  hpRegen?: number;
+  mpRegen?: number;
+};
+
 export type EquipmentMasterItem = {
   id: string;
   category: EquipmentCategory;
@@ -24,6 +35,8 @@ export type EquipmentMasterItem = {
   jp: string;
   en: string;
   can_mutate: boolean;
+  chestTier?: number;
+  stats?: EquipmentStats;
 };
 
 export type MutationPrefix = {

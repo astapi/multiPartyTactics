@@ -75,7 +75,25 @@ const getCandidatesByCategory = (source: "monster" | "chest") => {
   return map;
 };
 
-const CHEST_CANDIDATES = getCandidatesByCategory("chest");
+const buildChestTierCandidates = () => {
+  const all = listEquipmentBySource("chest");
+  const tierMap = new Map<number, Map<EquipmentCategory, EquipmentMasterItem[]>>();
+  for (const item of all) {
+    const tier = item.chestTier;
+    if (tier == null) continue;
+    if (!tierMap.has(tier)) tierMap.set(tier, new Map());
+    const catMap = tierMap.get(tier)!;
+    const list = catMap.get(item.category) ?? [];
+    list.push(item);
+    catMap.set(item.category, list);
+  }
+  return tierMap;
+};
+
+const getChestTier = (floor: number): number =>
+  Math.min(190, Math.ceil(Math.max(1, floor) / 10) * 10);
+
+const CHEST_TIER_CANDIDATES = buildChestTierCandidates();
 const MONSTER_CANDIDATES = getCandidatesByCategory("monster");
 
 export const rollTreasureChestEquipment = (params: TreasureChestRollParams): EquipmentReward => {
@@ -84,8 +102,13 @@ export const rollTreasureChestEquipment = (params: TreasureChestRollParams): Equ
     (params.explorationSeed ^ Math.imul(params.tick, 131071) ^ Math.imul(floor, 8191) ^ hashString(params.dungeonId)) >>> 0;
   const rng = createSeededRng(seed);
   const config = resolveChestLootConfig(params.dungeonId, floor);
-  const category = pickWeightedCategory(config.categoryWeights, new Set(CHEST_CANDIDATES.keys()), rng);
-  const candidates = CHEST_CANDIDATES.get(category) ?? [];
+
+  const tier = getChestTier(floor);
+  const tierCandidates = CHEST_TIER_CANDIDATES.get(tier);
+  if (!tierCandidates) throw new Error(`No chest candidates for tier ${tier}`);
+
+  const category = pickWeightedCategory(config.categoryWeights, new Set(tierCandidates.keys()), rng);
+  const candidates = tierCandidates.get(category) ?? [];
   const item = pickOne(candidates, rng);
   const grantKey = `treasure:${params.dungeonId}:${floor}:${params.explorationSeed}:${params.tick}`;
   return toReward(item, null, "TREASURE_CHEST", grantKey);
