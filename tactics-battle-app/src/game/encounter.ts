@@ -91,6 +91,9 @@ const normalizeScale = (value: number | undefined): number => {
   return value;
 };
 
+const DEF_DAMPENING = 0.3;
+const SPD_DAMPENING = 0.2;
+
 const scaleStats = (
   stats: Stats,
   scales: { statScale?: number; hpScale?: number } = {}
@@ -100,11 +103,14 @@ const scaleStats = (
   const hasScaling = statScale !== 1 || hpScale !== 1;
   if (!hasScaling) return { ...stats };
 
+  const defScale = 1 + (statScale - 1) * DEF_DAMPENING;
+  const spdScale = 1 + (statScale - 1) * SPD_DAMPENING;
+
   return {
     maxHp: Math.max(1, Math.round(stats.maxHp * statScale * hpScale)),
     atk: Math.max(1, Math.round(stats.atk * statScale)),
-    def: Math.max(0, Math.round(stats.def * statScale)),
-    spd: Math.max(1, Math.round(stats.spd * statScale)),
+    def: Math.max(0, Math.round(stats.def * defScale)),
+    spd: Math.max(1, Math.round(stats.spd * spdScale)),
     maxMp: Math.max(0, Math.round(stats.maxMp * statScale)),
     mpRegen: stats.maxMp <= 0 ? 0 : Math.max(1, Math.round(stats.mpRegen * statScale)),
   };
