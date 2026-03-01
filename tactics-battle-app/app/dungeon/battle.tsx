@@ -45,7 +45,7 @@ import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progressi
 import { useI18n } from "@/i18n";
 import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
 import { BATTLE_SPEED_OPTIONS, BattleSpeedMultiplier } from "@/constants/battleSpeed";
-import { getEnemyImage, isBossEnemyId } from "@/constants/enemyImages";
+import { getEnemyImage, getEnemySizeScale, isBossEnemyId } from "@/constants/enemyImages";
 import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
@@ -119,11 +119,14 @@ const buildLevelUpStatDiffs = (
   return diffs;
 };
 
+const BASE_ENEMY_IMAGE_SIZE = 72;
+
 type BattleEnemyViewModel = {
   id: string;
   name: string;
   image: ImageSourcePropType;
   isBoss: boolean;
+  sizeScale: number;
   hp: number;
   maxHp: number;
 };
@@ -158,20 +161,23 @@ const BattleEnemyCard = ({
     transform: [{ translateX: translateX.value }],
   }));
 
+  const imageSize = Math.round(BASE_ENEMY_IMAGE_SIZE * enemy.sizeScale);
+  const containerWidth = imageSize + 18;
+
   return (
     <Animated.View
       onLayout={onLayout}
-      style={[styles.enemyItem, enemy.isBoss && styles.enemyItemBoss, animatedStyle]}
+      style={[styles.enemyItem, { width: containerWidth }, animatedStyle]}
     >
       <Image
         source={enemy.image}
-        style={[styles.enemyImage, enemy.isBoss && styles.enemyImageBoss]}
+        style={{ width: imageSize, height: imageSize }}
         resizeMode="contain"
       />
       <Text style={styles.enemyLabel} numberOfLines={1}>
         {enemy.name}
       </Text>
-      <View style={styles.enemyHpBar}>
+      <View style={[styles.enemyHpBar, { width: imageSize }]}>
         <View
           style={[
             styles.enemyHpFill,
@@ -700,6 +706,7 @@ export default function BattleScreen() {
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
           isBoss: isBossEnemyId(enemy.enemyId),
+          sizeScale: getEnemySizeScale(enemy.enemyId),
           hp: enemy.stats.maxHp,
           maxHp: enemy.stats.maxHp,
         })),
@@ -722,6 +729,7 @@ export default function BattleScreen() {
           name: enemy.name,
           image: getEnemyImage(enemy.enemyId),
           isBoss: isBossEnemyId(enemy.enemyId),
+          sizeScale: getEnemySizeScale(enemy.enemyId),
           hp: enemy.stats.maxHp,
           maxHp: enemy.stats.maxHp,
         })),
@@ -754,6 +762,7 @@ export default function BattleScreen() {
         name: enemy.name,
         image: getEnemyImage(enemy.enemyId),
         isBoss: isBossEnemyId(enemy.enemyId),
+        sizeScale: getEnemySizeScale(enemy.enemyId),
         hp: enemy.stats.maxHp,
         maxHp: enemy.stats.maxHp,
       })),
@@ -779,6 +788,7 @@ export default function BattleScreen() {
       name: enemy.name,
       image: getEnemyImage(enemy.id),
       isBoss: isBossEnemyId(enemy.id),
+      sizeScale: getEnemySizeScale(enemy.id),
       hp: enemy.hp,
       maxHp: enemy.stats.maxHp,
     })),
@@ -1142,13 +1152,7 @@ const styles = StyleSheet.create({
   },
   enemyItem: {
     alignItems: "center",
-    width: 90,
   },
-  enemyItemBoss: {
-    width: 120,
-  },
-  enemyImage: { width: 72, height: 72 },
-  enemyImageBoss: { width: 112, height: 112 },
   enemyLabel: {
     marginTop: 4,
     color: "#efefef",
@@ -1158,7 +1162,6 @@ const styles = StyleSheet.create({
   },
   enemyHpBar: {
     marginTop: 4,
-    width: 72,
     height: 5,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.28)",

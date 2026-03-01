@@ -121,12 +121,24 @@ const BOSS_IMAGE_MAP: Record<string, ImageSourcePropType> = {
 };
 
 /**
+ * Unit.id（"enemy_giant_rat_1" 等）からマスターID（"giant_rat"）を抽出する。
+ * マスターIDがそのまま渡された場合はそのまま返す。
+ */
+const resolveEnemyId = (rawId: string): string => {
+  if (rawId in ENEMY_IMAGE_MAP || rawId in BOSS_IMAGE_MAP) return rawId;
+  // "enemy_{masterId}_{index}" 形式からマスターIDを抽出
+  const match = rawId.match(/^enemy_(.+)_\d+$/);
+  return match ? match[1] : rawId;
+};
+
+/**
  * 敵IDから画像を取得
- * O(1)のRecord参照。画像未登録の場合はデフォルト画像を返す。
+ * マスターID・Unit.idの両方に対応。画像未登録の場合はデフォルト画像を返す。
  */
 export const getEnemyImage = (enemyId: string): ImageSourcePropType => {
-  return BOSS_IMAGE_MAP[enemyId]
-    ?? ENEMY_IMAGE_MAP[enemyId]
+  const id = resolveEnemyId(enemyId);
+  return BOSS_IMAGE_MAP[id]
+    ?? ENEMY_IMAGE_MAP[id]
     ?? DEFAULT_ENEMY_IMAGE;
 };
 
@@ -134,5 +146,29 @@ export const getEnemyImage = (enemyId: string): ImageSourcePropType => {
  * ボス判定
  */
 export const isBossEnemyId = (enemyId: string): boolean => {
-  return enemyId in BOSS_IMAGE_MAP;
+  return resolveEnemyId(enemyId) in BOSS_IMAGE_MAP;
+};
+
+/**
+ * 敵IDからサイズ倍率を取得
+ * ベースサイズ(72px)に対する倍率を返す
+ */
+export const getEnemySizeScale = (enemyId: string): number => {
+  const id = resolveEnemyId(enemyId);
+  // ボス
+  if (id in BOSS_IMAGE_MAP || id.includes("boss_")) return 1.55;
+  // 極小 (slime)
+  if (id.includes("slime")) return 0.65;
+  // 小型 (rat, goblin) ※giant_rat含む — ネズミはgiantでも小型扱い
+  if (id.includes("rat") || id.includes("goblin")) return 0.8;
+  // 巨大 (dragon, giant, demon_warlord, greater_demon, abyss)
+  if (id.includes("dragon") || id.includes("giant") || id.includes("demon_warlord") || id.includes("greater_demon") || id.includes("abyss")) return 1.4;
+  // 大型 (troll, minotaur, construct, demon)
+  if (id.includes("troll") || id.includes("minotaur") || id.includes("construct") || id.includes("demon")) return 1.2;
+  // 中型 (orc, lizardman, gargoyle, lich, hobgoblin)
+  if (id.includes("orc") || id.includes("lizardman") || id.includes("gargoyle") || id.includes("lich") || id.includes("hobgoblin")) return 1.0;
+  // やや小型 (skeleton, kobold, poison_toad)
+  if (id.includes("skeleton") || id.includes("kobold") || id.includes("poison_toad") || id.includes("poison_frog")) return 0.9;
+  // デフォルト
+  return 1.0;
 };
