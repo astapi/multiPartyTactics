@@ -45,6 +45,7 @@ import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progressi
 import { useI18n } from "@/i18n";
 import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
 import { BATTLE_SPEED_OPTIONS, BattleSpeedMultiplier } from "@/constants/battleSpeed";
+import { getEnemyImage, isBossEnemyId } from "@/constants/enemyImages";
 import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
@@ -73,19 +74,6 @@ const BATTLE_RESULT_I18N_KEY = {
   DRAW: "battle.result.draw",
 } as const;
 
-const getEnemyImage = (enemyId: string): ImageSourcePropType => {
-  const id = enemyId.toLowerCase();
-  if (id.includes("lepus")) return require("@/assets/images/enemies/boss/lepus.png");
-  if (id.includes("goblin")) return require("@/assets/images/enemies/goblin.png");
-  if (id.includes("slime")) return require("@/assets/images/enemies/slime.png");
-  if (id.includes("poison_toad") || id.includes("poison_frog")) return require("@/assets/images/enemies/poison_frog.png");
-  return require("@/assets/images/enemies/slime.png");
-};
-
-const isBossEnemyId = (enemyId: string): boolean => {
-  const id = enemyId.toLowerCase();
-  return id.includes("boss_") || id.includes("lepus");
-};
 
 const parseEncounter = (raw: string | undefined): EncounterResult | null => {
   if (!raw) return null;
