@@ -16,14 +16,13 @@
     },
     "chest": {
       "categoryWeights": {
-        "one_handed_sword": 14,
-        "dagger": 12,
-        "throwing_knife": 10,
-        "two_handed_axe": 12,
-        "two_handed_hammer": 10,
-        "bow": 12,
-        "staff": 14,
-        "shield": 16
+        "one_handed_sword": 16,
+        "dagger": 13,
+        "throwing_knife": 11,
+        "two_handed_axe": 13,
+        "bow": 13,
+        "staff": 16,
+        "shield": 18
       }
     }
   },
