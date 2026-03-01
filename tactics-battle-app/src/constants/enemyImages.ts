@@ -136,3 +136,25 @@ export const getEnemyImage = (enemyId: string): ImageSourcePropType => {
 export const isBossEnemyId = (enemyId: string): boolean => {
   return enemyId in BOSS_IMAGE_MAP;
 };
+
+/**
+ * 敵IDからサイズ倍率を取得
+ * ベースサイズ(72px)に対する倍率を返す
+ */
+export const getEnemySizeScale = (enemyId: string): number => {
+  const id = enemyId.toLowerCase();
+  // ボス
+  if (id in BOSS_IMAGE_MAP || id.includes("boss_")) return 1.55;
+  // 巨大 (dragon, giant, demon_warlord, greater_demon, abyss)
+  if (id.includes("dragon") || id.includes("giant") || id.includes("demon_warlord") || id.includes("greater_demon") || id.includes("abyss")) return 1.4;
+  // 大型 (troll, minotaur, construct, demon)
+  if (id.includes("troll") || id.includes("minotaur") || id.includes("construct") || id.includes("demon")) return 1.2;
+  // 中型 (orc, lizardman, gargoyle, lich, hobgoblin)
+  if (id.includes("orc") || id.includes("lizardman") || id.includes("gargoyle") || id.includes("lich") || id.includes("hobgoblin")) return 1.0;
+  // やや小型 (skeleton, kobold, poison_toad)
+  if (id.includes("skeleton") || id.includes("kobold") || id.includes("poison_toad") || id.includes("poison_frog")) return 0.9;
+  // 小型 (slime, rat, goblin)
+  if (id.includes("slime") || id.includes("rat") || id.includes("goblin")) return 0.8;
+  // デフォルト
+  return 1.0;
+};
