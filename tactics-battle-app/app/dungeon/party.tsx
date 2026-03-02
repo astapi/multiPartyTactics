@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Check, Pencil, Plus, Trash2 } from "lucide-react-native";
+import { ArrowLeft, Check, Package, Pencil, Plus, Trash2 } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CharacterSelectModal } from "@/components/party/CharacterSelectModal";
@@ -191,6 +191,9 @@ export default function DungeonPartyScreen() {
           </Pressable>
           <Text style={styles.headerTitle}>{locale === "ja" ? "パーティ管理" : "Party Management"}</Text>
         </View>
+        <Pressable style={styles.iconBtn} onPress={() => router.push("/inventory")}>
+          <Package size={18} stroke={colors.textPrimary} />
+        </Pressable>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
