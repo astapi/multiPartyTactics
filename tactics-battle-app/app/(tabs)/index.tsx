@@ -41,7 +41,7 @@ export default function HomeScreen() {
       description: t("home.menu.weapon.desc"),
     },
     {
-      href: "/dungeon" as const,
+      href: "/shop/consumable" as const,
       icon: "item" as const,
       title: t("home.menu.item.title"),
       description: t("home.menu.item.desc"),

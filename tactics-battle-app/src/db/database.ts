@@ -8,6 +8,7 @@ import { MIGRATION_007 } from "./migrations/007_dungeon_floor_exploration_progre
 import { MIGRATION_008 } from "./migrations/008_dungeon_party_ui_step_count";
 import { MIGRATION_009 } from "./migrations/009_character_constellation";
 import { MIGRATION_010 } from "./migrations/010_shop_economy";
+import { MIGRATION_011 } from "./migrations/011_consumable_inventory";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle.db";
@@ -26,6 +27,7 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync(MIGRATION_002);
   await db.execAsync(MIGRATION_003);
   await db.execAsync(MIGRATION_010);
+  await db.execAsync(MIGRATION_011);
   await db.execAsync(MIGRATION_006);
   await db.execAsync(MIGRATION_007);
   const migrateCharacterExpColumn = async (): Promise<void> => {

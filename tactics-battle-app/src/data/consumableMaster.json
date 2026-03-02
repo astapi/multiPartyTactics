@@ -1,0 +1,18 @@
+{
+  "consumables": [
+    { "id": "healing_potion_s", "category": "healing_potion", "jp": "体力回復薬（小）", "en": "Healing Potion (S)", "priceGold": 50, "sortOrder": 1 },
+    { "id": "healing_potion_m", "category": "healing_potion", "jp": "体力回復薬（中）", "en": "Healing Potion (M)", "priceGold": 150, "sortOrder": 2 },
+    { "id": "healing_potion_l", "category": "healing_potion", "jp": "体力回復薬（大）", "en": "Healing Potion (L)", "priceGold": 400, "sortOrder": 3 },
+    { "id": "greater_healing_potion", "category": "healing_potion", "jp": "上級体力回復薬", "en": "Greater Healing Potion", "priceGold": 1000, "sortOrder": 4 },
+    { "id": "superior_healing_potion", "category": "healing_potion", "jp": "特級体力回復薬", "en": "Superior Healing Potion", "priceGold": 2500, "sortOrder": 5 },
+    { "id": "mana_potion_s", "category": "mana_potion", "jp": "魔力回復薬（小）", "en": "Mana Potion (S)", "priceGold": 60, "sortOrder": 6 },
+    { "id": "mana_potion_m", "category": "mana_potion", "jp": "魔力回復薬（中）", "en": "Mana Potion (M)", "priceGold": 180, "sortOrder": 7 },
+    { "id": "mana_potion_l", "category": "mana_potion", "jp": "魔力回復薬（大）", "en": "Mana Potion (L)", "priceGold": 500, "sortOrder": 8 },
+    { "id": "greater_mana_potion", "category": "mana_potion", "jp": "上級魔力回復薬", "en": "Greater Mana Potion", "priceGold": 1200, "sortOrder": 9 },
+    { "id": "superior_mana_potion", "category": "mana_potion", "jp": "特級魔力回復薬", "en": "Superior Mana Potion", "priceGold": 3000, "sortOrder": 10 },
+    { "id": "antidote", "category": "status_cure", "jp": "どくけし", "en": "Antidote", "priceGold": 30, "sortOrder": 11 },
+    { "id": "paralysis_cure", "category": "status_cure", "jp": "まひなおし", "en": "Paralysis Cure", "priceGold": 40, "sortOrder": 12 },
+    { "id": "burn_cure", "category": "status_cure", "jp": "やけどなおし", "en": "Burn Cure", "priceGold": 40, "sortOrder": 13 },
+    { "id": "petrify_cure", "category": "status_cure", "jp": "せきかなおし", "en": "Petrify Cure", "priceGold": 80, "sortOrder": 14 }
+  ]
+}
