@@ -1974,6 +1974,8 @@
               "type": "frame",
               "id": "5wzYj",
               "name": "headerRight",
+              "width": "fit_content(0)",
+              "height": "fit_content(0)",
               "gap": 8,
               "alignItems": "center",
               "children": [
@@ -5052,6 +5054,8 @@
               "type": "frame",
               "id": "0HAyF",
               "name": "headerRight",
+              "width": "fit_content(0)",
+              "height": "fit_content(0)",
               "gap": 8,
               "alignItems": "center",
               "children": [
@@ -16773,7 +16777,8 @@
                   "fill": "#888888",
                   "content": "Aries",
                   "fontFamily": "Space Mono",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -17583,6 +17588,1634 @@
                   "iconFontName": "grip-vertical",
                   "iconFontFamily": "lucide",
                   "fill": "#999999"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "PvAfv",
+      "x": 4082,
+      "y": 2126,
+      "name": "Tactics Action First Editor (Light)",
+      "clip": true,
+      "width": 402,
+      "height": 874,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "bCF7d",
+          "name": "editorHeader",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "padding": [
+            12,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Rreu5",
+              "name": "headerLeft",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "9DcVw",
+                  "name": "backBtn",
+                  "width": 36,
+                  "height": 36,
+                  "fill": "#F5F5F5",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "oCSST",
+                      "name": "backIcon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "#1A1A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "U9soA",
+                  "name": "headerTitle",
+                  "fill": "#1A1A1A",
+                  "content": "TACTICS EDITOR",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 12,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hBLVw",
+              "name": "headerRight",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "eNEO2",
+                  "name": "headerSaveBtn",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "gap": 6,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "dhiQw",
+                      "name": "headerSaveText",
+                      "fill": "#FFFFFF",
+                      "content": "保存",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ad0Cv",
+          "name": "editorContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#FFFFFF",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            8,
+            20,
+            16,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "brYe9",
+              "name": "characterStrip",
+              "width": "fill_container",
+              "fill": "#F5F5F5",
+              "cornerRadius": "$radius-lg",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#E0E0E0"
+              },
+              "gap": 10,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "E4aUA",
+                  "name": "charAvatar",
+                  "width": 44,
+                  "height": 44,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "images/gurdian_front.png",
+                    "mode": "fill"
+                  },
+                  "cornerRadius": 14
+                },
+                {
+                  "type": "frame",
+                  "id": "6Mwpo",
+                  "name": "charInfo",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aFvZi",
+                      "name": "charName",
+                      "fill": "#1A1A1A",
+                      "content": "Aria",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zmICc",
+                      "name": "charMeta",
+                      "fill": "#666666",
+                      "content": "Guardian Lv.22 ・ ルール 7件",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "UPMeJ",
+                  "name": "modeChip",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 999,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "XJjDP",
+                      "name": "modeChipText",
+                      "fill": "#FFFFFF",
+                      "content": "行動",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WjpPR",
+              "name": "helperBanner",
+              "width": "fill_container",
+              "fill": "#FFF9E8",
+              "cornerRadius": "$radius-md",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#F0D98C"
+              },
+              "gap": 8,
+              "padding": [
+                10,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "madxf",
+                  "name": "helperIcon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "zap",
+                  "iconFontFamily": "lucide",
+                  "fill": "#9C6B00"
+                },
+                {
+                  "type": "text",
+                  "id": "UyBFr",
+                  "name": "helperText",
+                  "fill": "#7A5A00",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "先にクラススキルを選択します。通常攻撃はルール不成立時に自動で実行されます。",
+                  "fontFamily": "Manrope",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qxRTE",
+              "name": "actionTypeSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "tDIjf",
+                  "name": "actionTypeTitle",
+                  "fill": "#666666",
+                  "content": "行動タイプ（実装準拠）",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 11,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "xPTLS",
+                  "name": "actionTypeRow",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "9RRyS",
+                      "name": "typeSkill",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RgS64",
+                          "name": "typeSkillText",
+                          "fill": "#FFFFFF",
+                          "content": "スキル",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RbGUV",
+                      "name": "typeAttack",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Bhoun",
+                          "name": "typeAttackText",
+                          "fill": "#666666",
+                          "content": "通常攻撃",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zRUUF",
+                      "name": "typeDefend",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I18tR",
+                          "name": "typeDefendText",
+                          "fill": "#666666",
+                          "content": "防御(職依存)",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xmHCU",
+              "name": "actionOptionSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iknhB",
+                  "name": "optionHeader",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "1Ma4g",
+                      "name": "optionTitle",
+                      "fill": "#666666",
+                      "content": "使用スキルを選択（クラス依存）",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700",
+                      "letterSpacing": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "9B0Ce",
+                  "name": "skillListCard",
+                  "width": "fill_container",
+                  "fill": "#F5F5F5",
+                  "cornerRadius": "$radius-lg",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E0E0E0"
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gHZcb",
+                      "name": "skillRow1",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 10,
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KdYOV",
+                          "name": "skillRow1Name",
+                          "fill": "#FFFFFF",
+                          "content": "防御",
+                          "fontFamily": "Manrope",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cTfUn",
+                          "name": "skillRow1Meta",
+                          "fill": "#FFFFFF",
+                          "content": "MP4 / CT2",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uTQX7",
+                      "name": "skillRow2",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 10,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "yu9mP",
+                          "name": "skillRow2Name",
+                          "fill": "#333333",
+                          "content": "挑発",
+                          "fontFamily": "Manrope",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "0U8xe",
+                          "name": "skillRow2Meta",
+                          "fill": "#666666",
+                          "content": "MP4 / CT3",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hVmhU",
+                      "name": "skillRow3",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 10,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j8oRk",
+                          "name": "skillRow3Name",
+                          "fill": "#333333",
+                          "content": "みがわり",
+                          "fontFamily": "Manrope",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rpWWm",
+                          "name": "skillRow3Meta",
+                          "fill": "#666666",
+                          "content": "MP6 / CT4",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Wzm6X",
+                  "name": "switchHintCard",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E0E0E0"
+                  },
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "ekmmR",
+                      "name": "switchHintIcon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "corner-down-right",
+                      "iconFontFamily": "lucide",
+                      "fill": "#666666"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ltGqf",
+                      "name": "switchHintText",
+                      "fill": "#666666",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "通常攻撃はスキルが使用不可または条件不一致のとき自動実行されます。",
+                      "fontFamily": "Manrope",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Wj4bP",
+              "name": "bottomActionBar",
+              "width": "fill_container",
+              "gap": 10,
+              "padding": [
+                8,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cemsA",
+                  "name": "cancelBtn",
+                  "width": "fill_container",
+                  "fill": "#F5F5F5",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E0E0E0"
+                  },
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CDJxa",
+                      "name": "cancelBtnText",
+                      "fill": "#555555",
+                      "content": "戻る",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "3I7Tw",
+                  "name": "applyBtn",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "tsdSQ",
+                      "name": "applyIcon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "check",
+                      "iconFontFamily": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TTfKu",
+                      "name": "applyText",
+                      "fill": "#FFFFFF",
+                      "content": "この行動を決定",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "SzcGW",
+      "x": 4532,
+      "y": 2126,
+      "name": "Tactics Condition Editor (Light)",
+      "clip": true,
+      "width": 402,
+      "height": 874,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "713Ow",
+          "name": "editorHeader",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "padding": [
+            12,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "9dtHB",
+              "name": "headerLeft",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "lah2o",
+                  "name": "backBtn",
+                  "width": 36,
+                  "height": 36,
+                  "fill": "#F5F5F5",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "pcyUX",
+                      "name": "backIcon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "#1A1A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "k4GDR",
+                  "name": "headerTitle",
+                  "fill": "#1A1A1A",
+                  "content": "TACTICS EDITOR",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 12,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ca34f",
+              "name": "headerRight",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "N1GGY",
+                  "name": "headerSaveBtn",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "gap": 6,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "4PWAz",
+                      "name": "headerSaveText",
+                      "fill": "#FFFFFF",
+                      "content": "保存",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "L6skV",
+          "name": "editorContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#FFFFFF",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            8,
+            20,
+            16,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "D0b4a",
+              "name": "characterStrip",
+              "width": "fill_container",
+              "fill": "#F5F5F5",
+              "cornerRadius": "$radius-lg",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#E0E0E0"
+              },
+              "gap": 10,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "E0uCh",
+                  "name": "charAvatar",
+                  "width": 44,
+                  "height": 44,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "images/gurdian_front.png",
+                    "mode": "fill"
+                  },
+                  "cornerRadius": 14
+                },
+                {
+                  "type": "frame",
+                  "id": "CsSpZ",
+                  "name": "charInfo",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LK79T",
+                      "name": "charName",
+                      "fill": "#1A1A1A",
+                      "content": "Aria",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "5EheV",
+                      "name": "charMeta",
+                      "fill": "#666666",
+                      "content": "Guardian Lv.22 ・ 攻撃/防御 条件",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "loIde",
+                  "name": "modeChip",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 999,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wTyEF",
+                      "name": "modeChipText",
+                      "fill": "#FFFFFF",
+                      "content": "条件",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bFVzH",
+              "name": "conditionSelectorSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "45MyW",
+                  "name": "conditionSelectorTitle",
+                  "fill": "#666666",
+                  "content": "条件タイプ（ConditionType）",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 11,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Q4LQP",
+                  "name": "conditionTypeRow",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "hxOsj",
+                      "name": "condTypeSkill",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Xrf8v",
+                          "name": "condTypeSkillText",
+                          "fill": "#666666",
+                          "content": "ALWAYS",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "y6cdd",
+                      "name": "condTypeAttack",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BmjfE",
+                          "name": "condTypeAttackText",
+                          "fill": "#FFFFFF",
+                          "content": "TURN_EQUALS",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UFxuX",
+                      "name": "condTypeDefend",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Qm4eS",
+                          "name": "condTypeDefendText",
+                          "fill": "#666666",
+                          "content": "ALL_OF",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "0yTWq",
+                  "name": "conditionIntroText",
+                  "fill": "#888888",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "実装済み: TURN_EQUALS / HP・MP割合 / 状態異常 / ALL_OF / ALWAYS",
+                  "fontFamily": "Manrope",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "DAs16",
+                  "name": "conditionTypeRow2",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "67KA5",
+                      "name": "condSelfHp",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "r6eDn",
+                          "name": "condSelfHpText",
+                          "fill": "#666666",
+                          "content": "SELF_HP_BELOW",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MeaFS",
+                      "name": "condAllyHp",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PoXWA",
+                          "name": "condAllyHpText",
+                          "fill": "#FFFFFF",
+                          "content": "ALLY_HP_BELOW",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dxDBm",
+                      "name": "condAllyMp",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GrxwY",
+                          "name": "condAllyMpText",
+                          "fill": "#666666",
+                          "content": "ALLY_MP_BELOW",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "036sl",
+                      "name": "condEnemyHp",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "1ouje",
+                          "name": "condEnemyHpText",
+                          "fill": "#666666",
+                          "content": "ENEMY_HP_BELOW",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t9oQz",
+                  "name": "conditionTypeRow3",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KQj6s",
+                      "name": "condAnyStatus",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Fb18A",
+                          "name": "condAnyStatusText",
+                          "fill": "#666666",
+                          "content": "ANY_ALLY_HAS_STATUS",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "7DTSx",
+              "name": "conditionSimpleCard",
+              "width": "fill_container",
+              "fill": "#F5F5F5",
+              "cornerRadius": "$radius-lg",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#E0E0E0"
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lF5BX",
+                  "name": "conditionSimpleTitle",
+                  "fill": "#666666",
+                  "content": "条件パラメータ（ALLY_HP_BELOW）",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 11,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "IZRAa",
+                  "name": "hpCondLabel",
+                  "fill": "#444444",
+                  "content": "threshold",
+                  "fontFamily": "Manrope",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "AI68K",
+                  "name": "hpCondRow",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PK7zz",
+                      "name": "hpCondAlly",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3CYEX",
+                          "name": "hpCondAllyText",
+                          "fill": "#FFFFFF",
+                          "content": "0.25",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wA1Ss",
+                      "name": "hpCondSelf",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Hfcvr",
+                          "name": "hpCondSelfText",
+                          "fill": "#666666",
+                          "content": "0.35",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mk44J",
+                      "name": "hpCondNone",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HRoTq",
+                          "name": "hpCondNoneText",
+                          "fill": "#666666",
+                          "content": "0.50",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "gQt4K",
+                  "name": "enemyCondLabel",
+                  "fill": "#444444",
+                  "content": "対象タイプ（TargetType）",
+                  "fontFamily": "Manrope",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "a8EXa",
+                  "name": "enemyCondRow",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cTYpa",
+                      "name": "enemyBoss",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BdBjw",
+                          "name": "enemyBossText",
+                          "fill": "#666666",
+                          "content": "SELF",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "2TA1H",
+                      "name": "enemyNotBoss",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vg97n",
+                          "name": "enemyNotBossText",
+                          "fill": "#FFFFFF",
+                          "content": "ALLY_LOWEST_HP",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OVsUr",
+                      "name": "enemyCount3",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "altOa",
+                          "name": "enemyCount3Text",
+                          "fill": "#666666",
+                          "content": "ENEMY_FIRST",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 10,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "qh2YS",
+                  "name": "noneCondLabel",
+                  "fill": "#444444",
+                  "content": "対象タイプ（続き）",
+                  "fontFamily": "Manrope",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "ZOh8O",
+                  "name": "noneCondRow",
+                  "width": "fill_container",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MZim6",
+                      "name": "targetTypeStatusLowest",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hibFr",
+                          "name": "targetTypeStatusLowestText",
+                          "fill": "#666666",
+                          "content": "ALLY_STATUS",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "6By94",
+                      "name": "targetTypeAllyPos",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NPc5Q",
+                          "name": "targetTypeAllyPosText",
+                          "fill": "#666666",
+                          "content": "ALLY_POSITION",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n1rFl",
+                      "name": "targetTypeEnemyPos",
+                      "width": "fill_container",
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 999,
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u5jqt",
+                          "name": "targetTypeEnemyPosText",
+                          "fill": "#FFFFFF",
+                          "content": "ENEMY_POSITION",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p2OLX",
+                      "name": "targetTypeEnemyLowest",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 999,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#E0E0E0"
+                      },
+                      "padding": [
+                        7,
+                        8
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VqGBh",
+                          "name": "targetTypeEnemyLowestText",
+                          "fill": "#666666",
+                          "content": "ENEMY_LOWEST",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 9,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "lOHFw",
+                  "name": "conditionHint",
+                  "fill": "#888888",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "POSITION系は position(1..) を、STATUS系は status(POISON/STUN) を指定します。",
+                  "fontFamily": "Manrope",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cDlNV",
+              "name": "bottomActionBar",
+              "width": "fill_container",
+              "gap": 10,
+              "padding": [
+                2,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Pxujs",
+                  "name": "backConditionBtn",
+                  "width": "fill_container",
+                  "fill": "#F5F5F5",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E0E0E0"
+                  },
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sYLOp",
+                      "name": "backConditionText",
+                      "fill": "#555555",
+                      "content": "行動に戻る",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "31LVN",
+                  "name": "applyActionBtn",
+                  "width": "fill_container",
+                  "fill": "#1A1A1A",
+                  "cornerRadius": 12,
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "9LLXq",
+                      "name": "applyActionIcon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "check",
+                      "iconFontFamily": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "atJ4H",
+                      "name": "applyActionText",
+                      "fill": "#FFFFFF",
+                      "content": "条件を保存",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
                 }
               ]
             }

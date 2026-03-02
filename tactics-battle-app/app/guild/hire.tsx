@@ -1,15 +1,11 @@
-import { useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { ArrowLeft, Coins, PenLine, UserPlus } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CLASS_MASTER, ClassInfo } from "@/constants/classes";
-import { getRandomConstellationId } from "@/constants/constellations";
-import { charactersRepository } from "@/db/repositories/charactersRepository";
-import { getBaseStatsForClassLevel } from "@/game/progression";
-import { tacticsRepository } from "@/db/repositories/tacticsRepository";
-import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
-import { generateId } from "@/utils/id";
+import { walletRepository } from "@/db/repositories/walletRepository";
+import { hireCharacterService } from "@/features/guild/hireCharacterService";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -28,43 +24,47 @@ export default function HireScreen() {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<ClassInfo>(CLASS_MASTER[0]);
   const [name, setName] = useState("");
+  const [walletGold, setWalletGold] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadWallet = useCallback(async () => {
+    const wallet = await walletRepository.getMainWallet();
+    setWalletGold(wallet.gold);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadWallet();
+    }, [loadWallet])
+  );
 
   const handleCreate = async () => {
+    if (isSubmitting) return;
     const trimmedName = name.trim();
     if (!trimmedName) {
       Alert.alert("Error", "Please enter a name for your adventurer.");
       return;
     }
-
+    setIsSubmitting(true);
     try {
-      const constellationId = getRandomConstellationId();
-      const base = getBaseStatsForClassLevel(selectedClass.id, 1, constellationId);
-      const id = generateId("char");
-      await charactersRepository.upsert({
-        id,
-        slotIndex: null,
+      const result = await hireCharacterService.hireCharacter({
         name: trimmedName,
         classId: selectedClass.id,
-        constellationId,
-        level: 1,
-        exp: 0,
-        baseMaxHp: base.maxHp,
-        baseAtk: base.atk,
-        baseDef: base.def,
-        baseSpd: base.spd,
-        baseMaxMp: base.maxMp,
-        baseMpRegen: base.mpRegen,
-        currentHp: base.maxHp,
-        currentMp: base.maxMp,
       });
-      const defaultTactics = buildDefaultTacticsForClass(id, selectedClass.id);
-      if (defaultTactics.length > 0) {
-        await tacticsRepository.replaceForCharacter(id, defaultTactics);
+      if (!result.ok) {
+        Alert.alert(
+          "Insufficient Gold",
+          `Need: ${result.requiredGold.toLocaleString()} G / Have: ${result.walletGold.toLocaleString()} G`
+        );
+        setWalletGold(result.walletGold);
+        return;
       }
       router.back();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       Alert.alert("Error", `Failed to create adventurer.\n${message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -149,12 +149,25 @@ export default function HireScreen() {
       </ScrollView>
 
       <View style={styles.bottomSection}>
+        <View style={styles.walletRow}>
+          <Text style={styles.walletLabel}>Current Gold:</Text>
+          <Coins size={14} stroke={colors.textSecondary} />
+          <Text style={styles.walletValue}>{walletGold.toLocaleString()} G</Text>
+        </View>
         <View style={styles.costRow}>
           <Text style={styles.costLabel}>Hiring cost:</Text>
           <Coins size={14} stroke={colors.textSecondary} />
           <Text style={styles.costValue}>{selectedClass.hiringCost.toLocaleString()} G</Text>
         </View>
-        <Pressable style={({ pressed }) => [styles.createButton, pressed ? styles.createButtonPressed : null]} onPress={handleCreate}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.createButton,
+            isSubmitting ? styles.createButtonDisabled : null,
+            pressed ? styles.createButtonPressed : null,
+          ]}
+          onPress={handleCreate}
+          disabled={isSubmitting}
+        >
           <UserPlus size={20} stroke={colors.textInverted} />
           <Text style={styles.createButtonText}>Create Adventurer</Text>
         </Pressable>
@@ -244,6 +257,9 @@ const styles = StyleSheet.create({
   },
   nameInput: { flex: 1, fontSize: 15, fontWeight: "500", color: colors.textPrimary },
   bottomSection: { paddingVertical: 12, paddingHorizontal: 20, gap: 10 },
+  walletRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  walletLabel: { fontSize: 13, fontWeight: "500", color: colors.textTertiary },
+  walletValue: { fontSize: 13, fontWeight: "600", color: colors.textPrimary },
   costRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
   costLabel: { fontSize: 13, fontWeight: "500", color: colors.textTertiary },
   costValue: { fontSize: 13, fontWeight: "600", color: colors.textPrimary },
@@ -257,5 +273,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   createButtonPressed: { opacity: 0.8 },
+  createButtonDisabled: { opacity: 0.5 },
   createButtonText: { fontSize: 16, fontWeight: "700", color: colors.textInverted },
 });

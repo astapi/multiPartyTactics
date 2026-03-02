@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS characters (
   class_id TEXT NOT NULL CHECK (class_id IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')),
   constellation_id TEXT NOT NULL DEFAULT 'ARIES',
   level INTEGER DEFAULT 1,
+  exp INTEGER NOT NULL DEFAULT 0,
   base_max_hp INTEGER,
   base_atk INTEGER,
   base_def INTEGER,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS party_members (
   slot_index INTEGER NOT NULL,
   PRIMARY KEY (party_id, slot_index),
   UNIQUE (party_id, character_id),
+  UNIQUE (character_id),
   FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE CASCADE,
   FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
 );

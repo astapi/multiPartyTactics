@@ -1,14 +1,17 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { ArrowLeft, Shield, Sword } from "lucide-react-native";
+import { ArrowLeft, FlaskRound, Shield, Sword } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { charactersRepository } from "@/db/repositories/charactersRepository";
+import { consumableInventoryRepository } from "@/db/repositories/consumableInventoryRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { formatStatSummary } from "@/game/equipment/equipmentStatsService";
 import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
 import { useI18n } from "@/i18n";
+import { buildOwnedConsumableRows, type OwnedConsumableRow } from "@/features/inventory/consumableRows";
+import type { ConsumableCategory } from "@/types/consumable";
 import type { EquipmentCategory, EquipmentSlot, EquipmentStackRecord } from "@/types/equipment";
 
 const colors = {
@@ -23,7 +26,7 @@ const colors = {
   chipActiveText: "#ffffff",
 } as const;
 
-type CategoryFilter = "all" | EquipmentCategory;
+type CategoryFilter = "all" | "consumables" | EquipmentCategory;
 
 type OwnedEquipmentRow = {
   key: string;
@@ -70,21 +73,42 @@ export default function InventoryScreen() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [ownedEquipment, setOwnedEquipment] = useState<OwnedEquipmentRow[]>([]);
   const [equippedEquipment, setEquippedEquipment] = useState<EquippedEquipmentRow[]>([]);
+  const [ownedConsumables, setOwnedConsumables] = useState<OwnedConsumableRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const strings = useMemo(
     () => ({
       title: locale === "ja" ? "インベントリ" : "Inventory",
       categoryAll: locale === "ja" ? "すべて" : "All",
+      categoryConsumables: locale === "ja" ? "道具" : "Items",
       ownedSection: locale === "ja" ? "所持装備" : "Owned Equipment",
       equippedSection: locale === "ja" ? "装備中" : "Equipped",
+      consumableSection: locale === "ja" ? "所持アイテム（道具）" : "Owned Items",
       emptyOwned: locale === "ja" ? "所持装備はありません。" : "No owned equipment.",
       emptyEquipped: locale === "ja" ? "装備中の装備はありません。" : "No equipped items.",
+      emptyConsumables: locale === "ja" ? "所持道具はありません。" : "No owned items.",
       sourceLabel: locale === "ja" ? "入手" : "Source",
       ownerLabel: locale === "ja" ? "装備者" : "Owner",
       slotWeapon: locale === "ja" ? "武器" : "Weapon",
       slotArmor: locale === "ja" ? "防具" : "Armor",
     }),
+    [locale]
+  );
+
+  const consumableCategoryLabel = useCallback(
+    (category: ConsumableCategory): string => {
+      const mapJa: Record<ConsumableCategory, string> = {
+        healing_potion: "回復薬",
+        mana_potion: "魔力薬",
+        status_cure: "治療薬",
+      };
+      const mapEn: Record<ConsumableCategory, string> = {
+        healing_potion: "Healing",
+        mana_potion: "Mana",
+        status_cure: "Status Cure",
+      };
+      return (locale === "ja" ? mapJa : mapEn)[category];
+    },
     [locale]
   );
 
@@ -130,9 +154,10 @@ export default function InventoryScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [stacks, characters] = await Promise.all([
+      const [stacks, characters, consumableInventory] = await Promise.all([
         equipmentInventoryRepository.listStacks(),
         charactersRepository.list(),
+        consumableInventoryRepository.listAll(),
       ]);
 
       const ownedRows: OwnedEquipmentRow[] = stacks.map((stack: EquipmentStackRecord) => {
@@ -170,8 +195,17 @@ export default function InventoryScreen() {
         }
       }
 
+      const consumableRows = buildOwnedConsumableRows({
+        inventoryRows: consumableInventory,
+        locale,
+        onUnknownItemId: (itemId) => {
+          console.warn(`[inventory] unknown consumable item id: ${itemId}`);
+        },
+      });
+
       setOwnedEquipment(ownedRows);
       setEquippedEquipment(equippedRows);
+      setOwnedConsumables(consumableRows);
     } finally {
       setLoading(false);
     }
@@ -201,6 +235,9 @@ export default function InventoryScreen() {
 
   const ownedGroups = useMemo(() => groupByCategory(filteredOwned), [filteredOwned]);
   const equippedGroups = useMemo(() => groupByCategory(filteredEquipped), [filteredEquipped]);
+  const isConsumablesOnlyFilter = categoryFilter === "consumables";
+  const shouldShowConsumableSection =
+    categoryFilter === "all" || categoryFilter === "consumables";
 
   const renderCategoryGroups = <T extends { key: string; category: EquipmentCategory }>(
     groups: Map<EquipmentCategory, T[]>,
@@ -242,6 +279,12 @@ export default function InventoryScreen() {
             >
               <Text style={[styles.filterChipText, categoryFilter === "all" ? styles.filterChipTextActive : null]}>{strings.categoryAll}</Text>
             </Pressable>
+            <Pressable
+              style={[styles.filterChip, isConsumablesOnlyFilter ? styles.filterChipActive : null]}
+              onPress={() => setCategoryFilter("consumables")}
+            >
+              <Text style={[styles.filterChipText, isConsumablesOnlyFilter ? styles.filterChipTextActive : null]}>{strings.categoryConsumables}</Text>
+            </Pressable>
             {categories.map((category) => (
               <Pressable
                 key={category}
@@ -254,42 +297,68 @@ export default function InventoryScreen() {
           </ScrollView>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{strings.ownedSection}</Text>
-          {loading ? (
-            <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
-          ) : (
-            renderCategoryGroups(ownedGroups, (row) => (
-              <View key={row.key} style={styles.card}>
-                <View style={styles.rowIcon}><Sword size={15} stroke={colors.textSecondary} /></View>
-                <View style={styles.cardTextWrap}>
-                  <Text style={styles.cardTitle}>{row.displayName}</Text>
-                  <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
-                  <Text style={styles.cardSub}>{`${strings.sourceLabel}: ${sourceLabel(row.source)}`}</Text>
+        {!isConsumablesOnlyFilter ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{strings.ownedSection}</Text>
+            {loading ? (
+              <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+            ) : (
+              renderCategoryGroups(ownedGroups, (row) => (
+                <View key={row.key} style={styles.card}>
+                  <View style={styles.rowIcon}><Sword size={15} stroke={colors.textSecondary} /></View>
+                  <View style={styles.cardTextWrap}>
+                    <Text style={styles.cardTitle}>{row.displayName}</Text>
+                    <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
+                    <Text style={styles.cardSub}>{`${strings.sourceLabel}: ${sourceLabel(row.source)}`}</Text>
+                  </View>
+                  <Text style={styles.quantityText}>x{row.quantity}</Text>
                 </View>
-                <Text style={styles.quantityText}>x{row.quantity}</Text>
-              </View>
-            ), strings.emptyOwned)
-          )}
-        </View>
+              ), strings.emptyOwned)
+            )}
+          </View>
+        ) : null}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{strings.equippedSection}</Text>
-          {loading ? (
-            <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
-          ) : (
-            renderCategoryGroups(equippedGroups, (row) => (
-              <View key={row.key} style={styles.card}>
-                <View style={styles.rowIcon}>{row.slotType === "armor" ? <Shield size={15} stroke={colors.textSecondary} /> : <Sword size={15} stroke={colors.textSecondary} />}</View>
-                <View style={styles.cardTextWrap}>
-                  <Text style={styles.cardTitle}>{row.displayName}</Text>
-                  <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
-                  <Text style={styles.cardSub}>{`${strings.ownerLabel}: ${row.characterName} / ${row.slotType === "weapon" ? strings.slotWeapon : strings.slotArmor}`}</Text>
+        {!isConsumablesOnlyFilter ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{strings.equippedSection}</Text>
+            {loading ? (
+              <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+            ) : (
+              renderCategoryGroups(equippedGroups, (row) => (
+                <View key={row.key} style={styles.card}>
+                  <View style={styles.rowIcon}>{row.slotType === "armor" ? <Shield size={15} stroke={colors.textSecondary} /> : <Sword size={15} stroke={colors.textSecondary} />}</View>
+                  <View style={styles.cardTextWrap}>
+                    <Text style={styles.cardTitle}>{row.displayName}</Text>
+                    <Text style={styles.cardSub}>{row.statSummary || "--"}</Text>
+                    <Text style={styles.cardSub}>{`${strings.ownerLabel}: ${row.characterName} / ${row.slotType === "weapon" ? strings.slotWeapon : strings.slotArmor}`}</Text>
+                  </View>
                 </View>
-              </View>
-            ), strings.emptyEquipped)
-          )}
-        </View>
+              ), strings.emptyEquipped)
+            )}
+          </View>
+        ) : null}
+
+        {shouldShowConsumableSection ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{strings.consumableSection}</Text>
+            {loading ? (
+              <Text style={styles.emptyText}>{locale === "ja" ? "読み込み中..." : "Loading..."}</Text>
+            ) : ownedConsumables.length === 0 ? (
+              <Text style={styles.emptyText}>{strings.emptyConsumables}</Text>
+            ) : (
+              ownedConsumables.map((row) => (
+                <View key={row.key} style={styles.card}>
+                  <View style={styles.rowIcon}><FlaskRound size={15} stroke={colors.textSecondary} /></View>
+                  <View style={styles.cardTextWrap}>
+                    <Text style={styles.cardTitle}>{row.displayName}</Text>
+                    <Text style={styles.cardSub}>{consumableCategoryLabel(row.category)}</Text>
+                  </View>
+                  <Text style={styles.quantityText}>x{row.quantity}</Text>
+                </View>
+              ))
+            )}
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

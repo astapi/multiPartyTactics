@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS dungeon_party_ui_state (
   party_id TEXT NOT NULL,
   dungeon_id TEXT NOT NULL,
   selected_floor INTEGER,
+  step_count INTEGER NOT NULL DEFAULT 40,
   mode TEXT NOT NULL DEFAULT 'IDLE' CHECK (mode IN ('IDLE', 'EXPLORE', 'AUTO')),
   auto_run_count INTEGER NOT NULL DEFAULT 0,
   auto_loot_count INTEGER NOT NULL DEFAULT 0,

@@ -12,14 +12,14 @@ npx expo start
 
 ## 画面
 
-- `/` ホーム
-- `/party` PT編成（6スロット）
-- `/party/[characterId]/tactics` タクティクス設定（追加・編集・並べ替え）
+- `/guild` ギルド（キャラ管理 + パーティ管理）
+- `/characters/[id]/tactics` タクティクス設定（追加・編集・並べ替え）
 - `/dungeon` ダンジョン選択
+- `/shop` Shopハブ
 - `/dungeon/exploration` 探索
 - `/dungeon/battle` 戦闘
 - `/result` 結果
-- `/settings` 設定
+- `/more` More（設定・補助機能）
 
 ## データ保存
 

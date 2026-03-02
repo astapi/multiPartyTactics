@@ -65,12 +65,45 @@ const mapPartyMember = (row: PartyMemberRow): PartyMemberRecord => {
 };
 
 export const partiesRepository = {
+  async getById(id: string): Promise<PartyRecord | null> {
+    const db = await getDb();
+    const row = await db.getFirstAsync<PartyRow>(
+      "SELECT id, name, created_at FROM parties WHERE id = ? LIMIT 1",
+      [id]
+    );
+    return row ? mapParty(row) : null;
+  },
+
   async list(): Promise<PartyRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<PartyRow>(
       "SELECT id, name, created_at FROM parties ORDER BY created_at ASC, id ASC"
     );
     return rows.map(mapParty);
+  },
+
+  async create(input: { id: string; name: string }): Promise<void> {
+    const db = await getDb();
+    await db.runAsync(
+      "INSERT INTO parties (id, name) VALUES (?, ?)",
+      [input.id, input.name.trim()]
+    );
+  },
+
+  async rename(id: string, name: string): Promise<void> {
+    const db = await getDb();
+    await db.runAsync(
+      "UPDATE parties SET name = ? WHERE id = ?",
+      [name.trim(), id]
+    );
+  },
+
+  async delete(id: string): Promise<void> {
+    if (id === "party_default") {
+      throw new Error("Cannot delete default party");
+    }
+    const db = await getDb();
+    await db.runAsync("DELETE FROM parties WHERE id = ?", [id]);
   },
 
   async listWithMembers(): Promise<PartyWithMembers[]> {

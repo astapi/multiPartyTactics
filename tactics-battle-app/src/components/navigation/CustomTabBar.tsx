@@ -1,5 +1,5 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Home, Settings, Swords, Users } from "lucide-react-native";
+import { Settings, ShoppingBag, Swords, Users } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useI18n } from "@/i18n";
@@ -38,13 +38,13 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
           };
 
           const label =
-            route.name === "index"
-              ? t("home.tab.home")
+            route.name === "guild"
+              ? t("tab.guild")
               : route.name === "dungeon"
-                ? t("home.tab.dungeon")
-                : route.name === "guild"
-                  ? t("home.tab.guild")
-                  : t("home.tab.more");
+                ? t("tab.dungeon")
+                : route.name === "shop"
+                  ? t("tab.shop")
+                  : t("tab.more");
 
           return (
             <Pressable
@@ -56,10 +56,10 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               onLongPress={onLongPress}
               style={styles.item}
             >
-              {route.name === "index" ? <Home size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
-              {route.name === "dungeon" ? <Swords size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
               {route.name === "guild" ? <Users size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
-              {route.name === "settings" ? <Settings size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
+              {route.name === "dungeon" ? <Swords size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
+              {route.name === "shop" ? <ShoppingBag size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
+              {route.name === "more" ? <Settings size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
               <Text style={isFocused ? styles.labelActive : styles.label}>{label}</Text>
             </Pressable>
           );

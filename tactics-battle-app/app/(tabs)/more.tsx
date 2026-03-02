@@ -378,6 +378,19 @@ export default function SettingsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t("tab.more")}</Text>
+            <View style={styles.card}>
+              <Pressable style={styles.row} onPress={() => router.push("/inventory")}>
+                <Text style={styles.rowText}>{locale === "ja" ? "インベントリ" : "Inventory"}</Text>
+              </Pressable>
+              <View style={styles.divider} />
+              <Pressable style={styles.row} onPress={() => router.push("/debug/battle-effects")}>
+                <Text style={styles.rowText}>{locale === "ja" ? "デバッグ画面" : "Debug Screens"}</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.section}>
             <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
             <View style={styles.card}>
               <Pressable style={styles.row} onPress={() => void onSelectLanguage("ja")}>
