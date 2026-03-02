@@ -13,15 +13,21 @@ describe("game/explorationSession", () => {
   const dungeon = DUNGEONS.find((d) => d.id === "crestoria_dungeon_1_200") ?? DUNGEONS[0];
   const party = [makeUnit()];
 
-  it("階段を発見しても降下待ちにならず探索を継続する", () => {
+  it("探索度30%超で階段発見抽選に入り、発見後も探索を継続する", () => {
     let state = createExplorationSession({
       dungeon,
       party,
       floor: 1,
       seed: 1,
-      config: { explorationPercentGainPerStep: 5, stairsDiscoveryThresholdPercent: 50, stepsPerRun: 40 },
+      config: {
+        explorationPercentGainPerStep: 10,
+        stairsDiscoveryThresholdPercent: 50,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
+        stepsPerRun: 40,
+      },
     });
-    for (let i = 0; i < 12; i += 1) {
+    while (!state.floorProgressMap[1]?.stairsDiscovered && state.currentStep < state.totalSteps) {
       state = advanceExplorationStep(state);
     }
 
@@ -69,24 +75,28 @@ describe("game/explorationSession", () => {
     expect(longStreakRuns).toBeLessThan(10);
   });
 
-  it("階段発見時も1tickあたりイベントは1件", () => {
+  it("階段発見tickでも1tickあたりイベントは1件", () => {
     let state = createExplorationSession({
       dungeon,
       party,
       floor: 1,
       seed: 101,
       config: {
-        explorationPercentGainPerStep: 50,
-        stairsDiscoveryThresholdPercent: 10,
+        explorationPercentGainPerStep: 0,
+        stairsDiscoveryThresholdPercent: 40,
         fullExplorationPercent: 100,
+        discoveredStairsArrivalMinSteps: 1,
+        discoveredStairsArrivalMaxSteps: 1,
       },
+      persistedProgress: [{ floor: 1, explorationPercent: 31, stairsDiscovered: false }],
     });
+    state = advanceExplorationStep(state);
     const beforeEventCount = state.events.length;
     state = advanceExplorationStep(state);
     const afterEventCount = state.events.length;
 
     expect(afterEventCount - beforeEventCount).toBe(1);
-    expect(["STAIRS_DISCOVERED", "STAIRS_REACHED"]).toContain(state.events.at(-1)?.type);
+    expect(state.events.at(-1)?.type).toBe("STAIRS_DISCOVERED");
     expect(state.status).toBe("RUNNING");
   });
 

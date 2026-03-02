@@ -387,6 +387,7 @@ export default function DungeonScreen() {
 
       <FlashList
         data={isLoading || error || parties.length === 0 ? [] : parties}
+        extraData={{ uiStateMap, maxUnlockedFloor, maxFloor }}
         keyExtractor={(item) => item.party.id}
         estimatedItemSize={180}
         contentContainerStyle={styles.content}

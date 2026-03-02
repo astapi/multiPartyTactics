@@ -51,6 +51,7 @@ export type ExplorationSessionState = {
   floorProgressMap: Record<number, ExplorationFloorProgress>;
   stairsReachedThisRunMap: Record<number, boolean>;
   floorStepsThisRunMap: Record<number, number>;
+  undiscoveredStairsArrivalTargetMap: Record<number, number>;
   discoveredStairsArrivalTargetMap: Record<number, number>;
   specialBossArrivalTargetMap: Record<number, number>;
   bossEncounterOfferedThisRunMap: Record<number, boolean>;
@@ -68,6 +69,7 @@ const DEFAULT_CONFIG: ExplorationSessionConfig = {
 
 const SPECIAL_B5_BOSS_DUNGEON_ID = "crestoria_dungeon_1_200";
 const SPECIAL_B5_BOSS_FLOOR = 5;
+const EARLY_STAIRS_DISCOVERY_START_PERCENT = 30;
 
 const mixSeed32 = (value: number): number => {
   let x = value >>> 0;
@@ -160,6 +162,18 @@ const sampleDiscoveredStairsArrivalTarget = (
   return minSteps + Math.floor(rng() * span);
 };
 
+const sampleUndiscoveredStairsArrivalTarget = (
+  state: ExplorationSessionState,
+  floor: number
+): number => {
+  const maxSteps = getDiscoveredStairsArrivalMaxSteps({
+    explorationPercent: getFloorProgress(state, floor).explorationPercent,
+    config: state.config,
+  });
+  const rng = createSeededRng((state.seed + floor * 4001 + state.currentFloor * 4507 + state.dungeon.floors * 5003) >>> 0);
+  return 1 + Math.floor(rng() * maxSteps);
+};
+
 const resolveStatusAfterStepBudget = (state: ExplorationSessionState): ExplorationSessionState => {
   if (
     state.status === "FLOOR_CLEARED" ||
@@ -209,6 +223,7 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
     },
     stairsReachedThisRunMap: {},
     floorStepsThisRunMap: {},
+    undiscoveredStairsArrivalTargetMap: {},
     discoveredStairsArrivalTargetMap: {},
     specialBossArrivalTargetMap: {},
     bossEncounterOfferedThisRunMap: {},
@@ -270,6 +285,24 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
   const stairsToFloor = hasNextFloor ? floor + 1 : undefined;
   const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
   const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
+  let nextUndiscoveredArrivalTargetMap = nextState.undiscoveredStairsArrivalTargetMap;
+  if (
+    canProcessStairs &&
+    !isDiscoveredFloor &&
+    !hasReachedStairsThisRun &&
+    nextFloorProgress.explorationPercent > EARLY_STAIRS_DISCOVERY_START_PERCENT &&
+    nextUndiscoveredArrivalTargetMap[floor] === undefined
+  ) {
+    nextUndiscoveredArrivalTargetMap = {
+      ...nextUndiscoveredArrivalTargetMap,
+      [floor]: (nextState.floorStepsThisRunMap[floor] ?? 0) + sampleUndiscoveredStairsArrivalTarget(nextState, floor),
+    };
+    nextState = {
+      ...nextState,
+      undiscoveredStairsArrivalTargetMap: nextUndiscoveredArrivalTargetMap,
+    };
+  }
+  const undiscoveredArrivalTarget = nextUndiscoveredArrivalTargetMap[floor];
   let nextDiscoveredArrivalTargetMap = nextState.discoveredStairsArrivalTargetMap;
   if (
     canProcessStairs &&
@@ -293,7 +326,9 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     (isDiscoveredFloor
       ? (nextState.floorStepsThisRunMap[floor] ?? 0) >=
         (discoveredArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps)
-      : nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent);
+      : undiscoveredArrivalTarget !== undefined
+        ? (nextState.floorStepsThisRunMap[floor] ?? 0) >= undiscoveredArrivalTarget
+        : nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent);
   let stairsEvent: ExplorationEvent | null = null;
   if (reachedStairs) {
     const isFirstDiscovery = !prevFloorProgress.stairsDiscovered;
