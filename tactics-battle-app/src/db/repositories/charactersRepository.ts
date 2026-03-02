@@ -123,34 +123,39 @@ export const charactersRepository = {
     return rows.map(mapCharacter).filter((record): record is PartyMemberRecord => record.slotIndex !== null);
   },
 
-  async listUnassigned(partyId: string = DEFAULT_PARTY_ID): Promise<CharacterRecord[]> {
+  async listUnassigned(): Promise<CharacterRecord[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<any>(
       `SELECT c.*, pm.slot_index
        FROM characters c
-       LEFT JOIN party_members pm
-         ON pm.character_id = c.id AND pm.party_id = ?
+       LEFT JOIN party_members pm ON pm.character_id = c.id
        WHERE pm.character_id IS NULL
-       ORDER BY c.name ASC`,
-      [partyId]
+       ORDER BY c.name ASC`
     );
     return rows.map(mapCharacter);
   },
 
   async assignToSlot(characterId: string, slotIndex: number, partyId: string = DEFAULT_PARTY_ID): Promise<void> {
     const db = await getDb();
-    await db.runAsync(
-      "DELETE FROM party_members WHERE party_id = ? AND slot_index = ?",
-      [partyId, slotIndex]
-    );
-    await db.runAsync(
-      "DELETE FROM party_members WHERE party_id = ? AND character_id = ?",
-      [partyId, characterId]
-    );
-    await db.runAsync(
-      "INSERT INTO party_members (party_id, character_id, slot_index) VALUES (?, ?, ?)",
-      [partyId, characterId, slotIndex]
-    );
+    await db.execAsync("BEGIN;");
+    try {
+      await db.runAsync(
+        "DELETE FROM party_members WHERE party_id = ? AND slot_index = ?",
+        [partyId, slotIndex]
+      );
+      await db.runAsync(
+        "DELETE FROM party_members WHERE character_id = ?",
+        [characterId]
+      );
+      await db.runAsync(
+        "INSERT INTO party_members (party_id, character_id, slot_index) VALUES (?, ?, ?)",
+        [partyId, characterId, slotIndex]
+      );
+      await db.execAsync("COMMIT;");
+    } catch (error) {
+      await db.execAsync("ROLLBACK;");
+      throw error;
+    }
   },
 
   async removeFromSlot(characterId: string, partyId: string = DEFAULT_PARTY_ID): Promise<void> {

@@ -1,11 +1,9 @@
 import { getDb } from "@/db/database";
+import { INITIAL_GOLD, MAIN_WALLET_ID } from "@/constants/economy";
 import { calculateShopPriceGold } from "@/game/equipment/shopPricing";
 import { getEquipmentById, listEquipmentBySource } from "@/game/loot/equipmentMasterService";
 import type { ShopCatalogItem } from "@/types/equipment";
 import { generateId } from "@/utils/id";
-
-const MAIN_WALLET_ID = "main";
-const DEFAULT_GOLD = 12450;
 
 type ShopCatalogRow = {
   base_item_id: string;
@@ -18,7 +16,7 @@ const ensureMainWalletTx = async (db: Awaited<ReturnType<typeof getDb>>): Promis
   await db.runAsync(
     `INSERT OR IGNORE INTO wallets (id, gold, updated_at)
      VALUES (?, ?, CURRENT_TIMESTAMP)`,
-    [MAIN_WALLET_ID, DEFAULT_GOLD]
+    [MAIN_WALLET_ID, INITIAL_GOLD]
   );
 };
 

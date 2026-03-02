@@ -1,3 +1,5 @@
+import { INITIAL_GOLD, MAIN_WALLET_ID } from "@/constants/economy";
+
 export const MIGRATION_010 = `
 CREATE TABLE IF NOT EXISTS wallets (
   id TEXT PRIMARY KEY,
@@ -25,5 +27,5 @@ CREATE INDEX IF NOT EXISTS idx_shop_catalog_enabled ON shop_equipment_catalog(is
 CREATE INDEX IF NOT EXISTS idx_shop_purchase_logs_item ON shop_purchase_logs(base_item_id);
 
 INSERT OR IGNORE INTO wallets (id, gold, updated_at)
-VALUES ('main', 12450, CURRENT_TIMESTAMP);
+VALUES ('${MAIN_WALLET_ID}', ${INITIAL_GOLD}, CURRENT_TIMESTAMP);
 `;

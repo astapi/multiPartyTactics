@@ -38,6 +38,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: "#09090b" },
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </GestureHandlerRootView>

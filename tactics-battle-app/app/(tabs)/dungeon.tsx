@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Compass, Crown, MapPin, Repeat, Shield, Square, Swords } from "lucide-react-native";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getClassById } from "@/constants/classes";
 import { DUNGEONS } from "@/constants/dungeons";
 import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonPartyUiRepository } from "@/db/repositories/dungeonPartyUiRepository";
@@ -22,30 +23,15 @@ const colors = {
   textSecondary: "#666666",
   textTertiary: "#888888",
   textMuted: "#aaaaaa",
+  textDisabled: "#cccccc",
   borderDefault: "#e0e0e0",
+  borderStrong: "#d0d0d0",
   overlay: "rgba(0,0,0,0.28)",
 } as const;
 
 const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "crestoria_dungeon_1_200";
 const DEFAULT_EXPLORATION_STEP_COUNT = 40;
 const EXPLORATION_STEP_COUNT_OPTIONS = [20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
-
-type PartyIconKey = "shield" | "swords" | "crown";
-
-const PARTY_ICON_ORDER: PartyIconKey[] = ["shield", "swords", "crown"];
-
-const getPartyIcon = (kind: PartyIconKey) => {
-  switch (kind) {
-    case "shield":
-      return <Shield size={18} stroke="#999999" />;
-    case "swords":
-      return <Swords size={18} stroke="#999999" />;
-    case "crown":
-      return <Crown size={18} stroke="#cccccc" />;
-    default:
-      return <Shield size={18} stroke="#999999" />;
-  }
-};
 
 const clampFloor = (floor: number, maxFloor: number) => Math.max(1, Math.min(Math.max(1, maxFloor), floor));
 const sanitizeSelectedFloor = (params: {
@@ -445,13 +431,10 @@ export default function DungeonScreen() {
             maxUnlockedFloor,
           });
           const memberCount = entry.members.length;
-          const avgLv =
-            memberCount > 0
-              ? Math.round(entry.members.reduce((sum, member) => sum + member.level, 0) / memberCount)
-              : 0;
-          const iconKind = PARTY_ICON_ORDER[index % PARTY_ICON_ORDER.length] ?? "shield";
           const isIdleCard = cardState.displayStatus === "idle";
           const hasMembers = memberCount > 0;
+          const memberBySlot = new Map(entry.members.map((member) => [member.slotIndex, member] as const));
+          const memberSlots = Array.from({ length: 6 }).map((_, slotIndex) => memberBySlot.get(slotIndex) ?? null);
           const primaryActionEnabled =
             (cardState.primaryAction === "selectFloor" || cardState.isExploreEnabled || cardState.primaryAction === "autoStop") &&
             (hasMembers || cardState.primaryAction === "selectFloor");
@@ -462,25 +445,54 @@ export default function DungeonScreen() {
               style={[styles.partyCard, isIdleCard ? styles.partyCardIdle : styles.partyCardActiveLike]}
             >
               <View style={styles.partyCardTop}>
-                <View style={[styles.partyIconWrap, isIdleCard ? styles.partyIconWrapIdle : null]}>
-                  {getPartyIcon(iconKind)}
-                </View>
-                <View style={styles.partyTextWrap}>
+                <View style={styles.partyTopRow}>
                   <Text style={styles.partyName} numberOfLines={1}>{entry.party.name}</Text>
-                  <Text style={styles.partySub} numberOfLines={1}>
-                    {t("dungeon.ui.party.membersAvg", { count: memberCount, avg: avgLv })}
-                  </Text>
+                  <View style={styles.partyBadgeRow}>
+                    <Pressable
+                      style={styles.badgeWrap}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/dungeon/party",
+                          params: { partyId: entry.party.id },
+                        })
+                      }
+                    >
+                      <Text style={styles.badgeText}>{t("dungeon.ui.action.editParty")}</Text>
+                    </Pressable>
+                    {cardState.showAutoBadge ? (
+                      <View style={styles.badgeWrap}>
+                        <Repeat size={12} stroke={colors.textSecondary} />
+                        <Text style={styles.badgeText}>{t("dungeon.ui.auto.badge")}</Text>
+                      </View>
+                    ) : cardState.displayStatus === "idle" ? (
+                      <View style={[styles.badgeWrap, styles.badgeIdle]}>
+                        <Text style={[styles.badgeText, styles.badgeIdleText]}>{t("dungeon.ui.status.idle")}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                 </View>
-                {cardState.showAutoBadge ? (
-                  <View style={styles.badgeWrap}>
-                    <Repeat size={12} stroke={colors.textSecondary} />
-                    <Text style={styles.badgeText}>{t("dungeon.ui.auto.badge")}</Text>
-                  </View>
-                ) : cardState.displayStatus === "idle" ? (
-                  <View style={[styles.badgeWrap, styles.badgeIdle]}>
-                    <Text style={[styles.badgeText, styles.badgeIdleText]}>{t("dungeon.ui.status.idle")}</Text>
-                  </View>
-                ) : null}
+                <View style={styles.membersRow}>
+                  {memberSlots.map((member, slotIndex) => {
+                    const empty = member === null;
+                    return (
+                      <View key={`party-member-${entry.party.id}-${slotIndex}`} style={styles.memberItem}>
+                        <View style={[styles.memberAvatar, empty ? styles.memberAvatarEmpty : null]}>
+                          {empty ? (
+                            <Shield size={12} stroke={colors.borderDefault} />
+                          ) : (
+                            <Image source={getClassById(member.classId).image} style={styles.memberAvatarImage} resizeMode="contain" />
+                          )}
+                        </View>
+                        <Text style={empty ? styles.memberLevelEmpty : styles.memberLevel}>
+                          {empty ? "" : `Lv${member.level}`}
+                        </Text>
+                        <Text style={empty ? styles.memberNameEmpty : styles.memberName} numberOfLines={1}>
+                          {empty ? t("guild.party.empty") : member.name}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
 
               <View style={styles.cardDivider} />
@@ -676,24 +688,30 @@ const styles = StyleSheet.create({
   partyCardActiveLike: { backgroundColor: colors.bgSurface },
   partyCardIdle: { backgroundColor: colors.bgPrimary },
   partyCardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+    gap: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  partyIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  partyTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  partyBadgeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  partyName: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
+  membersRow: { flexDirection: "row", gap: 4 },
+  memberItem: { flex: 1, minWidth: 0, alignItems: "center", gap: 2, paddingVertical: 2 },
+  memberAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.bgElevated,
+    backgroundColor: "transparent",
+    overflow: "hidden",
   },
-  partyIconWrapIdle: { backgroundColor: colors.bgSurface },
-  partyTextWrap: { flex: 1, gap: 2 },
-  partyName: { color: colors.textPrimary, fontSize: 15, fontWeight: "600" },
-  partySub: { color: colors.textTertiary, fontSize: 10 },
+  memberAvatarImage: { width: "122%", height: "122%" },
+  memberAvatarEmpty: { backgroundColor: colors.bgPrimary, borderWidth: 1, borderColor: colors.borderStrong },
+  memberLevel: { color: colors.textTertiary, fontSize: 8, fontWeight: "500" },
+  memberLevelEmpty: { color: colors.textDisabled, fontSize: 8, fontWeight: "500", minHeight: 10 },
+  memberName: { color: colors.textPrimary, fontSize: 9, fontWeight: "600" },
+  memberNameEmpty: { color: colors.textDisabled, fontSize: 9, fontWeight: "500" },
   badgeWrap: {
     flexDirection: "row",
     alignItems: "center",

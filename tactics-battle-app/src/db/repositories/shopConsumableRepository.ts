@@ -1,12 +1,10 @@
 import { getDb } from "@/db/database";
+import { INITIAL_GOLD, MAIN_WALLET_ID } from "@/constants/economy";
 import {
   getConsumableById,
   listConsumables,
 } from "@/game/consumable/consumableMasterService";
 import type { ConsumableShopCatalogItem } from "@/types/consumable";
-
-const MAIN_WALLET_ID = "main";
-const DEFAULT_GOLD = 12450;
 
 const ensureMainWalletTx = async (
   db: Awaited<ReturnType<typeof getDb>>
@@ -14,7 +12,7 @@ const ensureMainWalletTx = async (
   await db.runAsync(
     `INSERT OR IGNORE INTO wallets (id, gold, updated_at)
      VALUES (?, ?, CURRENT_TIMESTAMP)`,
-    [MAIN_WALLET_ID, DEFAULT_GOLD]
+    [MAIN_WALLET_ID, INITIAL_GOLD]
   );
 };
 

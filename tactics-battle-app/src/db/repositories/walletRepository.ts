@@ -1,8 +1,6 @@
 import { getDb } from "@/db/database";
+import { INITIAL_GOLD, MAIN_WALLET_ID } from "@/constants/economy";
 import type { WalletRecord } from "@/types/equipment";
-
-const MAIN_WALLET_ID = "main";
-const DEFAULT_GOLD = 12450;
 
 const mapWallet = (row: any): WalletRecord => ({
   id: row.id,
@@ -14,7 +12,7 @@ const ensureMainWalletTx = async (db: Awaited<ReturnType<typeof getDb>>): Promis
   await db.runAsync(
     `INSERT OR IGNORE INTO wallets (id, gold, updated_at)
      VALUES (?, ?, CURRENT_TIMESTAMP)`,
-    [MAIN_WALLET_ID, DEFAULT_GOLD]
+    [MAIN_WALLET_ID, INITIAL_GOLD]
   );
 };
 
@@ -74,7 +72,7 @@ export const walletRepository = {
       "SELECT * FROM wallets WHERE id = ? LIMIT 1",
       [MAIN_WALLET_ID]
     );
-    const currentGold = Math.max(0, Math.floor(wallet?.gold ?? DEFAULT_GOLD));
+    const currentGold = Math.max(0, Math.floor(wallet?.gold ?? INITIAL_GOLD));
     await db.runAsync(
       `UPDATE wallets
        SET gold = ?, updated_at = CURRENT_TIMESTAMP
