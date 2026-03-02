@@ -381,7 +381,7 @@ export default function SettingsScreen() {
             <Text style={styles.sectionLabel}>{t("tab.more")}</Text>
             <View style={styles.card}>
               <Pressable style={styles.row} onPress={() => router.push("/inventory")}>
-                <Text style={styles.rowText}>{locale === "ja" ? "インベントリ" : "Inventory"}</Text>
+                <Text style={styles.rowText}>{locale === "ja" ? "倉庫" : "Inventory"}</Text>
               </Pressable>
               <View style={styles.divider} />
               <Pressable style={styles.row} onPress={() => router.push("/debug/battle-effects")}>

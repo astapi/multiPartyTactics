@@ -78,7 +78,7 @@ export default function InventoryScreen() {
 
   const strings = useMemo(
     () => ({
-      title: locale === "ja" ? "インベントリ" : "Inventory",
+      title: locale === "ja" ? "倉庫" : "Inventory",
       categoryAll: locale === "ja" ? "すべて" : "All",
       categoryConsumables: locale === "ja" ? "道具" : "Items",
       ownedSection: locale === "ja" ? "所持装備" : "Owned Equipment",
