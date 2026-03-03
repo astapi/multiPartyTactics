@@ -54,8 +54,8 @@ describe("game/tactics/defaults", () => {
         classId: "SWORDMAN",
         expectedSkillIds: ["focus", "sword_dance", "rift_slash"],
         expectedConditions: [
-          { type: "TURN_EQUALS", params: "{\"turn\":1}" },
-          { type: "ENEMY_HP_BELOW", params: "{\"threshold\":0.45}" },
+          { type: "BOSS_BATTLE", params: null },
+          { type: "ALWAYS", params: null },
           { type: "ALWAYS", params: null },
         ],
       },
@@ -63,9 +63,9 @@ describe("game/tactics/defaults", () => {
         classId: "BERSERKER",
         expectedSkillIds: ["pump_up", "crushing_swing", "sweep"],
         expectedConditions: [
-          { type: "TURN_EQUALS", params: "{\"turn\":1}" },
-          { type: "ENEMY_HP_BELOW", params: "{\"threshold\":0.35}" },
+          { type: "BOSS_BATTLE", params: null },
           { type: "ALWAYS", params: null },
+          { type: "ENEMY_COUNT_AT_LEAST", params: "{\"count\":2}" },
         ],
       },
       {
@@ -74,15 +74,15 @@ describe("game/tactics/defaults", () => {
         expectedConditions: [
           { type: "ALLY_HP_BELOW", params: "{\"threshold\":0.3}" },
           { type: "ALLY_HP_BELOW", params: "{\"threshold\":0.6}" },
-          { type: "TURN_EQUALS", params: "{\"turn\":1}" },
+          { type: "BOSS_BATTLE", params: null },
         ],
       },
       {
         classId: "WITCH",
         expectedSkillIds: ["mana_charge", "fireball", "lightning"],
         expectedConditions: [
-          { type: "TURN_EQUALS", params: "{\"turn\":1}" },
-          { type: "ENEMY_HP_BELOW", params: "{\"threshold\":0.4}" },
+          { type: "BOSS_BATTLE", params: null },
+          { type: "ALWAYS", params: null },
           { type: "ALWAYS", params: null },
         ],
       },

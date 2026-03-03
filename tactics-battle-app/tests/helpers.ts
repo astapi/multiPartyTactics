@@ -60,6 +60,6 @@ export const makeRule = (
   skillId: overrides.skillId ?? "skill-1",
   conditionType: overrides.conditionType ?? "ALWAYS",
   conditionParams: overrides.conditionParams ?? null,
-  targetType: overrides.targetType ?? "ENEMY_FIRST",
+  targetType: overrides.targetType ?? "AUTO",
   targetParams: overrides.targetParams ?? null,
 });

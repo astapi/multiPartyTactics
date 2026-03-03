@@ -33,7 +33,7 @@ describe("logic benchmarks", () => {
       skillId: "s",
       conditionType: "ALLY_HP_BELOW",
       conditionParams: JSON.stringify({ threshold: 0.5 }),
-      targetType: "ENEMY_LOWEST_HP",
+      targetType: "AUTO",
     }),
   ];
 

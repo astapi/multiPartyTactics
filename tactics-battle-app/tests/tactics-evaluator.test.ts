@@ -74,7 +74,7 @@ describe("game/tactics/evaluator", () => {
       actor,
       [actor, allyLow],
       [enemyA, enemyB],
-      [makeRule({ id: "turn", skillId: "s", conditionType: "TURN_EQUALS", conditionParams: "{\"turn\":5}", targetType: "ENEMY_FIRST" })],
+      [makeRule({ id: "turn", skillId: "s", conditionType: "TURN_EQUALS", conditionParams: "{\"turn\":5}", targetType: "AUTO" })],
       skillMap,
       5
     );
@@ -94,11 +94,11 @@ describe("game/tactics/evaluator", () => {
       actor,
       [actor, allyLow],
       [enemyA, enemyB],
-      [makeRule({ id: "enemy", skillId: "s", conditionType: "ENEMY_HP_BELOW", conditionParams: "{\"threshold\":0.3}", targetType: "ENEMY_LOWEST_HP" })],
+      [makeRule({ id: "enemy", skillId: "s", conditionType: "ENEMY_COUNT_AT_LEAST", conditionParams: "{\"count\":2}", targetType: "AUTO" })],
       skillMap,
       1
     );
-    expect(enemyLowest.target?.id).toBe("enemyB");
+    expect(enemyLowest.target?.id).toBe("enemyA");
 
     const allyMpLow = makeUnit({
       id: "allyMpLow",
@@ -133,23 +133,247 @@ describe("game/tactics/evaluator", () => {
     );
     expect(mpCondition.target?.id).toBe("allyMpLow");
 
-    const enemyByPosition = evaluateTactics(
+    const enemyAuto = evaluateTactics(
       actor,
       [actor, allyLow],
       [enemyA, enemyB],
       [
         makeRule({
-          id: "enemy-pos",
+          id: "enemy-auto",
           skillId: "s",
           conditionType: "ALWAYS",
-          targetType: "ENEMY_POSITION",
-          targetParams: "{\"position\":2}",
+          targetType: "AUTO",
         }),
       ],
       skillMap,
       1
     );
-    expect(enemyByPosition.target?.id).toBe("enemyB");
+    expect(enemyAuto.target?.id).toBe("enemyA");
+  });
+
+  it("treats BELOW conditions as <= at threshold boundary", () => {
+    const actor = makeUnit({
+      id: "actor",
+      hp: 50,
+      mp: 10,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 1,
+    });
+    const ally = makeUnit({
+      id: "ally",
+      hp: 40,
+      mp: 3,
+      stats: { maxHp: 100, maxMp: 10 },
+      order: 2,
+    });
+    const enemy = makeUnit({
+      id: "enemy",
+      hp: 30,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 100,
+    });
+    const skill = makeSkill({ id: "s", mpCost: 0, target: "ALLY" });
+    const skillMap = new Map([[skill.id, skill]]);
+
+    const selfBoundary = evaluateTactics(
+      actor,
+      [actor, ally],
+      [enemy],
+      [
+        makeRule({
+          id: "self-boundary",
+          skillId: "s",
+          conditionType: "SELF_HP_BELOW",
+          conditionParams: "{\"threshold\":0.5}",
+          targetType: "SELF",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(selfBoundary.skill?.id).toBe("s");
+    expect(selfBoundary.target?.id).toBe("actor");
+
+    const allyBoundary = evaluateTactics(
+      actor,
+      [actor, ally],
+      [enemy],
+      [
+        makeRule({
+          id: "ally-boundary",
+          skillId: "s",
+          conditionType: "ALLY_HP_BELOW",
+          conditionParams: "{\"threshold\":0.4}",
+          targetType: "ALLY_LOWEST_HP",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(allyBoundary.target?.id).toBe("ally");
+
+    const allyMpBoundary = evaluateTactics(
+      actor,
+      [actor, ally],
+      [enemy],
+      [
+        makeRule({
+          id: "ally-mp-boundary",
+          skillId: "s",
+          conditionType: "ALLY_MP_BELOW",
+          conditionParams: "{\"threshold\":0.3}",
+          targetType: "ALLY_LOWEST_HP",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(allyMpBoundary.target?.id).toBe("ally");
+
+  });
+
+  it("supports SELF_HP_ABOVE and ALLY_FIRST_MATCHING_CONDITION", () => {
+    const actor = makeUnit({
+      id: "actor",
+      hp: 50,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 2,
+    });
+    const allyFront = makeUnit({
+      id: "ally-front",
+      hp: 20,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 1,
+    });
+    const allyBack = makeUnit({
+      id: "ally-back",
+      hp: 10,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 3,
+    });
+    const enemy = makeUnit({ id: "enemy", hp: 80, stats: { maxHp: 100 }, order: 100 });
+    const skill = makeSkill({ id: "s", mpCost: 0, target: "ALLY" });
+    const skillMap = new Map([[skill.id, skill]]);
+
+    const selfHpAbove = evaluateTactics(
+      actor,
+      [actor, allyFront, allyBack],
+      [enemy],
+      [
+        makeRule({
+          id: "self-above",
+          skillId: "s",
+          conditionType: "SELF_HP_ABOVE",
+          conditionParams: "{\"threshold\":0.5}",
+          targetType: "SELF",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(selfHpAbove.skill?.id).toBe("s");
+    expect(selfHpAbove.target?.id).toBe("actor");
+
+    const firstMatching = evaluateTactics(
+      actor,
+      [actor, allyFront, allyBack],
+      [enemy],
+      [
+        makeRule({
+          id: "first-matching",
+          skillId: "s",
+          conditionType: "ALLY_HP_BELOW",
+          conditionParams: "{\"threshold\":0.4}",
+          targetType: "ALLY_FIRST_MATCHING_CONDITION",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(firstMatching.target?.id).toBe("ally-front");
+  });
+
+  it("supports BOSS_BATTLE condition", () => {
+    const actor = makeUnit({ id: "actor", order: 1 });
+    const ally = makeUnit({ id: "ally", order: 2 });
+    const bossEnemy = makeUnit({ id: "enemy_boss_lepus_1", order: 100 });
+    const normalEnemy = makeUnit({ id: "enemy_goblin_1", order: 101 });
+    const skill = makeSkill({ id: "s", mpCost: 0, target: "SELF" });
+    const skillMap = new Map([[skill.id, skill]]);
+
+    const bossHit = evaluateTactics(
+      actor,
+      [actor, ally],
+      [bossEnemy],
+      [
+        makeRule({
+          id: "boss-rule",
+          skillId: "s",
+          conditionType: "BOSS_BATTLE",
+          targetType: "SELF",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(bossHit.skill?.id).toBe("s");
+    expect(bossHit.target?.id).toBe("actor");
+
+    const normalMiss = evaluateTactics(
+      actor,
+      [actor, ally],
+      [normalEnemy],
+      [
+        makeRule({
+          id: "boss-rule",
+          skillId: "s",
+          conditionType: "BOSS_BATTLE",
+          targetType: "SELF",
+        }),
+      ],
+      skillMap,
+      1
+    );
+    expect(normalMiss.skill).toBeNull();
+    expect(normalMiss.target).toBeNull();
+  });
+
+  it("returns null when ALLY_FIRST_MATCHING_CONDITION has no matching ally", () => {
+    const actor = makeUnit({
+      id: "actor",
+      hp: 90,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 1,
+    });
+    const ally = makeUnit({
+      id: "ally",
+      hp: 80,
+      stats: { maxHp: 100, maxMp: 20 },
+      order: 2,
+    });
+    const enemy = makeUnit({ id: "enemy", hp: 80, stats: { maxHp: 100 }, order: 100 });
+    const skill = makeSkill({ id: "s", mpCost: 0, target: "ALLY" });
+    const skillMap = new Map([[skill.id, skill]]);
+
+    const result = evaluateTactics(
+      actor,
+      [actor, ally],
+      [enemy],
+      [
+        makeRule({
+          id: "no-match",
+          skillId: "s",
+          conditionType: "ALLY_HP_BELOW",
+          conditionParams: "{\"threshold\":0.4}",
+          targetType: "ALLY_FIRST_MATCHING_CONDITION",
+        }),
+      ],
+      skillMap,
+      1
+    );
+
+    expect(result.skill).toBeNull();
+    expect(result.target).toBeNull();
   });
 
   it("supports multiple conditions via ALL_OF", () => {

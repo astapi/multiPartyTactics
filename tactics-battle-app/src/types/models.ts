@@ -41,22 +41,23 @@ export type PartyWithMembers = {
 
 export type ConditionType =
   | "TURN_EQUALS"
+  | "BOSS_BATTLE"
+  | "ENEMY_COUNT_AT_LEAST"
   | "SELF_HP_BELOW"
+  | "SELF_HP_ABOVE"
   | "ALLY_HP_BELOW"
   | "ALLY_MP_BELOW"
-  | "ENEMY_HP_BELOW"
   | "ANY_ALLY_HAS_STATUS"
   | "ALL_OF"
   | "ALWAYS";
 
 export type TargetType =
+  | "AUTO"
   | "SELF"
   | "ALLY_LOWEST_HP"
+  | "ALLY_FIRST_MATCHING_CONDITION"
   | "ALLY_WITH_STATUS_LOWEST_HP"
-  | "ALLY_POSITION"
-  | "ENEMY_FIRST"
-  | "ENEMY_POSITION"
-  | "ENEMY_LOWEST_HP";
+  | "ALLY_POSITION";
 
 export type TacticsRuleRecord = {
   id: string;

@@ -12,48 +12,15 @@ import {
 import type { Skill } from "@/game/skills/types";
 import { getSkillDisplayName } from "@/game/skills/labels";
 import { getConditionTypeLabel, getTargetTypeLabel } from "@/game/tactics/labels";
+import {
+  coerceRuleToSkillDefinition,
+  getSkillTacticsDefinition,
+  type TacticsParamField,
+  validateRuleAgainstSkillDefinition,
+} from "@/game/tactics/skillTacticsDefinitions";
 import { useI18n } from "@/i18n";
 import { ConditionType, TacticsRuleRecord, TargetType } from "@/types/models";
 import { generateId } from "@/utils/id";
-
-const CONDITIONS: ConditionType[] = [
-  "TURN_EQUALS",
-  "SELF_HP_BELOW",
-  "ALLY_HP_BELOW",
-  "ALLY_MP_BELOW",
-  "ENEMY_HP_BELOW",
-  "ANY_ALLY_HAS_STATUS",
-  "ALL_OF",
-  "ALWAYS",
-];
-
-const TARGETS: TargetType[] = [
-  "SELF",
-  "ALLY_LOWEST_HP",
-  "ALLY_WITH_STATUS_LOWEST_HP",
-  "ALLY_POSITION",
-  "ENEMY_FIRST",
-  "ENEMY_POSITION",
-  "ENEMY_LOWEST_HP",
-];
-
-const NESTED_CONDITIONS: Exclude<ConditionType, "ALL_OF">[] = [
-  "TURN_EQUALS",
-  "SELF_HP_BELOW",
-  "ALLY_HP_BELOW",
-  "ALLY_MP_BELOW",
-  "ENEMY_HP_BELOW",
-  "ANY_ALLY_HAS_STATUS",
-  "ALWAYS",
-];
-
-type CompoundConditionRow = {
-  id: string;
-  type: Exclude<ConditionType, "ALL_OF">;
-  turn: string;
-  threshold: string;
-  status: string;
-};
 
 type Props = {
   visible: boolean;
@@ -65,18 +32,24 @@ type Props = {
   onClose: () => void;
 };
 
+const colors = {
+  bgPanel: "#ffffff",
+  bgSection: "#f5f5f5",
+  bgAccent: "#f0f7ff",
+  textPrimary: "#1a1a1a",
+  textSecondary: "#666666",
+  textTertiary: "#888888",
+  borderDefault: "#e0e0e0",
+  borderAccent: "#93c5fd",
+  iconDark: "#111111",
+} as const;
+
 const parseObject = (value: string | null): Record<string, unknown> => {
   if (!value) return {};
-  const parsed = JSON.parse(value);
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("JSON object expected");
-  }
-  return parsed as Record<string, unknown>;
-};
-
-const safeParseObject = (value: string | null): Record<string, unknown> => {
   try {
-    return parseObject(value);
+    const parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as Record<string, unknown>;
   } catch {
     return {};
   }
@@ -84,133 +57,56 @@ const safeParseObject = (value: string | null): Record<string, unknown> => {
 
 const toText = (value: unknown): string => (value == null ? "" : String(value));
 
-const parseNestedConditions = (value: string | null): CompoundConditionRow[] => {
-  const obj = safeParseObject(value);
-  const rows = Array.isArray(obj.conditions)
-    ? (obj.conditions as Array<{ type?: unknown; params?: unknown }>)
-    : [];
-  return rows.map((entry, index) => {
-    const type = String(entry.type ?? "ALWAYS");
-    const params =
-      entry.params && typeof entry.params === "object" && !Array.isArray(entry.params)
-        ? (entry.params as Record<string, unknown>)
-        : {};
-    const normalizedType = NESTED_CONDITIONS.includes(type as Exclude<ConditionType, "ALL_OF">)
-      ? (type as Exclude<ConditionType, "ALL_OF">)
-      : "ALWAYS";
-    return {
-      id: `nested-${index}-${generateId("cond")}`,
-      type: normalizedType,
-      turn: toText(params.turn),
-      threshold: toText(params.threshold),
-      status: toText(params.status),
-    };
-  });
-};
+const toJson = (value: Record<string, unknown> | null): string | null =>
+  value ? JSON.stringify(value) : null;
 
-const buildNumeric = (raw: string, label: string): number => {
-  const value = Number(raw);
-  if (!Number.isFinite(value)) {
-    throw new Error(`${label}:number`);
+const buildParams = (
+  fields: TacticsParamField[] | undefined,
+  values: {
+    turn: string;
+    threshold: string;
+    status: string;
+    position: string;
+    count: string;
   }
-  return value;
-};
+): Record<string, unknown> | null => {
+  if (!fields || fields.length === 0) return null;
 
-const buildInteger = (raw: string, label: string): number => {
-  const value = buildNumeric(raw, label);
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error(`${label}:integer`);
-  }
-  return value;
-};
-
-const buildSingleConditionParams = (row: {
-  type: Exclude<ConditionType, "ALL_OF">;
-  turn: string;
-  threshold: string;
-  status: string;
-}): Record<string, unknown> | null => {
-  switch (row.type) {
-    case "TURN_EQUALS":
-      return { turn: buildInteger(row.turn, "turn") };
-    case "SELF_HP_BELOW":
-    case "ALLY_HP_BELOW":
-    case "ALLY_MP_BELOW":
-    case "ENEMY_HP_BELOW":
-      return { threshold: buildNumeric(row.threshold, "threshold") };
-    case "ANY_ALLY_HAS_STATUS": {
-      const status = row.status.trim().toUpperCase();
+  const params: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (field === "turn") {
+      const turn = Number(values.turn);
+      if (!Number.isInteger(turn) || turn < 1) throw new Error("turn:integer");
+      params.turn = turn;
+      continue;
+    }
+    if (field === "threshold") {
+      const threshold = Number(values.threshold);
+      if (!Number.isFinite(threshold)) throw new Error("threshold:number");
+      if (threshold < 0 || threshold > 1) throw new Error("threshold:range");
+      params.threshold = threshold;
+      continue;
+    }
+    if (field === "status") {
+      const status = values.status.trim().toUpperCase();
       if (!status) throw new Error("status:required");
-      return { status };
+      params.status = status;
+      continue;
     }
-    case "ALWAYS":
-      return null;
-    default:
-      return null;
-  }
-};
-
-const buildConditionParamsValue = (args: {
-  conditionType: ConditionType;
-  turn: string;
-  threshold: string;
-  status: string;
-  allOfRows: CompoundConditionRow[];
-}): string | null => {
-  switch (args.conditionType) {
-    case "ALWAYS":
-      return null;
-    case "ALL_OF": {
-      if (args.allOfRows.length === 0) {
-        throw new Error("all_of:required");
-      }
-      const conditions = args.allOfRows.map((row) => ({
-        type: row.type,
-        params: buildSingleConditionParams(row) ?? {},
-      }));
-      return JSON.stringify({ conditions });
+    if (field === "position") {
+      const position = Number(values.position);
+      if (!Number.isInteger(position) || position < 1) throw new Error("position:integer");
+      params.position = position;
+      continue;
     }
-    default: {
-      const params = buildSingleConditionParams({
-        type: args.conditionType as Exclude<ConditionType, "ALL_OF">,
-        turn: args.turn,
-        threshold: args.threshold,
-        status: args.status,
-      });
-      return params ? JSON.stringify(params) : null;
+    if (field === "count") {
+      const count = Number(values.count);
+      if (!Number.isInteger(count) || count < 1) throw new Error("count:integer");
+      params.count = count;
     }
   }
-};
 
-const buildTargetParamsValue = (args: {
-  targetType: TargetType;
-  targetStatus: string;
-  targetPosition: string;
-}): string | null => {
-  switch (args.targetType) {
-    case "ALLY_WITH_STATUS_LOWEST_HP": {
-      const status = args.targetStatus.trim().toUpperCase();
-      if (!status) throw new Error("target_status:required");
-      return JSON.stringify({ status });
-    }
-    case "ALLY_POSITION":
-    case "ENEMY_POSITION":
-      return JSON.stringify({ position: buildInteger(args.targetPosition, "position") });
-    default:
-      return null;
-  }
-};
-
-const parseTargetStatus = (targetType: TargetType, targetParams: string | null): string => {
-  if (targetType !== "ALLY_WITH_STATUS_LOWEST_HP") return "";
-  const params = safeParseObject(targetParams);
-  return toText(params.status);
-};
-
-const parseTargetPosition = (targetType: TargetType, targetParams: string | null): string => {
-  if (targetType !== "ALLY_POSITION" && targetType !== "ENEMY_POSITION") return "";
-  const params = safeParseObject(targetParams);
-  return toText(params.position);
+  return params;
 };
 
 export const RuleEditModal = ({
@@ -223,59 +119,104 @@ export const RuleEditModal = ({
   onClose,
 }: Props) => {
   const { t } = useI18n();
-  const skillButtons = useMemo(() => skills.slice(0, 8), [skills]);
 
   const [skillId, setSkillId] = useState("");
   const [conditionType, setConditionType] = useState<ConditionType>("ALWAYS");
-  const [targetType, setTargetType] = useState<TargetType>("ENEMY_FIRST");
+  const [targetType, setTargetType] = useState<TargetType>("AUTO");
   const [turnValue, setTurnValue] = useState("");
   const [thresholdValue, setThresholdValue] = useState("");
   const [statusValue, setStatusValue] = useState("");
-  const [allOfRows, setAllOfRows] = useState<CompoundConditionRow[]>([]);
+  const [countValue, setCountValue] = useState("");
   const [targetStatusValue, setTargetStatusValue] = useState("");
   const [targetPositionValue, setTargetPositionValue] = useState("");
+
+  const selectedSkill = useMemo(
+    () => skills.find((skill) => skill.id === skillId) ?? skills[0],
+    [skills, skillId]
+  );
+
+  const definition = useMemo(
+    () =>
+      getSkillTacticsDefinition(
+        selectedSkill?.id ?? skillId,
+        selectedSkill?.target
+      ),
+    [selectedSkill, skillId]
+  );
 
   useEffect(() => {
     if (!visible) return;
 
-    const nextSkillId = initial?.skillId ?? skills[0]?.id ?? "";
-    const nextConditionType = initial?.conditionType ?? "ALWAYS";
-    const nextTargetType = initial?.targetType ?? "ENEMY_FIRST";
-    const conditionParams = safeParseObject(initial?.conditionParams ?? null);
+    const nextSkill = initial
+      ? skills.find((skill) => skill.id === initial.skillId) ?? skills[0]
+      : skills[0];
+    const nextSkillId = nextSkill?.id ?? "";
+    const nextDefinition = getSkillTacticsDefinition(nextSkillId, nextSkill?.target);
+
+    const seedRule: TacticsRuleRecord = initial ?? {
+      id: generateId("rule"),
+      characterId,
+      priority,
+      skillId: nextSkillId,
+      conditionType: nextDefinition.defaultCondition.type,
+      conditionParams: toJson(nextDefinition.defaultCondition.params),
+      targetType: nextDefinition.defaultTarget.type,
+      targetParams: toJson(nextDefinition.defaultTarget.params),
+    };
+
+    const normalized = coerceRuleToSkillDefinition(
+      { ...seedRule, skillId: nextSkillId },
+      nextDefinition
+    );
+    const conditionParams = parseObject(normalized.conditionParams);
+    const targetParams = parseObject(normalized.targetParams);
 
     setSkillId(nextSkillId);
-    setConditionType(nextConditionType);
-    setTargetType(nextTargetType);
+    setConditionType(normalized.conditionType);
+    setTargetType(normalized.targetType);
     setTurnValue(toText(conditionParams.turn));
     setThresholdValue(toText(conditionParams.threshold));
     setStatusValue(toText(conditionParams.status));
-    setAllOfRows(parseNestedConditions(initial?.conditionParams ?? null));
-    setTargetStatusValue(parseTargetStatus(nextTargetType, initial?.targetParams ?? null));
-    setTargetPositionValue(parseTargetPosition(nextTargetType, initial?.targetParams ?? null));
-  }, [visible, initial, skills]);
+    setCountValue(toText(conditionParams.count));
+    setTargetStatusValue(toText(targetParams.status));
+    setTargetPositionValue(toText(targetParams.position));
+  }, [visible, initial, skills, characterId, priority]);
 
-  const addAllOfRow = () => {
-    setAllOfRows((prev) => [
-      ...prev,
-      {
-        id: generateId("cond"),
-        type: "ALWAYS",
-        turn: "",
-        threshold: "",
-        status: "",
-      },
-    ]);
+  const handleSelectSkill = (nextSkill: Skill) => {
+    const nextDefinition = getSkillTacticsDefinition(nextSkill.id, nextSkill.target);
+    setSkillId(nextSkill.id);
+
+    if (!nextDefinition.allowedConditions.includes(conditionType)) {
+      setConditionType(nextDefinition.defaultCondition.type);
+      setTurnValue(toText(nextDefinition.defaultCondition.params?.turn));
+      setThresholdValue(toText(nextDefinition.defaultCondition.params?.threshold));
+      setStatusValue(toText(nextDefinition.defaultCondition.params?.status));
+      setCountValue(toText(nextDefinition.defaultCondition.params?.count));
+    }
+
+    if (!nextDefinition.allowedTargets.includes(targetType)) {
+      setTargetType(nextDefinition.defaultTarget.type);
+      setTargetStatusValue(toText(nextDefinition.defaultTarget.params?.status));
+      setTargetPositionValue(toText(nextDefinition.defaultTarget.params?.position));
+    }
   };
 
-  const updateAllOfRow = (id: string, patch: Partial<CompoundConditionRow>) => {
-    setAllOfRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...patch } : row)));
-  };
-
-  const deleteAllOfRow = (id: string) => {
-    setAllOfRows((prev) => prev.filter((row) => row.id !== id));
-  };
+  const conditionFields =
+    definition.paramSchema.condition[conditionType]?.fields ?? [];
+  const targetFields = definition.paramSchema.target[targetType]?.fields ?? [];
+  const hideTargetEditor =
+    definition.allowedTargets.length === 1 &&
+    definition.allowedTargets[0] === "AUTO" &&
+    targetFields.length === 0;
 
   const formatValidationError = (message: string): string => {
+    if (
+      message === "condition_type:not_allowed" ||
+      message === "target_type:not_allowed"
+    ) {
+      return t("tactics.validation.invalid_combo");
+    }
+
     const [field, kind] = message.split(":");
     const fieldLabel =
       field === "turn"
@@ -284,155 +225,95 @@ export const RuleEditModal = ({
           ? t("tactics.param.threshold")
           : field === "position"
             ? t("tactics.param.position")
-            : field === "status" || field === "target_status"
+            : field === "status"
               ? t("tactics.param.status")
+              : field === "count"
+                ? t("tactics.param.count")
               : field;
-    if (field === "all_of" && kind === "required") return t("tactics.validation.all_of_required");
+    if (kind === "range" && field === "threshold") {
+      return t("tactics.validation.threshold_range", { field: fieldLabel });
+    }
     if (kind === "number") return t("tactics.validation.number", { field: fieldLabel });
     if (kind === "integer") return t("tactics.validation.integer", { field: fieldLabel });
     if (kind === "required") return t("tactics.validation.required", { field: fieldLabel });
     return t("tactics.validation.invalid");
   };
 
-  const renderConditionFields = (
-    type: ConditionType | Exclude<ConditionType, "ALL_OF">,
-    values: {
-      turn: string;
-      threshold: string;
-      status: string;
-    },
-    setters: {
-      setTurn: (value: string) => void;
-      setThreshold: (value: string) => void;
-      setStatus: (value: string) => void;
-    }
-  ) => {
-    if (type === "TURN_EQUALS") {
-      return (
+  const renderConditionFields = () => (
+    <View>
+      {conditionFields.includes("turn") ? (
         <TextInput
-          value={values.turn}
-          onChangeText={setters.setTurn}
+          value={turnValue}
+          onChangeText={setTurnValue}
           style={styles.input}
           placeholder={t("tactics.placeholder.turn")}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textTertiary}
           keyboardType="number-pad"
         />
-      );
-    }
-
-    if (
-      type === "SELF_HP_BELOW" ||
-      type === "ALLY_HP_BELOW" ||
-      type === "ALLY_MP_BELOW" ||
-      type === "ENEMY_HP_BELOW"
-    ) {
-      return (
+      ) : null}
+      {conditionFields.includes("threshold") ? (
         <TextInput
-          value={values.threshold}
-          onChangeText={setters.setThreshold}
+          value={thresholdValue}
+          onChangeText={setThresholdValue}
           style={styles.input}
           placeholder={t("tactics.placeholder.threshold")}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textTertiary}
           keyboardType="decimal-pad"
         />
-      );
-    }
-
-    if (type === "ANY_ALLY_HAS_STATUS") {
-      return (
+      ) : null}
+      {conditionFields.includes("status") ? (
         <TextInput
-          value={values.status}
-          onChangeText={setters.setStatus}
+          value={statusValue}
+          onChangeText={setStatusValue}
           style={styles.input}
           placeholder={t("tactics.placeholder.status")}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textTertiary}
           autoCapitalize="characters"
         />
-      );
-    }
-
-    return null;
-  };
-
-  const renderAllOfEditor = () => (
-    <View style={styles.groupBox}>
-      <View style={styles.groupHeader}>
-        <Text style={styles.groupTitle}>{t("tactics.ui.allOfConditions")}</Text>
-        <Pressable onPress={addAllOfRow} style={styles.smallActionButton}>
-          <Text style={styles.smallActionText}>{t("tactics.ui.addCondition")}</Text>
-        </Pressable>
-      </View>
-      {allOfRows.length === 0 ? (
-        <Text style={styles.hintText}>{t("tactics.ui.allOfEmpty")}</Text>
-      ) : (
-        allOfRows.map((row, index) => (
-          <View key={row.id} style={styles.subRuleCard}>
-            <View style={styles.subRuleHeader}>
-              <Text style={styles.subRuleTitle}>{t("tactics.ui.conditionIndex", { index: index + 1 })}</Text>
-              <Pressable onPress={() => deleteAllOfRow(row.id)} style={styles.removeButton}>
-                <Text style={styles.removeButtonText}>{t("tactics.ui.delete")}</Text>
-              </Pressable>
-            </View>
-            <View style={styles.optionRow}>
-              {NESTED_CONDITIONS.map((type) => (
-                <Pressable
-                  key={`${row.id}-${type}`}
-                  onPress={() => updateAllOfRow(row.id, { type })}
-                  style={[
-                    styles.optionButton,
-                    row.type === type ? styles.optionSelected : styles.optionDefault,
-                  ]}
-                >
-                  <Text style={styles.optionText}>{getConditionTypeLabel(type, t)}</Text>
-                </Pressable>
-              ))}
-            </View>
-            {renderConditionFields(
-              row.type,
-              { turn: row.turn, threshold: row.threshold, status: row.status },
-              {
-                setTurn: (value) => updateAllOfRow(row.id, { turn: value }),
-                setThreshold: (value) => updateAllOfRow(row.id, { threshold: value }),
-                setStatus: (value) => updateAllOfRow(row.id, { status: value }),
-              }
-            )}
-          </View>
-        ))
-      )}
+      ) : null}
+      {conditionFields.includes("count") ? (
+        <TextInput
+          value={countValue}
+          onChangeText={setCountValue}
+          style={styles.input}
+          placeholder={t("tactics.placeholder.count")}
+          placeholderTextColor={colors.textTertiary}
+          keyboardType="number-pad"
+        />
+      ) : null}
+      {conditionFields.length === 0 ? (
+        <Text style={styles.hintText}>{t("tactics.ui.noExtraParams")}</Text>
+      ) : null}
     </View>
   );
 
-  const renderTargetParamsEditor = () => {
-    if (targetType === "ALLY_WITH_STATUS_LOWEST_HP") {
-      return (
+  const renderTargetFields = () => (
+    <View>
+      {targetFields.includes("status") ? (
         <TextInput
           value={targetStatusValue}
           onChangeText={setTargetStatusValue}
-          style={[styles.input, styles.inputLast]}
+          style={styles.input}
           placeholder={t("tactics.placeholder.status")}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textTertiary}
           autoCapitalize="characters"
         />
-      );
-    }
-
-    if (targetType === "ALLY_POSITION" || targetType === "ENEMY_POSITION") {
-      return (
+      ) : null}
+      {targetFields.includes("position") ? (
         <TextInput
           value={targetPositionValue}
           onChangeText={setTargetPositionValue}
-          style={[styles.input, styles.inputLast]}
+          style={styles.input}
           placeholder={t("tactics.placeholder.position")}
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textTertiary}
           keyboardType="number-pad"
         />
-      );
-    }
-
-    return (
-      <Text style={[styles.hintText, styles.inputLast]}>{t("tactics.ui.noExtraParams")}</Text>
-    );
-  };
+      ) : null}
+      {targetFields.length === 0 ? (
+        <Text style={styles.hintText}>{t("tactics.ui.noExtraParams")}</Text>
+      ) : null}
+    </View>
+  );
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -443,10 +324,10 @@ export const RuleEditModal = ({
 
             <Text style={styles.label}>{t("tactics.ui.skill")}</Text>
             <View style={styles.optionRow}>
-              {skillButtons.map((skill) => (
+              {skills.map((skill) => (
                 <Pressable
                   key={skill.id}
-                  onPress={() => setSkillId(skill.id)}
+                  onPress={() => handleSelectSkill(skill)}
                   style={[
                     styles.optionButton,
                     skillId === skill.id ? styles.optionSelected : styles.optionDefault,
@@ -459,79 +340,113 @@ export const RuleEditModal = ({
 
             <Text style={styles.label}>{t("tactics.ui.condition")}</Text>
             <View style={styles.optionRow}>
-              {CONDITIONS.map((c) => (
-                <Pressable
-                  key={c}
-                  onPress={() => setConditionType(c)}
-                  style={[
-                    styles.optionButton,
-                    conditionType === c ? styles.optionSelected : styles.optionDefault,
-                  ]}
-                >
-                  <Text style={styles.optionText}>{getConditionTypeLabel(c, t)}</Text>
-                </Pressable>
-              ))}
+              {definition.allowedConditions.map((type) => {
+                const fixed = definition.allowedConditions.length === 1;
+                return (
+                  <Pressable
+                    key={type}
+                    onPress={() => {
+                      if (fixed) return;
+                      setConditionType(type);
+                    }}
+                    style={[
+                      styles.optionButton,
+                      conditionType === type ? styles.optionSelected : styles.optionDefault,
+                      fixed ? styles.optionDisabled : null,
+                    ]}
+                    disabled={fixed}
+                  >
+                    <Text style={styles.optionText}>{getConditionTypeLabel(type, t)}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
             <Text style={styles.label}>{t("tactics.ui.conditionParams")}</Text>
-            {conditionType === "ALL_OF"
-              ? renderAllOfEditor()
-              : renderConditionFields(
-                  conditionType,
-                  { turn: turnValue, threshold: thresholdValue, status: statusValue },
-                  {
-                    setTurn: setTurnValue,
-                    setThreshold: setThresholdValue,
-                    setStatus: setStatusValue,
-                  }
-                ) ?? <Text style={styles.hintText}>{t("tactics.ui.noExtraParams")}</Text>}
+            {renderConditionFields()}
 
-            <Text style={styles.label}>{t("tactics.ui.target")}</Text>
-            <View style={styles.optionRow}>
-              {TARGETS.map((target) => (
-                <Pressable
-                  key={target}
-                  onPress={() => setTargetType(target)}
-                  style={[
-                    styles.optionButton,
-                    targetType === target ? styles.optionSelected : styles.optionDefault,
-                  ]}
-                >
-                  <Text style={styles.optionText}>{getTargetTypeLabel(target, t)}</Text>
-                </Pressable>
-              ))}
-            </View>
+            {hideTargetEditor ? null : (
+              <>
+                <Text style={styles.label}>{t("tactics.ui.target")}</Text>
+                <View style={styles.optionRow}>
+                  {definition.allowedTargets.map((target) => {
+                    const fixed = definition.allowedTargets.length === 1;
+                    return (
+                      <Pressable
+                        key={target}
+                        onPress={() => {
+                          if (fixed) return;
+                          setTargetType(target);
+                        }}
+                        style={[
+                          styles.optionButton,
+                          targetType === target ? styles.optionSelected : styles.optionDefault,
+                          fixed ? styles.optionDisabled : null,
+                        ]}
+                        disabled={fixed}
+                      >
+                        <Text style={styles.optionText}>{getTargetTypeLabel(target, t)}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
 
-            <Text style={styles.label}>{t("tactics.ui.targetParams")}</Text>
-            {renderTargetParamsEditor()}
+                <Text style={styles.label}>{t("tactics.ui.targetParams")}</Text>
+                {renderTargetFields()}
+              </>
+            )}
 
             <View style={styles.actionRow}>
               <Pressable
                 onPress={() => {
                   try {
-                    const nextConditionParams = buildConditionParamsValue({
-                      conditionType,
-                      turn: turnValue,
-                      threshold: thresholdValue,
-                      status: statusValue,
-                      allOfRows,
-                    });
-                    const nextTargetParams = buildTargetParamsValue({
-                      targetType,
-                      targetStatus: targetStatusValue,
-                      targetPosition: targetPositionValue,
-                    });
+                    const nextSkill = selectedSkill;
+                    const nextSkillId = nextSkill?.id ?? "";
+                    const nextDefinition = getSkillTacticsDefinition(
+                      nextSkillId,
+                      nextSkill?.target
+                    );
+                    const nextConditionParams = buildParams(
+                      nextDefinition.paramSchema.condition[conditionType]?.fields,
+                      {
+                        turn: turnValue,
+                        threshold: thresholdValue,
+                        status: statusValue,
+                        position: "",
+                        count: countValue,
+                      }
+                    );
+                    const nextTargetParams = buildParams(
+                      nextDefinition.paramSchema.target[targetType]?.fields,
+                      {
+                        turn: "",
+                        threshold: "",
+                        status: targetStatusValue,
+                        position: targetPositionValue,
+                        count: "",
+                      }
+                    );
 
-                    onSave({
+                    const nextRule: TacticsRuleRecord = {
                       id: initial?.id ?? generateId("rule"),
                       characterId,
                       priority,
-                      skillId,
+                      skillId: nextSkillId,
                       conditionType,
-                      conditionParams: nextConditionParams,
+                      conditionParams: toJson(nextConditionParams),
                       targetType,
-                      targetParams: nextTargetParams,
-                    });
+                      targetParams: toJson(nextTargetParams),
+                    };
+
+                    const validation = validateRuleAgainstSkillDefinition(
+                      nextRule,
+                      nextDefinition
+                    );
+                    if (!validation.ok) {
+                      throw new Error(validation.reason);
+                    }
+
+                    onSave(nextRule);
                     onClose();
                   } catch (error) {
                     const message =
@@ -557,69 +472,50 @@ export const RuleEditModal = ({
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" },
+  overlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.35)" },
   panel: {
     maxHeight: "86%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    backgroundColor: "#18181b",
-    padding: 16,
+    backgroundColor: colors.bgPanel,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
-  title: { marginBottom: 12, fontSize: 18, fontWeight: "600", color: "#ffffff" },
-  label: { marginBottom: 4, color: "#d4d4d8" },
+  title: { marginBottom: 12, fontSize: 18, fontWeight: "700", color: colors.textPrimary },
+  label: {
+    marginBottom: 6,
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 1,
+  },
   optionRow: { marginBottom: 12, flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  optionButton: { borderRadius: 8, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 4 },
-  optionSelected: { borderColor: "#10b981" },
-  optionDefault: { borderColor: "#3f3f46" },
-  optionText: { color: "#f4f4f5" },
-  input: {
-    marginBottom: 8,
-    borderRadius: 8,
+  optionButton: {
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#3f3f46",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: "#ffffff",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.bgSection,
   },
-  inputLast: { marginBottom: 16 },
-  hintText: { marginBottom: 12, color: "#a1a1aa" },
-  groupBox: {
-    marginBottom: 12,
+  optionSelected: { borderColor: colors.borderAccent, backgroundColor: colors.bgAccent },
+  optionDefault: { borderColor: colors.borderDefault },
+  optionDisabled: { opacity: 0.6 },
+  optionText: { color: colors.textPrimary, fontSize: 12, fontWeight: "500" },
+  input: {
+    marginBottom: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#3f3f46",
-    backgroundColor: "#111113",
-    padding: 10,
-    gap: 8,
+    borderColor: colors.borderDefault,
+    backgroundColor: colors.bgSection,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: colors.textPrimary,
   },
-  groupHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  groupTitle: { color: "#f4f4f5", fontWeight: "600" },
-  smallActionButton: {
-    borderRadius: 6,
-    backgroundColor: "#374151",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  smallActionText: { color: "#ffffff", fontSize: 12, fontWeight: "600" },
-  subRuleCard: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#27272a",
-    backgroundColor: "#18181b",
-    padding: 8,
-  },
-  subRuleHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  subRuleTitle: { marginBottom: 8, color: "#d4d4d8", fontWeight: "600" },
-  removeButton: {
-    borderRadius: 6,
-    backgroundColor: "#7f1d1d",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  removeButtonText: { color: "#ffffff", fontSize: 12, fontWeight: "600" },
+  hintText: { marginBottom: 12, color: colors.textTertiary, fontSize: 11 },
   actionRow: { flexDirection: "row", gap: 8 },
-  actionButton: { flex: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12 },
-  saveButton: { backgroundColor: "#059669" },
-  cancelButton: { backgroundColor: "#3f3f46" },
-  actionText: { textAlign: "center", fontWeight: "600", color: "#ffffff" },
+  actionButton: { flex: 1, borderRadius: 12, paddingVertical: 10 },
+  saveButton: { backgroundColor: colors.iconDark },
+  cancelButton: { backgroundColor: colors.textSecondary },
+  actionText: { textAlign: "center", color: "#ffffff", fontWeight: "600" },
 });
