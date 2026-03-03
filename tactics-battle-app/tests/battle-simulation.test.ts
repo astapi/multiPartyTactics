@@ -337,7 +337,7 @@ describe("game/battleSimulation", () => {
         characterId: "w1",
         skillId: "lightning",
         conditionType: "ALWAYS",
-        targetType: "ENEMY_FIRST",
+        targetType: "AUTO",
       }),
     ];
 

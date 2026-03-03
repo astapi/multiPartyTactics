@@ -10,10 +10,9 @@ import { charactersRepository } from "@/db/repositories/charactersRepository";
 import { computeCharacterDerivedStats, formatStatSummary } from "@/game/equipment/equipmentStatsService";
 import { buildEquipmentDisplayName, getEquipmentById } from "@/game/loot/equipmentMasterService";
 import {
-  getConditionTypeLabel,
+  describeConditionSentence,
   getSkillIdDisplayName,
   getTargetTypeLabel,
-  summarizeConditionParams,
   summarizeTargetParams,
 } from "@/game/tactics/labels";
 import { useTactics } from "@/hooks/useTactics";
@@ -274,11 +273,11 @@ export default function CharacterDetailScreen() {
           ) : (
             <View style={styles.sectionList}>
               {topRules.map((rule, index) => {
-                const conditionSummary = summarizeConditionParams(rule, t);
+                const conditionSentence = describeConditionSentence(rule, t);
                 const targetSummary = summarizeTargetParams(rule, t);
-                const ruleSummary = `${getConditionTypeLabel(rule.conditionType, t)}${
-                  conditionSummary ? ` (${conditionSummary})` : ""
-                }  ->  ${getTargetTypeLabel(rule.targetType, t)}${targetSummary ? ` (${targetSummary})` : ""}`;
+                const ruleSummary = `${conditionSentence}  ->  ${getTargetTypeLabel(rule.targetType, t)}${
+                  targetSummary ? ` (${targetSummary})` : ""
+                }`;
 
                 return (
                   <View key={rule.id} style={styles.ruleCard}>

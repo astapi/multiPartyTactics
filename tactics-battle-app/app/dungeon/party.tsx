@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Check, Package, Pencil, Plus, Trash2 } from "lucide-react-native";
+import { ArrowLeft, Check, Package, Pencil, Plus, Shield, Trash2 } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CharacterSelectModal } from "@/components/party/CharacterSelectModal";
@@ -258,25 +258,25 @@ export default function DungeonPartyScreen() {
           </View>
         ) : null}
 
-        <View style={styles.slotGrid}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slotRow}>
           {partySlots.map((character, index) => (
             <Pressable key={`slot-${index}`} style={styles.slotCard} onPress={() => setSelectedSlot(index)}>
               <View style={[styles.slotAvatar, !character ? styles.slotAvatarEmpty : null]}>
                 {character ? (
-                  <Image source={getClassById(character.classId).image} style={styles.slotAvatarImage} />
+                  <Image source={getClassById(character.classId).image} style={styles.slotAvatarImage} resizeMode="contain" />
                 ) : (
-                  <Plus size={18} stroke={colors.iconSecondary} />
+                  <Shield size={12} stroke={colors.borderDefault} />
                 )}
               </View>
+              <Text style={character ? styles.slotLevel : styles.slotLevelEmpty}>
+                {character ? `Lv${character.level}` : ""}
+              </Text>
               <Text style={character ? styles.slotName : styles.slotNameEmpty} numberOfLines={1}>
                 {character?.name ?? t("guild.party.empty")}
               </Text>
-              <Text style={character ? styles.slotSub : styles.slotSubEmpty} numberOfLines={1}>
-                {character ? `${t(CLASS_NAME_KEYS[character.classId])} • Lv.${character.level}` : ""}
-              </Text>
             </Pressable>
           ))}
-        </View>
+        </ScrollView>
 
         <View style={styles.availableHeader}>
           <Text style={styles.sectionLabel}>{locale === "ja" ? "未所属キャラクター" : "Unassigned Characters"}</Text>
@@ -390,39 +390,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.textPrimary,
   },
-  slotGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  slotRow: { flexDirection: "row", gap: 4, paddingVertical: 2 },
   slotCard: {
-    width: "31.5%",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    width: 52,
     alignItems: "center",
-    gap: 4,
-    minHeight: 94,
-    justifyContent: "center",
+    gap: 2,
+    paddingVertical: 2,
   },
   slotAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 46,
+    height: 46,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.bgElevated,
+    backgroundColor: "transparent",
     overflow: "hidden",
   },
-  slotAvatarImage: { width: "100%", height: "100%" },
+  slotAvatarImage: { width: "122%", height: "122%" },
   slotAvatarEmpty: {
     backgroundColor: colors.bgPrimary,
     borderWidth: 1,
     borderColor: colors.borderStrong,
   },
-  slotName: { color: colors.textPrimary, fontSize: 11, fontWeight: "600" },
-  slotNameEmpty: { color: colors.textTertiary, fontSize: 11, fontWeight: "500" },
-  slotSub: { color: colors.textTertiary, fontSize: 8 },
-  slotSubEmpty: { color: colors.textTertiary, fontSize: 8, minHeight: 10 },
+  slotLevel: { color: colors.textTertiary, fontSize: 8, fontWeight: "500" },
+  slotLevelEmpty: { color: colors.textDisabled, fontSize: 8, fontWeight: "500", minHeight: 10 },
+  slotName: { color: colors.textPrimary, fontSize: 9, fontWeight: "600" },
+  slotNameEmpty: { color: colors.textDisabled, fontSize: 9, fontWeight: "500" },
   availableHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingTop: 8 },
   availableCount: { color: colors.textTertiary, fontSize: 11 },
   listWrap: { gap: 8 },
