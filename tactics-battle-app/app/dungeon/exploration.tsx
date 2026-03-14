@@ -10,6 +10,8 @@ import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charac
 import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonExplorationProgressRepository";
 import { dungeonRepository } from "@/db/repositories/dungeonRepository";
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
+import { settingsRepository } from "@/db/repositories/settingsRepository";
+import { ExplorationSpeedMultiplier } from "@/constants/battleSpeed";
 import { ExplorationEvent, ExplorationResult } from "@/game/exploration";
 import {
   ExplorationSessionState,
@@ -145,6 +147,7 @@ export default function ExplorationScreen() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [explorationSpeedMultiplier, setExplorationSpeedMultiplier] = useState<ExplorationSpeedMultiplier>(1);
   const logScrollRef = useRef<ScrollView | null>(null);
   const appliedRewardGrantKeysRef = useRef<Set<string>>(new Set());
   const processedBattleRewardSessionIdsRef = useRef<Set<string>>(new Set());
@@ -269,16 +272,34 @@ export default function ExplorationScreen() {
   );
 
   useEffect(() => {
+    let cancelled = false;
+    const loadExplorationSpeed = async () => {
+      try {
+        const saved = await settingsRepository.getExplorationSpeedMultiplier();
+        if (!cancelled) {
+          setExplorationSpeedMultiplier(saved);
+        }
+      } catch (loadError) {
+        console.error("Failed to load exploration speed setting:", loadError);
+      }
+    };
+    void loadExplorationSpeed();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!session) return;
     if (!isFocused || isNavigating || isPaused) return;
     if (session.status !== "RUNNING") return;
 
     const timer = setInterval(() => {
       setSession((prev) => (prev ? advanceExplorationStep(prev) : prev));
-    }, 1000);
+    }, Math.max(100, Math.round(1000 / explorationSpeedMultiplier)));
 
     return () => clearInterval(timer);
-  }, [isFocused, isNavigating, isPaused, session]);
+  }, [explorationSpeedMultiplier, isFocused, isNavigating, isPaused, session]);
 
   useEffect(() => {
     if (!session) return;
