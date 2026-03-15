@@ -55,6 +55,8 @@ describe("game/skills/execute", () => {
     expect(result.damage).toBeGreaterThan(0);
     expect(result.healing).toBe(0);
     expect(result.hitCount).toBe(1);
+    expect(result.hitResults).toHaveLength(1);
+    expect(result.hitResults[0]).toMatchObject({ targetId: target.id, targetName: target.name });
     expect(result.consumedItems).toEqual([]);
     expect(actor.mp).toBe(7);
     expect(actor.cooldowns.slash).toBe(1);
@@ -169,8 +171,37 @@ describe("game/skills/execute", () => {
     executeSkill(actor, actor, pumpUp, () => 0.5);
     const result = executeSkill(actor, target, swordDance, () => 0.5);
     expect(result.hitCount).toBe(4);
+    expect(result.hitResults).toHaveLength(4);
+    expect(result.hitResults.every((hit) => hit.targetId === target.id)).toBe(true);
     expect(result.damage).toBeGreaterThan(0);
     expect(hasEffect(actor, "PUMP_UP_DAMAGE")).toBe(true);
+  });
+
+  it("retargets remaining random hits after the first target is defeated", () => {
+    const actor = makeUnit({ mp: 20, stats: { spi: 30 } });
+    const targetA = makeUnit({ id: "enemy-a", name: "Goblin A", hp: 10, stats: { maxHp: 10, def: 0 } });
+    const targetB = makeUnit({ id: "enemy-b", name: "Goblin B", hp: 50, stats: { maxHp: 50, def: 0 } });
+    const fireball = makeSkill({
+      id: "fireball",
+      type: "attack",
+      target: "ENEMY",
+      area: "RANDOM_ENEMY",
+      hitCount: 3,
+      hitMultiplier: 1,
+      powerStat: "spi",
+      randomizeTargetPerHit: true,
+    });
+    const rolls = [0, 0, 0, 0.5, 0.5, 0.5];
+    let rollIndex = 0;
+
+    const result = executeSkill(actor, targetA, fireball, () => rolls[rollIndex++] ?? 0.5, {
+      opponents: [targetA, targetB],
+    });
+
+    expect(result.hitCount).toBe(3);
+    expect(result.hitResults.map((hit) => hit.targetId)).toEqual(["enemy-a", "enemy-b", "enemy-b"]);
+    expect(targetA.hp).toBe(0);
+    expect(targetB.hp).toBeLessThan(50);
   });
 
   it("supports taunt/cover markers and item consumption", () => {

@@ -906,17 +906,6 @@ export default function BattleScreen() {
             </View>
           </View>
 
-          {params.resultSummary ? (
-            <View style={styles.resultSummaryCard}>
-              <View style={styles.resultSummaryRow}>
-                <Text style={styles.resultSummaryLabel}>{t("battle.result.goldTitle")}</Text>
-                <Text style={styles.resultSummaryValue}>
-                  {t("battle.result.goldValue", { gold: params.resultSummary.goldGained })}
-                </Text>
-              </View>
-            </View>
-          ) : null}
-
           <View style={styles.logSection}>
             <View style={styles.logHeader}>
               <Text style={styles.logTitle}>{t("battle.ui.logTitle")}</Text>

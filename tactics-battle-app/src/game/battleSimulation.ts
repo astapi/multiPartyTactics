@@ -162,6 +162,24 @@ const getBattleOutcomeLogKey = (outcome: BattleOutcome): string => {
   }
 };
 
+const shouldSplitAttackLogs = (skill: Skill): boolean =>
+  skill.type === "attack" && skill.area === "RANDOM_ENEMY";
+
+const aggregateHitResultsByTarget = (
+  hitResults: Array<{ targetId: string; targetName: string; damage: number }>
+): Array<{ targetId: string; targetName: string; damage: number }> => {
+  const aggregated = new Map<string, { targetId: string; targetName: string; damage: number }>();
+  for (const hit of hitResults) {
+    const current = aggregated.get(hit.targetId);
+    if (current) {
+      current.damage += hit.damage;
+      continue;
+    }
+    aggregated.set(hit.targetId, { ...hit });
+  }
+  return [...aggregated.values()];
+};
+
 export const simulateBattle = (params: BattleSimulationParams): BattleSimulationResult => {
   const maxTurns = params.maxTurns ?? 50;
   const rng = createSeededRng(params.seed);
@@ -312,6 +330,40 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           allies: aliveParty,
           opponents: aliveEnemies,
         });
+        if (shouldSplitAttackLogs(resolution.skill)) {
+          const hitRows = aggregateHitResultsByTarget(result.hitResults);
+          pushLog(
+            createBattleLog(
+              params.sessionId,
+              turn,
+              actor.id,
+              actor.name,
+              resolution.skill.id,
+              null,
+              0,
+              0,
+              "battle.log.skill_use"
+            ),
+            turn
+          );
+          for (const hit of hitRows) {
+            pushLog(
+              createBattleLog(
+                params.sessionId,
+                turn,
+                actor.id,
+                actor.name,
+                resolution.skill.id,
+                hit.targetName,
+                hit.damage,
+                0,
+                "battle.log.damage_target"
+              ),
+              turn
+            );
+          }
+          continue;
+        }
         const isArea = isAreaSkill(resolution.skill) || result.resolvedTargetIds.length > 1;
         pushLog(
           createBattleLog(

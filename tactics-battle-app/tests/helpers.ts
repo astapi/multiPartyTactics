@@ -43,6 +43,7 @@ export const makeSkill = (overrides: Partial<Skill> = {}): Skill => ({
   mpCost: overrides.mpCost ?? 0,
   cooldown: overrides.cooldown ?? 0,
   multiplier: overrides.multiplier,
+  powerStat: overrides.powerStat,
   hitCount: overrides.hitCount,
   hitMultiplier: overrides.hitMultiplier,
   randomizeTargetPerHit: overrides.randomizeTargetPerHit,

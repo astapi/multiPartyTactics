@@ -33,10 +33,49 @@ const appendCombatResult = (
   return `${base} ${t("battle.log.meta.wrap", { detail: chunks.join(" / ") })}`;
 };
 
+const formatAttackDamageMessage = (
+  log: BattleLogRecord,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string
+): string | null => {
+  if (log.damage <= 0) return null;
+
+  if (log.logMessage === "battle.log.basic_attack" && log.targetName) {
+    return t("battle.log.basic_attack_damage", {
+      actorName: log.actorName,
+      targetName: log.targetName,
+      damage: log.damage,
+    });
+  }
+
+  if (log.logMessage === "battle.log.skill_use_target" && log.targetName) {
+    return t("battle.log.skill_use_target_damage", {
+      actorName: log.actorName,
+      skillName: getActionLabel(log.actionType, t),
+      targetName: log.targetName,
+      damage: log.damage,
+    });
+  }
+
+  if (log.logMessage === "battle.log.skill_use") {
+    return t("battle.log.skill_use_damage", {
+      actorName: log.actorName,
+      skillName: getActionLabel(log.actionType, t),
+      damage: log.damage,
+    });
+  }
+
+  return null;
+};
+
 export const formatBattleLogMessage = (
   log: BattleLogRecord,
   t: (key: TranslationKey, params?: Record<string, string | number>) => string
 ): string => {
+  const attackDamageMessage = formatAttackDamageMessage(log, t);
+  if (attackDamageMessage) {
+    return attackDamageMessage;
+  }
+
   let message: string;
   switch (log.logMessage as TranslationKey | string) {
     case "battle.log.poison_tick":
@@ -69,6 +108,12 @@ export const formatBattleLogMessage = (
         targetName: log.targetName ?? "-",
       });
       break;
+    case "battle.log.damage_target":
+      message = t("battle.log.damage_target", {
+        targetName: log.targetName ?? "-",
+        damage: log.damage,
+      });
+      break;
     case "battle.log.result_win":
       message = t("battle.log.result_win");
       break;
@@ -81,6 +126,9 @@ export const formatBattleLogMessage = (
     default:
       message = log.logMessage;
       break;
+  }
+  if (log.logMessage === "battle.log.damage_target") {
+    return message;
   }
   return appendCombatResult(message, log, t);
 };
