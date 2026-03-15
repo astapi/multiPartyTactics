@@ -6,6 +6,7 @@ import {
   listEquipmentBySource,
   listMutationPrefixes,
 } from "@/game/loot/equipmentMasterService";
+import { getMonsterDropBaseItemIds } from "@/game/loot/monsterDropTableService";
 import { resolveChestLootConfig, resolveMonsterLootConfig } from "@/game/loot/lootTableService";
 import type {
   EquipmentCategory,
@@ -64,17 +65,6 @@ const toReward = (
   category: baseItem.category,
 });
 
-const getCandidatesByCategory = (source: "monster" | "chest") => {
-  const all = listEquipmentBySource(source);
-  const map = new Map<EquipmentCategory, EquipmentMasterItem[]>();
-  for (const item of all) {
-    const list = map.get(item.category) ?? [];
-    list.push(item);
-    map.set(item.category, list);
-  }
-  return map;
-};
-
 const buildChestTierCandidates = () => {
   const all = listEquipmentBySource("chest");
   const tierMap = new Map<number, Map<EquipmentCategory, EquipmentMasterItem[]>>();
@@ -94,7 +84,6 @@ const getChestTier = (floor: number): number =>
   Math.min(190, Math.ceil(Math.max(1, floor) / 10) * 10);
 
 const CHEST_TIER_CANDIDATES = buildChestTierCandidates();
-const MONSTER_CANDIDATES = getCandidatesByCategory("monster");
 
 export const rollTreasureChestEquipment = (params: TreasureChestRollParams): EquipmentReward => {
   const floor = Math.max(1, params.floor);
@@ -123,16 +112,17 @@ export const rollMonsterDrops = (
   const rng = createSeededRng(seed);
   const config = resolveMonsterLootConfig(params.dungeonId, floor);
   const mutationPrefixes = listMutationPrefixes();
-  const availableMonsterCategories = new Set(MONSTER_CANDIDATES.keys());
-
-  return params.encounter.enemies.map((_, enemyIndex) => {
+  return params.encounter.enemies.map((enemy, enemyIndex) => {
     if (rng() >= config.perEnemyDropChance) {
       return { enemyIndex, reward: null };
     }
 
-    const category = pickWeightedCategory(config.categoryWeights, availableMonsterCategories, rng);
-    const candidates = MONSTER_CANDIDATES.get(category) ?? [];
-    const item = pickOne(candidates, rng);
+    const baseItemIds = getMonsterDropBaseItemIds(enemy.enemyId);
+    if (baseItemIds.length === 0) {
+      return { enemyIndex, reward: null };
+    }
+    const baseItemId = pickOne(baseItemIds, rng);
+    const item = getEquipmentById(baseItemId);
 
     let mutationPrefixId: string | null = null;
     if (item.can_mutate && isMutationApplicable(item.id) && rng() < config.mutationChance) {

@@ -875,6 +875,210 @@
         "maxMp": 70,
         "mpRegen": 4
       }
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "stats": {
+        "maxHp": 13,
+        "atk": 16,
+        "def": 5,
+        "spd": 18,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "giant_bat",
+      "name": "Giant Bat",
+      "stats": {
+        "maxHp": 36,
+        "atk": 24,
+        "def": 9,
+        "spd": 18,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "wraith",
+      "name": "Wraith",
+      "stats": {
+        "maxHp": 42,
+        "atk": 24,
+        "def": 11,
+        "spd": 14,
+        "maxMp": 20,
+        "mpRegen": 2
+      }
+    },
+    {
+      "id": "rock_lizard",
+      "name": "Rock Lizard",
+      "stats": {
+        "maxHp": 55,
+        "atk": 34,
+        "def": 16,
+        "spd": 11,
+        "maxMp": 8,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "lizardman",
+      "name": "Lizardman",
+      "stats": {
+        "maxHp": 60,
+        "atk": 37,
+        "def": 15,
+        "spd": 13,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "ghoul",
+      "name": "Ghoul",
+      "stats": {
+        "maxHp": 34,
+        "atk": 28,
+        "def": 11,
+        "spd": 11,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "scorpion",
+      "name": "Scorpion",
+      "stats": {
+        "maxHp": 32,
+        "atk": 27,
+        "def": 10,
+        "spd": 13,
+        "maxMp": 0,
+        "mpRegen": 0
+      }
+    },
+    {
+      "id": "banshee",
+      "name": "Banshee",
+      "stats": {
+        "maxHp": 28,
+        "atk": 20,
+        "def": 9,
+        "spd": 15,
+        "maxMp": 18,
+        "mpRegen": 2
+      }
+    },
+    {
+      "id": "minotaur",
+      "name": "Minotaur",
+      "stats": {
+        "maxHp": 158,
+        "atk": 53,
+        "def": 23,
+        "spd": 11,
+        "maxMp": 11,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "storm_harpy",
+      "name": "Storm Harpy",
+      "stats": {
+        "maxHp": 92,
+        "atk": 42,
+        "def": 18,
+        "spd": 19,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "champion_minotaur",
+      "name": "Champion Minotaur",
+      "stats": {
+        "maxHp": 242,
+        "atk": 76,
+        "def": 30,
+        "spd": 16,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "death_knight",
+      "name": "Death Knight",
+      "stats": {
+        "maxHp": 112,
+        "atk": 45,
+        "def": 24,
+        "spd": 12,
+        "maxMp": 8,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "cyclops",
+      "name": "Cyclops",
+      "stats": {
+        "maxHp": 230,
+        "atk": 63,
+        "def": 28,
+        "spd": 9,
+        "maxMp": 16,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "elder_cyclops",
+      "name": "Elder Cyclops",
+      "stats": {
+        "maxHp": 317,
+        "atk": 80,
+        "def": 33,
+        "spd": 9,
+        "maxMp": 17,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "golem",
+      "name": "Golem",
+      "stats": {
+        "maxHp": 180,
+        "atk": 50,
+        "def": 30,
+        "spd": 7,
+        "maxMp": 20,
+        "mpRegen": 1
+      }
+    },
+    {
+      "id": "vampire",
+      "name": "Vampire",
+      "stats": {
+        "maxHp": 165,
+        "atk": 52,
+        "def": 24,
+        "spd": 18,
+        "maxMp": 28,
+        "mpRegen": 2
+      }
+    },
+    {
+      "id": "shield_golem",
+      "name": "Shield Golem",
+      "stats": {
+        "maxHp": 216,
+        "atk": 49,
+        "def": 32,
+        "spd": 8,
+        "maxMp": 56,
+        "mpRegen": 4
+      }
     }
   ]
 }

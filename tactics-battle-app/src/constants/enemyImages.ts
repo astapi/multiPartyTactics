@@ -20,6 +20,7 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
   giant_rat: require("@/assets/images/enemies/giant_rat.png"),
   plague_rat: require("@/assets/images/enemies/plague_rat.png"),
   shadow_rat: require("@/assets/images/enemies/shadow_rat.png"),
+  wolf: require("@/assets/images/enemies/wolf.png"),
 
   // --- ゴブリン系 ---
   goblin: require("@/assets/images/enemies/goblin.png"),
@@ -39,12 +40,18 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
 
   // --- 毒ガエル系 ---
   poison_toad: require("@/assets/images/enemies/poison_toad.png"),
+  giant_bat: require("@/assets/images/enemies/giant_bat.png"),
+  scorpion: require("@/assets/images/enemies/scorpion.png"),
 
   // --- スケルトン系 ---
   skeleton_archer: require("@/assets/images/enemies/skeleton_archer.png"),
   skeleton_knight: require("@/assets/images/enemies/skeleton_knight.png"),
   skeleton_mage: require("@/assets/images/enemies/skeleton_mage.png"),
   skeleton_soldier: require("@/assets/images/enemies/skeleton_soldier.png"),
+  banshee: require("@/assets/images/enemies/banshee.png"),
+  ghoul: require("@/assets/images/enemies/ghoul.png"),
+  wraith: require("@/assets/images/enemies/wraith.png"),
+  death_knight: require("@/assets/images/enemies/death_knight.png"),
 
   // --- オーク系 ---
   orc_berserker: require("@/assets/images/enemies/orc_berserker.png"),
@@ -57,6 +64,7 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
 
   // --- リザードマン系 ---
   lizardman_champion: require("@/assets/images/enemies/lizardman_champion.png"),
+  lizardman: require("@/assets/images/enemies/lizardman_warrior.png"),
   lizardman_guard: require("@/assets/images/enemies/lizardman_guard.png"),
   lizardman_hunter: require("@/assets/images/enemies/lizardman_hunter.png"),
   lizardman_shaman: require("@/assets/images/enemies/lizardman_shaman.png"),
@@ -72,10 +80,13 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
   stone_gargoyle: require("@/assets/images/enemies/stone_gargoyle.png"),
   iron_gargoyle: require("@/assets/images/enemies/iron_gargoyle.png"),
   obsidian_gargoyle: require("@/assets/images/enemies/obsidian_gargoyle.png"),
+  rock_lizard: require("@/assets/images/enemies/rock_lizard.png"),
 
   // --- ミノタウロス系 ---
   minotaur_axeman: require("@/assets/images/enemies/minotaur_axeman.png"),
   minotaur_berserker: require("@/assets/images/enemies/minotaur_berserker.png"),
+  champion_minotaur: require("@/assets/images/enemies/minotaur_champion.png"),
+  minotaur: require("@/assets/images/enemies/minotaur.png"),
   minotaur_champion: require("@/assets/images/enemies/minotaur_champion.png"),
   minotaur_guard: require("@/assets/images/enemies/minotaur_guard.png"),
   minotaur_priest: require("@/assets/images/enemies/minotaur_priest.png"),
@@ -107,6 +118,8 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
   stone_giant: require("@/assets/images/enemies/stone_giant.png"),
   war_giant: require("@/assets/images/enemies/war_giant.png"),
   ancient_giant: require("@/assets/images/enemies/ancient_giant.png"),
+  cyclops: require("@/assets/images/enemies/Cyclops.png"),
+  elder_cyclops: require("@/assets/images/enemies/cyclops2.png"),
 
   // --- ドラゴン系 ---
   dragon_whelp: require("@/assets/images/enemies/dragon_whelp.png"),
@@ -114,6 +127,10 @@ const ENEMY_IMAGE_MAP: Record<string, ImageSourcePropType> = {
   adult_dragon: require("@/assets/images/enemies/adult_dragon.png"),
   elder_dragon: require("@/assets/images/enemies/elder_dragon.png"),
   abyss_dragon: require("@/assets/images/enemies/abyss_dragon.png"),
+  golem: require("@/assets/images/enemies/golem.png"),
+  shield_golem: require("@/assets/images/enemies/construct_shield.png"),
+  storm_harpy: require("@/assets/images/enemies/storm_harpy.png"),
+  vampire: require("@/assets/images/enemies/vampire.png"),
 };
 
 const BOSS_IMAGE_MAP: Record<string, ImageSourcePropType> = {
