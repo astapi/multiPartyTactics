@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMonsterDropBaseItemIds, listMonsterDropEntries } from "@/game/loot/monsterDropTableService";
+import { getMonsterDropBaseItemIds, getMonsterDropGold, listMonsterDropEntries } from "@/game/loot/monsterDropTableService";
 
 describe("game/loot/monsterDropTableService", () => {
   it("covers every normal encounter enemy with a monster equipment mapping", () => {
@@ -13,5 +13,13 @@ describe("game/loot/monsterDropTableService", () => {
     expect(getMonsterDropBaseItemIds("skeleton_knight")).toEqual(["bone_shield"]);
     expect(getMonsterDropBaseItemIds("shield_golem")).toEqual(["crystal_shield"]);
     expect(getMonsterDropBaseItemIds("boss_aries")).toEqual([]);
+  });
+
+  it("resolves representative enemy ids to gold values", () => {
+    expect(getMonsterDropGold("giant_rat")).toBe(5);
+    expect(getMonsterDropGold("goblin_archer")).toBeGreaterThan(getMonsterDropGold("plague_rat"));
+    expect(getMonsterDropGold("lizardman_guard")).toBeGreaterThan(getMonsterDropGold("stone_gargoyle"));
+    expect(getMonsterDropGold("construct_shield")).toBeGreaterThan(getMonsterDropGold("orc_warrior"));
+    expect(getMonsterDropGold("boss_aries")).toBe(0);
   });
 });

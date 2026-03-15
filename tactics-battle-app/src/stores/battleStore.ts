@@ -23,6 +23,7 @@ type BattleState = {
   status: BattleStatus;
   latestBattleSessionId: string | null;
   latestBattleExplorationSeed: number | null;
+  latestBattleGold: number;
   latestBattleDrops: string[];
   pendingExplorationPartySync: BattlePartySyncPayload | null;
   latestBattlePartySync: BattlePartySyncPayload | null;
@@ -33,6 +34,7 @@ type BattleState = {
   setLatestBattleRewards: (params: {
     sessionId: string | null;
     explorationSeed: number | null;
+    gold: number;
     drops: string[];
   }) => void;
   setPendingExplorationPartySync: (payload: BattlePartySyncPayload | null) => void;
@@ -46,6 +48,7 @@ export const useBattleStore = create<BattleState>((set) => ({
   status: "IDLE",
   latestBattleSessionId: null,
   latestBattleExplorationSeed: null,
+  latestBattleGold: 0,
   latestBattleDrops: [],
   pendingExplorationPartySync: null,
   latestBattlePartySync: null,
@@ -53,10 +56,11 @@ export const useBattleStore = create<BattleState>((set) => ({
   setLogs: (logs) => set({ logs }),
   appendLog: (log) => set((state) => ({ logs: [...state.logs, log] })),
   setStatus: (status) => set({ status }),
-  setLatestBattleRewards: ({ sessionId, explorationSeed, drops }) =>
+  setLatestBattleRewards: ({ sessionId, explorationSeed, gold, drops }) =>
     set({
       latestBattleSessionId: sessionId,
       latestBattleExplorationSeed: explorationSeed,
+      latestBattleGold: Math.max(0, Math.floor(gold)),
       latestBattleDrops: [...drops],
     }),
   setPendingExplorationPartySync: (payload) =>
@@ -84,6 +88,7 @@ export const useBattleStore = create<BattleState>((set) => ({
       status: "IDLE",
       latestBattleSessionId: null,
       latestBattleExplorationSeed: null,
+      latestBattleGold: 0,
       latestBattleDrops: [],
       pendingExplorationPartySync: state.pendingExplorationPartySync,
       latestBattlePartySync: state.latestBattlePartySync,

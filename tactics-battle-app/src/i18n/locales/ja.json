@@ -171,6 +171,8 @@
   "battle.result.lose": "敗北",
   "battle.result.draw": "引分",
   "battle.result.summaryTitle": "戦闘リザルト",
+  "battle.result.goldTitle": "獲得ゴールド",
+  "battle.result.goldValue": "+{gold} G",
   "battle.result.expTitle": "獲得EXP",
   "battle.result.expValue": "+{exp} EXP",
   "battle.result.expRecipients": "生存メンバー {count}人に付与",

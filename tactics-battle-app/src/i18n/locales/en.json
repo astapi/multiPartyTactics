@@ -171,6 +171,8 @@
   "battle.result.lose": "LOSE",
   "battle.result.draw": "DRAW",
   "battle.result.summaryTitle": "Battle Result",
+  "battle.result.goldTitle": "Gold Earned",
+  "battle.result.goldValue": "+{gold} G",
   "battle.result.expTitle": "EXP Gained",
   "battle.result.expValue": "+{exp} EXP",
   "battle.result.expRecipients": "Granted to {count} surviving members",
