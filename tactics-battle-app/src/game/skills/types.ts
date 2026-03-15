@@ -143,4 +143,9 @@ export type SkillUseResult = {
   hitCount: number;
   consumedItems: SkillItemCost[];
   resolvedTargetIds: string[];
+  hitResults: Array<{
+    targetId: string;
+    targetName: string;
+    damage: number;
+  }>;
 };

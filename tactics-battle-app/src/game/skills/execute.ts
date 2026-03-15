@@ -114,44 +114,6 @@ const resolveEffectTargets = (
   return [target];
 };
 
-const resolveAttackHitTargets = (
-  target: Unit,
-  skill: Skill,
-  rng: () => number,
-  context?: SkillExecutionContext
-): Unit[] => {
-  const hits = Math.max(1, skill.hitCount ?? 1);
-  const opponents = getAliveUnits(context?.opponents);
-  const attackTargets: Unit[] = [];
-
-  if (skill.area === "ALL_ENEMIES" || skill.area === "ENEMY_ROW") {
-    const baseTargets = opponents.length > 0 ? opponents : [target];
-    for (const unit of baseTargets) {
-      attackTargets.push(redirectAttackTarget(unit, baseTargets));
-    }
-    return attackTargets;
-  }
-
-  if (skill.area === "RANDOM_ENEMY" && skill.randomizeTargetPerHit) {
-    const candidates = opponents.length > 0 ? opponents : [target];
-    for (let i = 0; i < hits; i += 1) {
-      const aliveCandidates = candidates.filter((unit) => unit.hp > 0);
-      if (aliveCandidates.length === 0) break;
-      const picked = aliveCandidates[Math.floor(rng() * aliveCandidates.length)];
-      attackTargets.push(redirectAttackTarget(picked, candidates));
-    }
-    return attackTargets;
-  }
-
-  const defenders = opponents.length > 0 ? opponents : [target];
-  for (let i = 0; i < hits; i += 1) {
-    const resolved = redirectAttackTarget(target, defenders);
-    if (resolved.hp <= 0) break;
-    attackTargets.push(resolved);
-  }
-  return attackTargets;
-};
-
 const getSkillPowerStat = (actor: Unit, skill: Skill): number =>
   skill.powerStat === "spi" ? Math.max(1, actor.stats.spi) : Math.max(1, actor.stats.atk);
 
@@ -175,6 +137,7 @@ export const executeSkill = (
   const appliedEffects: Effect[] = [];
   let hitCount = 0;
   const resolvedTargetIds = new Set<string>();
+  const hitResults: SkillUseResult["hitResults"] = [];
   const effectTargets = resolveEffectTargets(target, skill, context);
 
   if (skill.type === "attack") {
@@ -188,22 +151,47 @@ export const executeSkill = (
     );
     const outgoingMultiplier = getOutgoingDamageMultiplier(actor);
     const perHitMultiplier = (skill.hitMultiplier ?? skill.multiplier ?? 1) * nextAttackMultiplier * outgoingMultiplier;
-    const attackTargets = resolveAttackHitTargets(target, skill, rng, context);
-
-    for (const attackTarget of attackTargets) {
-      if (attackTarget.hp <= 0) continue;
+    const hits = Math.max(1, skill.hitCount ?? 1);
+    const applyAttackHit = (attackTarget: Unit) => {
+      if (attackTarget.hp <= 0) return;
       const randomFactor = 0.98 + rng() * 0.04;
       const dealtDamage =
         skill.powerStat === "spi"
           ? calculateMagicDamage(actor, attackTarget, perHitMultiplier, randomFactor)
           : calculatePhysicalDamage(actor, attackTarget, perHitMultiplier, randomFactor);
-      const dealt = applyDamage(
-        attackTarget,
-        dealtDamage
-      );
+      const dealt = applyDamage(attackTarget, dealtDamage);
       damage += dealt;
       hitCount += 1;
       resolvedTargetIds.add(attackTarget.id);
+      hitResults.push({
+        targetId: attackTarget.id,
+        targetName: attackTarget.name,
+        damage: dealt,
+      });
+    };
+
+    if (skill.area === "ALL_ENEMIES" || skill.area === "ENEMY_ROW") {
+      const opponents = getAliveUnits(context?.opponents);
+      const baseTargets = opponents.length > 0 ? opponents : [target];
+      for (const unit of baseTargets) {
+        applyAttackHit(redirectAttackTarget(unit, baseTargets));
+      }
+    } else if (skill.area === "RANDOM_ENEMY" && skill.randomizeTargetPerHit) {
+      const candidates = (context?.opponents ?? []).length > 0 ? context!.opponents! : [target];
+      for (let i = 0; i < hits; i += 1) {
+        const aliveCandidates = candidates.filter((unit) => unit.hp > 0);
+        if (aliveCandidates.length === 0) break;
+        const picked = aliveCandidates[Math.floor(rng() * aliveCandidates.length)];
+        applyAttackHit(redirectAttackTarget(picked, candidates));
+      }
+    } else {
+      const defenders = getAliveUnits(context?.opponents);
+      const baseDefenders = defenders.length > 0 ? defenders : [target];
+      for (let i = 0; i < hits; i += 1) {
+        const resolved = redirectAttackTarget(target, baseDefenders);
+        if (resolved.hp <= 0) break;
+        applyAttackHit(resolved);
+      }
     }
 
     if (nextAttackEffects.length > 0 && hitCount > 0) {
@@ -386,5 +374,6 @@ export const executeSkill = (
     hitCount,
     consumedItems,
     resolvedTargetIds: [...resolvedTargetIds],
+    hitResults,
   };
 };

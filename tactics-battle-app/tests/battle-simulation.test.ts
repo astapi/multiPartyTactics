@@ -411,6 +411,65 @@ describe("game/battleSimulation", () => {
     ).toBe(true);
   });
 
+  it("splits random multi-hit skill logs into one cast log plus per-target damage logs", () => {
+    const caster = makeUnit({
+      id: "w2",
+      name: "Shion",
+      classId: "WITCH",
+      mp: 20,
+      stats: { maxHp: 30, atk: 8, def: 1, spi: 20, spd: 20, maxMp: 20, mpRegen: 0 },
+    });
+    const enemies = [
+      toEncounter("s1", "Slime A", { maxHp: 50, atk: 1, def: 0, spd: 3, maxMp: 0, mpRegen: 0 }),
+      toEncounter("s2", "Slime B", { maxHp: 50, atk: 1, def: 0, spd: 2, maxMp: 0, mpRegen: 0 }),
+      toEncounter("s3", "Slime C", { maxHp: 50, atk: 1, def: 0, spd: 1, maxMp: 0, mpRegen: 0 }),
+    ];
+    const fireball = makeSkill({
+      id: "fireball",
+      name: "Fireball",
+      type: "attack",
+      target: "ENEMY",
+      area: "RANDOM_ENEMY",
+      mpCost: 0,
+      cooldown: 0,
+      hitCount: 3,
+      hitMultiplier: 1,
+      randomizeTargetPerHit: true,
+      powerStat: "spi",
+    });
+    const rules = [
+      makeRule({
+        id: "fireball-rule",
+        characterId: "w2",
+        skillId: "fireball",
+        conditionType: "ALWAYS",
+        targetType: "AUTO",
+      }),
+    ];
+
+    const result = simulateBattle({
+      sessionId: "s9",
+      seed: 9,
+      party: [caster],
+      enemies,
+      tacticsByCharacter: { w2: rules },
+      skillMap: new Map([[fireball.id, fireball]]),
+      maxTurns: 1,
+    });
+
+    const fireballLogs = result.logs.filter((log) => log.actionType === "fireball");
+    expect(fireballLogs.length).toBeGreaterThanOrEqual(2);
+    expect(fireballLogs[0]).toMatchObject({
+      logMessage: "battle.log.skill_use",
+      targetName: null,
+      damage: 0,
+    });
+    expect(fireballLogs.slice(1).every((log) => log.targetName)).toBe(true);
+    expect(fireballLogs.slice(1).every((log) => log.damage > 0)).toBe(true);
+    expect(fireballLogs.slice(1).every((log) => log.logMessage === "battle.log.damage_target")).toBe(true);
+    expect(new Set(fireballLogs.slice(1).map((log) => log.targetName)).size).toBe(fireballLogs.length - 1);
+  });
+
   it("makes front party slots more likely targets than back slots", () => {
     const counts = new Map<string, number>();
 
