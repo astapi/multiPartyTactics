@@ -42,7 +42,7 @@ import { BattleOutcome, BattleReplayState, simulateBattle } from "@/game/battleS
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { computeCharacterDerivedStats, toBaseResource } from "@/game/equipment/equipmentStatsService";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
-import { toUnit } from "@/game/partyMapper";
+import { toPartyUnits } from "@/game/partyMapper";
 import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
 import { useI18n } from "@/i18n";
 import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
@@ -325,9 +325,7 @@ export default function BattleScreen() {
         const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
           syncedSelected.map((member) => member.id)
         );
-        const units = syncedSelected.map((member) =>
-          toUnit(member, equippedByCharacterId[member.id] ?? {})
-        );
+        const units = toPartyUnits(syncedSelected, equippedByCharacterId);
         const map: Record<string, TacticsRuleRecord[]> = {};
         for (const unit of units) {
           map[unit.id] = await tacticsRepository.listByCharacter(unit.id);

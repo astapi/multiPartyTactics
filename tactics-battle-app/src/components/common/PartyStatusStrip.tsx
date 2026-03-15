@@ -23,6 +23,7 @@ const CLASS_IMAGE: Record<string, ImageSourcePropType> = {
   CLERIC: require("@/assets/images/class/cleric.png"),
   WITCH: require("@/assets/images/class/witch.png"),
   THIEF: require("@/assets/images/class/thief.png"),
+  PORTER: require("@/assets/images/class/thief.png"),
 };
 
 // Class-specific face crop positions. Tweak offsetY per class to align faces in the circle.
@@ -33,6 +34,7 @@ const PARTY_PORTRAIT_FACE_CROP_BY_CLASS: Record<string, FaceCrop> = {
   CLERIC: { size: 54, offsetY: -11 },
   WITCH: { size: 54, offsetY: -11 },
   THIEF: { size: 54, offsetY: -11 },
+  PORTER: { size: 54, offsetY: -11 },
 };
 
 const DEFAULT_FACE_CROP: FaceCrop = { size: 54, offsetY: -11 };

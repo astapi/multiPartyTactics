@@ -24,11 +24,20 @@ type PartyMemberRow = {
   base_max_hp: number;
   base_atk: number;
   base_def: number;
+  base_spi: number;
   base_spd: number;
   base_max_mp: number;
   base_mp_regen: number;
   current_hp: number;
   current_mp: number;
+  age: number;
+  growth_multiplier: number;
+  trait_ids_json: string;
+  innate_hp_rate: number;
+  innate_atk_bonus: number;
+  innate_def_bonus: number;
+  innate_spi_bonus: number;
+  innate_spd_bonus: number;
 };
 
 const mapParty = (row: PartyRow): PartyRecord => ({
@@ -56,11 +65,20 @@ const mapPartyMember = (row: PartyMemberRow): PartyMemberRecord => {
     baseMaxHp: row.base_max_hp,
     baseAtk: row.base_atk,
     baseDef: row.base_def,
+    baseSpi: row.base_spi ?? 0,
     baseSpd: row.base_spd,
     baseMaxMp: row.base_max_mp,
     baseMpRegen: row.base_mp_regen,
     currentHp: row.current_hp,
     currentMp: row.current_mp,
+    age: row.age ?? 18,
+    growthMultiplier: row.growth_multiplier ?? 1,
+    traitIds: JSON.parse(String(row.trait_ids_json ?? "[]")),
+    innateHpRate: row.innate_hp_rate ?? 1,
+    innateAtkBonus: row.innate_atk_bonus ?? 0,
+    innateDefBonus: row.innate_def_bonus ?? 0,
+    innateSpiBonus: row.innate_spi_bonus ?? 0,
+    innateSpdBonus: row.innate_spd_bonus ?? 0,
   };
 };
 
@@ -123,11 +141,20 @@ export const partiesRepository = {
            c.base_max_hp,
            c.base_atk,
            c.base_def,
+           c.base_spi,
            c.base_spd,
            c.base_max_mp,
            c.base_mp_regen,
            c.current_hp,
-           c.current_mp
+           c.current_mp,
+           c.age,
+           c.growth_multiplier,
+           c.trait_ids_json,
+           c.innate_hp_rate,
+           c.innate_atk_bonus,
+           c.innate_def_bonus,
+           c.innate_spi_bonus,
+           c.innate_spd_bonus
          FROM party_members pm
          INNER JOIN characters c ON c.id = pm.character_id
          ORDER BY pm.party_id ASC, pm.slot_index ASC`

@@ -38,6 +38,7 @@ const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
   CLERIC: "class.name.cleric",
   WITCH: "class.name.witch",
   THIEF: "class.name.thief",
+  PORTER: "class.name.porter",
 };
 
 const PRIORITY_BADGE_COLORS = ["#333333", "#666666", "#999999"] as const;
@@ -167,6 +168,12 @@ export default function CharacterDetailScreen() {
       breakdown: statBreakdownTemplate(character.baseDef, derivedStats?.bonus.def ?? 0),
     },
     {
+      key: "spi",
+      label: "SPI",
+      total: derivedStats?.total.spi ?? character.baseSpi,
+      breakdown: statBreakdownTemplate(character.baseSpi, derivedStats?.bonus.spi ?? 0),
+    },
+    {
       key: "spd",
       label: "SPD",
       total: derivedStats?.total.spd ?? character.baseSpd,
@@ -208,7 +215,7 @@ export default function CharacterDetailScreen() {
               {`${classLabel}  Lv.${character.level}`}
             </Text>
             <Text style={styles.profileMeta} numberOfLines={1}>
-              {constellationLabel}
+              {`${constellationLabel} • ${character.age}歳`}
             </Text>
           </View>
         </View>

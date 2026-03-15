@@ -28,11 +28,20 @@ const mapCharacter = (row: any): CharacterRecord => {
     baseMaxHp: row.base_max_hp,
     baseAtk: row.base_atk,
     baseDef: row.base_def,
+    baseSpi: row.base_spi ?? 0,
     baseSpd: row.base_spd,
     baseMaxMp: row.base_max_mp,
     baseMpRegen: row.base_mp_regen,
     currentHp: row.current_hp,
     currentMp: row.current_mp,
+    age: row.age ?? 18,
+    growthMultiplier: row.growth_multiplier ?? 1,
+    traitIds: JSON.parse(String(row.trait_ids_json ?? "[]")),
+    innateHpRate: row.innate_hp_rate ?? 1,
+    innateAtkBonus: row.innate_atk_bonus ?? 0,
+    innateDefBonus: row.innate_def_bonus ?? 0,
+    innateSpiBonus: row.innate_spi_bonus ?? 0,
+    innateSpdBonus: row.innate_spd_bonus ?? 0,
   };
 };
 
@@ -57,8 +66,8 @@ export const charactersRepository = {
     const db = await getDb();
     await db.runAsync(
       `INSERT INTO characters
-      (id, name, class_id, constellation_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, name, class_id, constellation_id, level, exp, base_max_hp, base_atk, base_def, base_spi, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp, age, growth_multiplier, trait_ids_json, innate_hp_rate, innate_atk_bonus, innate_def_bonus, innate_spi_bonus, innate_spd_bonus)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         class_id = excluded.class_id,
@@ -68,11 +77,20 @@ export const charactersRepository = {
         base_max_hp = excluded.base_max_hp,
         base_atk = excluded.base_atk,
         base_def = excluded.base_def,
+        base_spi = excluded.base_spi,
         base_spd = excluded.base_spd,
         base_max_mp = excluded.base_max_mp,
         base_mp_regen = excluded.base_mp_regen,
         current_hp = excluded.current_hp,
-        current_mp = excluded.current_mp`,
+        current_mp = excluded.current_mp,
+        age = excluded.age,
+        growth_multiplier = excluded.growth_multiplier,
+        trait_ids_json = excluded.trait_ids_json,
+        innate_hp_rate = excluded.innate_hp_rate,
+        innate_atk_bonus = excluded.innate_atk_bonus,
+        innate_def_bonus = excluded.innate_def_bonus,
+        innate_spi_bonus = excluded.innate_spi_bonus,
+        innate_spd_bonus = excluded.innate_spd_bonus`,
       [
         record.id,
         record.name,
@@ -83,11 +101,20 @@ export const charactersRepository = {
         record.baseMaxHp,
         record.baseAtk,
         record.baseDef,
+        record.baseSpi,
         record.baseSpd,
         record.baseMaxMp,
         record.baseMpRegen,
         record.currentHp,
         record.currentMp,
+        record.age,
+        record.growthMultiplier,
+        JSON.stringify(record.traitIds),
+        record.innateHpRate,
+        record.innateAtkBonus,
+        record.innateDefBonus,
+        record.innateSpiBonus,
+        record.innateSpdBonus,
       ]
     );
   },

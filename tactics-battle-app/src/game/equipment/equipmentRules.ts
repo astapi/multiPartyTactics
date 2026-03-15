@@ -40,8 +40,9 @@ export const canCharacterEquipItem = (
       return item.category === "staff";
     case "THIEF":
       return item.category === "dagger" || item.category === "throwing_knife";
+    case "PORTER":
+      return item.category === "one_handed_sword" || item.category === "shield";
     default:
       return false;
   }
 };
-

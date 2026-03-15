@@ -8,6 +8,7 @@ import {
   applyEffect,
   applyHealing,
   applyStatus,
+  calculateMagicDamage,
   calculatePhysicalDamage,
   getOutgoingDamageMultiplier,
 } from "../battle";
@@ -151,6 +152,9 @@ const resolveAttackHitTargets = (
   return attackTargets;
 };
 
+const getSkillPowerStat = (actor: Unit, skill: Skill): number =>
+  skill.powerStat === "spi" ? Math.max(1, actor.stats.spi) : Math.max(1, actor.stats.atk);
+
 export const executeSkill = (
   actor: Unit,
   target: Unit,
@@ -189,9 +193,13 @@ export const executeSkill = (
     for (const attackTarget of attackTargets) {
       if (attackTarget.hp <= 0) continue;
       const randomFactor = 0.98 + rng() * 0.04;
+      const dealtDamage =
+        skill.powerStat === "spi"
+          ? calculateMagicDamage(actor, attackTarget, perHitMultiplier, randomFactor)
+          : calculatePhysicalDamage(actor, attackTarget, perHitMultiplier, randomFactor);
       const dealt = applyDamage(
         attackTarget,
-        calculatePhysicalDamage(actor, attackTarget, perHitMultiplier, randomFactor)
+        dealtDamage
       );
       damage += dealt;
       hitCount += 1;
@@ -340,7 +348,7 @@ export const executeSkill = (
     }
 
     if (effect.kind === "HEAL_MULTIPLIER") {
-      const amount = Math.max(1, Math.floor(actor.stats.atk * effect.multiplier));
+      const amount = Math.max(1, Math.floor(getSkillPowerStat(actor, skill) * effect.multiplier));
       healing += applyHealing(effectTarget, amount);
       resolvedTargetIds.add(effectTarget.id);
       continue;

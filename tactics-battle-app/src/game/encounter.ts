@@ -169,6 +169,7 @@ const scaleStats = (
     maxHp: Math.max(1, Math.round(stats.maxHp * statScale * hpScale)),
     atk: Math.max(1, Math.round(stats.atk * statScale)),
     def: Math.max(0, Math.round(stats.def * defScale)),
+    spi: Math.max(0, Math.round(stats.spi * statScale)),
     spd: Math.max(1, Math.round(stats.spd * spdScale)),
     maxMp: Math.max(0, Math.round(stats.maxMp * statScale)),
     mpRegen: stats.maxMp <= 0 ? 0 : Math.max(1, Math.round(stats.mpRegen * statScale)),

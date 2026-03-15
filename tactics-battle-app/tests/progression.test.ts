@@ -23,11 +23,20 @@ const makeCharacter = (overrides: Partial<CharacterRecord> = {}): CharacterRecor
   baseMaxHp: 100,
   baseAtk: 11,
   baseDef: 8,
+  baseSpi: 6,
   baseSpd: 10,
   baseMaxMp: 22,
   baseMpRegen: 2,
   currentHp: 100,
   currentMp: 22,
+  age: 18,
+  growthMultiplier: 1,
+  traitIds: [],
+  innateHpRate: 1,
+  innateAtkBonus: 0,
+  innateDefBonus: 0,
+  innateSpiBonus: 0,
+  innateSpdBonus: 0,
   ...overrides,
 });
 
@@ -72,7 +81,7 @@ describe("game/progression", () => {
     const lv2 = getBaseStatsForClassLevel("GUARDIAN", 2);
     const lv10 = getBaseStatsForClassLevel("GUARDIAN", 10);
 
-    expect(lv1).toEqual({ maxHp: 120, atk: 8, def: 10, spd: 8, maxMp: 20, mpRegen: 2 });
+    expect(lv1).toEqual({ maxHp: 120, atk: 8, def: 10, spi: 5, spd: 8, maxMp: 20, mpRegen: 2 });
     expect(lv2.maxHp - lv1.maxHp).toBe(6);
     expect(lv2.def - lv1.def).toBe(1);
     expect(lv10).toEqual(getBaseStatsForClassLevel("GUARDIAN", 10));
@@ -126,6 +135,7 @@ describe("game/progression", () => {
           baseMaxHp: stats.maxHp,
           baseAtk: stats.atk,
           baseDef: stats.def,
+          baseSpi: stats.spi,
           baseSpd: stats.spd,
           baseMaxMp: stats.maxMp,
           baseMpRegen: stats.mpRegen,

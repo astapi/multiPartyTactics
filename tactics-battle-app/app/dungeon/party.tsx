@@ -33,6 +33,7 @@ const CLASS_NAME_KEYS: Record<CharacterRecord["classId"], TranslationKey> = {
   CLERIC: "class.name.cleric",
   WITCH: "class.name.witch",
   THIEF: "class.name.thief",
+  PORTER: "class.name.porter",
 };
 
 export default function DungeonPartyScreen() {

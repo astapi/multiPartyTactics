@@ -22,11 +22,20 @@ describe("misc testable logic", () => {
       baseMaxHp: 80,
       baseAtk: 5,
       baseDef: 6,
+      baseSpi: 13,
       baseSpd: 10,
       baseMaxMp: 35,
       baseMpRegen: 2,
       currentHp: 70,
       currentMp: 20,
+      age: 18,
+      growthMultiplier: 1,
+      traitIds: [],
+      innateHpRate: 1,
+      innateAtkBonus: 0,
+      innateDefBonus: 0,
+      innateSpiBonus: 0,
+      innateSpdBonus: 0,
     });
     expect(unit).toMatchObject({
       id: "c1",
@@ -35,7 +44,7 @@ describe("misc testable logic", () => {
       hp: 70,
       mp: 20,
       order: 3,
-      stats: { maxHp: 80, atk: 5, def: 6, spd: 10, maxMp: 35, mpRegen: 2 },
+      stats: { maxHp: 80, atk: 5, def: 6, spi: 13, spd: 10, maxMp: 35, mpRegen: 2 },
     });
   });
 
@@ -52,11 +61,20 @@ describe("misc testable logic", () => {
         baseMaxHp: 100,
         baseAtk: 11,
         baseDef: 8,
+        baseSpi: 6,
         baseSpd: 10,
         baseMaxMp: 22,
         baseMpRegen: 2,
         currentHp: 80,
         currentMp: 10,
+        age: 18,
+        growthMultiplier: 1,
+        traitIds: [],
+        innateHpRate: 1,
+        innateAtkBonus: 0,
+        innateDefBonus: 0,
+        innateSpiBonus: 0,
+        innateSpdBonus: 0,
       },
       {
         weapon: {
@@ -75,7 +93,7 @@ describe("misc testable logic", () => {
         },
       }
     );
-    expect(unit.stats).toEqual({ maxHp: 140, atk: 21, def: 24, spd: 10, maxMp: 22, mpRegen: 2 });
+    expect(unit.stats).toEqual({ maxHp: 140, atk: 21, def: 24, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 });
     expect(unit.hp).toBe(120);
     expect(unit.mp).toBe(10);
   });

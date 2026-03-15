@@ -12,4 +12,5 @@ export const CLASS_DEFINITIONS: ClassDefinition[] = [
   { id: "CLERIC", name: "Cleric", role: "HEALER", skills: CLERIC_SKILLS },
   { id: "WITCH", name: "Witch", role: "SUPPORT", skills: ARCANE_SKILLS },
   { id: "THIEF", name: "Thief", role: "DPS", skills: THIEF_SKILLS },
+  { id: "PORTER", name: "Porter", role: "SUPPORT", skills: [] },
 ];

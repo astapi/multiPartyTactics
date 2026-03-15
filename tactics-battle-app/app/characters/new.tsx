@@ -32,11 +32,20 @@ export default function NewCharacterScreen() {
         baseMaxHp: base.maxHp,
         baseAtk: base.atk,
         baseDef: base.def,
+        baseSpi: base.spi,
         baseSpd: base.spd,
         baseMaxMp: base.maxMp,
         baseMpRegen: base.mpRegen,
         currentHp: base.maxHp,
         currentMp: base.maxMp,
+        age: 18,
+        growthMultiplier: 1,
+        traitIds: [],
+        innateHpRate: 1,
+        innateAtkBonus: 0,
+        innateDefBonus: 0,
+        innateSpiBonus: 0,
+        innateSpdBonus: 0,
       });
       const defaultTactics = buildDefaultTacticsForClass(id, classId);
       if (defaultTactics.length > 0) {
@@ -76,6 +85,7 @@ export default function NewCharacterScreen() {
           <Text style={styles.statLine}>HP: {getBaseStatsForClassLevel(classId, 1).maxHp}</Text>
           <Text style={styles.statLine}>ATK: {getBaseStatsForClassLevel(classId, 1).atk}</Text>
           <Text style={styles.statLine}>DEF: {getBaseStatsForClassLevel(classId, 1).def}</Text>
+          <Text style={styles.statLine}>SPI: {getBaseStatsForClassLevel(classId, 1).spi}</Text>
           <Text style={styles.statLine}>SPD: {getBaseStatsForClassLevel(classId, 1).spd}</Text>
           <Text style={styles.statLine}>MP: {getBaseStatsForClassLevel(classId, 1).maxMp}</Text>
         </View>

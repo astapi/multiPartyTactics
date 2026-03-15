@@ -19,11 +19,20 @@ const sampleCharacter = {
   baseMaxHp: 100,
   baseAtk: 11,
   baseDef: 8,
+  baseSpi: 6,
   baseSpd: 10,
   baseMaxMp: 22,
   baseMpRegen: 2,
   currentHp: 70,
   currentMp: 12,
+  age: 18,
+  growthMultiplier: 1,
+  traitIds: [],
+  innateHpRate: 1,
+  innateAtkBonus: 0,
+  innateDefBonus: 0,
+  innateSpiBonus: 0,
+  innateSpdBonus: 0,
 };
 
 describe("game/equipment/equipmentStatsService", () => {
@@ -71,10 +80,10 @@ describe("game/equipment/equipmentStatsService", () => {
       },
     });
 
-    expect(derived.base).toMatchObject({ hp: 100, atk: 11, def: 8, mp: 22, spd: 10, mpRegen: 2 });
+    expect(derived.base).toMatchObject({ hp: 100, atk: 11, def: 8, spi: 6, mp: 22, spd: 10, mpRegen: 2 });
     expect(derived.bonus).toMatchObject({ hp: 40, atk: 10, def: 16, mp: 0, spd: 0, mpRegen: 0 });
-    expect(derived.total).toMatchObject({ hp: 140, atk: 21, def: 24, mp: 22, spd: 10, mpRegen: 2 });
-    expect(derived.battle).toEqual({ maxHp: 140, atk: 21, def: 24, spd: 10, maxMp: 22, mpRegen: 2 });
+    expect(derived.total).toMatchObject({ hp: 140, atk: 21, def: 24, spi: 6, mp: 22, spd: 10, mpRegen: 2 });
+    expect(derived.battle).toEqual({ maxHp: 140, atk: 21, def: 24, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 });
   });
 
   it("formats non-zero stat lines", () => {

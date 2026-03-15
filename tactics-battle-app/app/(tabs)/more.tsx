@@ -201,11 +201,20 @@ export default function SettingsScreen() {
             baseMaxHp: base.maxHp,
             baseAtk: base.atk,
             baseDef: base.def,
+            baseSpi: base.spi,
             baseSpd: base.spd,
             baseMaxMp: base.maxMp,
             baseMpRegen: base.mpRegen,
             currentHp: base.maxHp,
             currentMp: base.maxMp,
+            age: 18,
+            growthMultiplier: 1,
+            traitIds: [],
+            innateHpRate: 1,
+            innateAtkBonus: 0,
+            innateDefBonus: 0,
+            innateSpiBonus: 0,
+            innateSpdBonus: 0,
           });
           const defaultTactics = buildDefaultTacticsForClass(id, preset.classId);
           if (defaultTactics.length > 0) {

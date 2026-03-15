@@ -10,6 +10,7 @@ export type Stats = {
   maxHp: number;
   atk: number;
   def: number;
+  spi: number;
   spd: number;
   maxMp: number;
   mpRegen: number;
@@ -124,6 +125,21 @@ export const calculatePhysicalDamage = (
   const attack = getEffectiveStat(attacker, "atk");
   const defense = getEffectiveStat(defender, "def");
   const base = Math.max(1, attack - defense);
+  const scaled = Math.floor(
+    base * Math.max(0, skillMultiplier) * getDamageTakenMultiplier(defender) * randomFactor
+  );
+  return Math.max(1, scaled);
+};
+
+export const calculateMagicDamage = (
+  attacker: Unit,
+  defender: Unit,
+  skillMultiplier: number,
+  randomFactor = 1
+): number => {
+  const spirit = Math.max(1, attacker.stats.spi);
+  const defense = getEffectiveStat(defender, "def");
+  const base = Math.max(1, spirit - Math.floor(defense * 0.35));
   const scaled = Math.floor(
     base * Math.max(0, skillMultiplier) * getDamageTakenMultiplier(defender) * randomFactor
   );

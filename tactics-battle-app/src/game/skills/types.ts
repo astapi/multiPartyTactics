@@ -111,6 +111,7 @@ export type Skill = {
   mpCost: number;
   cooldown: number;
   multiplier?: number;
+  powerStat?: "atk" | "spi";
   hitCount?: number;
   hitMultiplier?: number;
   randomizeTargetPerHit?: boolean;
