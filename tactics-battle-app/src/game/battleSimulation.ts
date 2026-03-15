@@ -129,6 +129,7 @@ const pickWeightedPartyTarget = (units: Unit[], rng: () => number): Unit => {
 const createBattleLog = (
   sessionId: string,
   turn: number,
+  actorId: string | null,
   actor: string,
   action: string,
   target: string | null,
@@ -139,6 +140,7 @@ const createBattleLog = (
   id: undefined,
   battleSessionId: sessionId,
   turn,
+  actorId,
   actorName: actor,
   actionType: action,
   targetName: target,
@@ -187,6 +189,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
       createBattleLog(
         params.sessionId,
         turn,
+        null,
         "SYSTEM",
         `RESULT_${outcome}`,
         null,
@@ -226,6 +229,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           createBattleLog(
             params.sessionId,
             turn,
+            actor.id,
             actor.name,
             "POISON_TICK",
             actor.name,
@@ -243,6 +247,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           createBattleLog(
             params.sessionId,
             turn,
+            actor.id,
             actor.name,
             "SKIP",
             null,
@@ -282,6 +287,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
             createBattleLog(
               params.sessionId,
               turn,
+              actor.id,
               actor.name,
               BASIC_ATTACK.id,
               result.resolvedTargetIds.length > 1 ? null : target.name,
@@ -311,6 +317,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           createBattleLog(
             params.sessionId,
             turn,
+            actor.id,
             actor.name,
             resolution.skill.id,
             isArea ? null : resolution.target.name,
@@ -335,6 +342,7 @@ export const simulateBattle = (params: BattleSimulationParams): BattleSimulation
           createBattleLog(
             params.sessionId,
             turn,
+            actor.id,
             actor.name,
             BASIC_ATTACK.id,
             result.resolvedTargetIds.length > 1 ? null : target.name,

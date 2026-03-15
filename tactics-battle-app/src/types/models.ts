@@ -187,6 +187,7 @@ export type BattleLogRecord = {
   id?: number;
   battleSessionId: string;
   turn: number;
+  actorId?: string | null;
   actorName: string;
   actionType: string;
   targetName: string | null;

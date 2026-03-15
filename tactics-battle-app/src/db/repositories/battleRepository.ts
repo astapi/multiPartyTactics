@@ -16,6 +16,7 @@ const mapLog = (row: any): BattleLogRecord => ({
   id: row.id,
   battleSessionId: row.battle_session_id,
   turn: row.turn,
+  actorId: null,
   actorName: row.actor_name,
   actionType: row.action_type,
   targetName: row.target_name,
