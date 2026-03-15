@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "bench": "vitest bench --run"
+    "bench": "vitest bench --run",
+    "deploy:ios": "./scripts/deploy-ios.sh",
+    "deploy:ios:quick": "./scripts/deploy-ios.sh --no-clean"
   },
   "dependencies": {
     "@babel/runtime": "^7.26.0",
