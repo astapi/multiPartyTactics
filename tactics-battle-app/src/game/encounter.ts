@@ -1,4 +1,5 @@
 import enemiesData from "@/data/enemies.json";
+import { DUNGEON_BOSS_BY_FLOOR } from "@/data/dungeonBosses";
 import dungeonEnemyTableData from "@/data/dungeonEnemyTable.json";
 import { Stats } from "@/game/battle";
 import { createSeededRng } from "@/utils/rng";
@@ -76,17 +77,6 @@ const ENEMY_MASTER = new Map(
 );
 
 const DUNGEON_TABLE = dungeonEnemyTableData.dungeons as DungeonTable[];
-
-const LEPUS_BOSS_ID = "boss_lepus";
-const LEPUS_BOSS_NAME = "レプス";
-const LEPUS_BOSS_STATS: Stats = {
-  maxHp: 240,
-  atk: 59,
-  def: 16,
-  spd: 14,
-  maxMp: 24,
-  mpRegen: 3,
-};
 
 type WeightedEncounterEntry = {
   enemyId: string;
@@ -217,12 +207,17 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
 
 export const createBossEncounter = (params: CreateBossEncounterParams): EncounterResult => {
   const floor = Math.max(1, params.floor);
+  const boss = DUNGEON_BOSS_BY_FLOOR.get(floor);
+  if (!boss) {
+    throw new Error(`No boss definition for ${params.dungeonId} floor ${floor}`);
+  }
+
   return {
     enemies: [
       {
-        enemyId: LEPUS_BOSS_ID,
-        name: LEPUS_BOSS_NAME,
-        stats: scaleStats(LEPUS_BOSS_STATS, {
+        enemyId: boss.id,
+        name: boss.name,
+        stats: scaleStats(boss.stats, {
           statScale: resolveScaleOverride({
             baseScale: 1,
             floor,
@@ -246,7 +241,7 @@ export const createBossEncounter = (params: CreateBossEncounterParams): Encounte
       seed: params.seed,
       enemyCount: 1,
       encounterKind: "BOSS",
-      bossName: LEPUS_BOSS_NAME,
+      bossName: boss.name,
     },
   };
 };

@@ -112,7 +112,7 @@
   "dungeon.selectParty": "SELECT PARTY",
   "dungeon.selectDungeon": "SELECT DUNGEON",
   "dungeon.selectFloor": "SELECT FLOOR",
-  "dungeon.name.crestoria_dungeon_1_200": "Crestoria Dungeon 1-200F",
+  "dungeon.name.crestoria_dungeon_1_200": "Crestoria Dungeon 1-120F",
   "dungeon.progress": "Progress: Floor {floor} / {max}",
   "dungeon.deploy": "Deploy Party",
   "dungeon.ui.headerSub": "Manage your parties",

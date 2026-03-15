@@ -1,6 +1,7 @@
 import difficultyConfig from "@/data/difficultyConfig.json";
 import { DungeonOption } from "@/constants/dungeons";
 import { Unit } from "@/game/battle";
+import { getDungeonBossFloors } from "@/game/dungeonBundles";
 import {
   ExplorationEvent,
   ExplorationResult,
@@ -67,8 +68,6 @@ const DEFAULT_CONFIG: ExplorationSessionConfig = {
   discoveredStairsArrivalMaxSteps: 20,
 };
 
-const SPECIAL_B5_BOSS_DUNGEON_ID = "crestoria_dungeon_1_200";
-const SPECIAL_B5_BOSS_FLOOR = 5;
 const EARLY_STAIRS_DISCOVERY_START_PERCENT = 30;
 
 const mixSeed32 = (value: number): number => {
@@ -106,8 +105,8 @@ const withFloorProgress = (
   },
 });
 
-const isSpecialBossGateFloor = (state: Pick<ExplorationSessionState, "dungeon">, floor: number): boolean =>
-  state.dungeon.id === SPECIAL_B5_BOSS_DUNGEON_ID && floor === SPECIAL_B5_BOSS_FLOOR;
+const isBossGateFloor = (state: Pick<ExplorationSessionState, "dungeon">, floor: number): boolean =>
+  getDungeonBossFloors(state.dungeon.id).includes(floor);
 
 export const isStairsDiscoveredForFloor = (progress: Pick<ExplorationFloorProgress, "stairsDiscovered">): boolean =>
   progress.stairsDiscovered;
@@ -281,7 +280,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
   });
 
   const hasNextFloor = floor < state.dungeon.floors;
-  const canProcessStairs = hasNextFloor && !isSpecialBossGateFloor(state, floor);
+  const canProcessStairs = hasNextFloor && !isBossGateFloor(state, floor);
   const stairsToFloor = hasNextFloor ? floor + 1 : undefined;
   const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
   const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
@@ -355,7 +354,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
 
   let nextSpecialBossArrivalTargetMap = nextState.specialBossArrivalTargetMap;
   const canSampleSpecialBossArrivalTarget =
-    isSpecialBossGateFloor(state, floor) &&
+    isBossGateFloor(state, floor) &&
     nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
     !nextFloorProgress.stairsDiscovered &&
     !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&
@@ -373,7 +372,7 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
   const specialBossArrivalTarget = nextSpecialBossArrivalTargetMap[floor];
 
   const shouldOfferSpecialBossEncounter =
-    isSpecialBossGateFloor(state, floor) &&
+    isBossGateFloor(state, floor) &&
     nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
     !nextFloorProgress.stairsDiscovered &&
     !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&

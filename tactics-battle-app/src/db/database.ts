@@ -8,6 +8,7 @@ import { MIGRATION_007 } from "./migrations/007_dungeon_floor_exploration_progre
 import { MIGRATION_008 } from "./migrations/008_dungeon_party_ui_step_count";
 import { MIGRATION_010 } from "./migrations/010_shop_economy";
 import { MIGRATION_011 } from "./migrations/011_consumable_inventory";
+import { MIGRATION_012 } from "./migrations/012_crestoria_floor_cap";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle_v2.db";
@@ -29,6 +30,7 @@ export const initializeDatabase = async (): Promise<void> => {
   await db.execAsync(MIGRATION_007);
   await db.execAsync(MIGRATION_010);
   await db.execAsync(MIGRATION_011);
+  await db.execAsync(MIGRATION_012);
 
   // Hotfix for v2 databases created before exp/step_count were in base schema.
   const characterColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(characters)");

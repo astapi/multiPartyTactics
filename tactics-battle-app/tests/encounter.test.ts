@@ -28,31 +28,29 @@ describe("game/encounter", () => {
     ).toThrow("No encounter table");
   });
 
-  it("supports crestoria 200-floor dungeon and boss-floor fallback encounters", () => {
+  it("supports crestoria 120-floor dungeon and boss-floor fallback encounters", () => {
     const floor1 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 1, seed: 101 });
-    const floor5 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 5, seed: 105 });
-    const floor200 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 200, seed: 200 });
+    const floor10 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 10, seed: 110 });
+    const floor120 = generateEncounter({ dungeonId: "crestoria_dungeon_1_200", floor: 120, seed: 220 });
 
     expect(floor1.rollMeta.floor).toBe(1);
-    expect(floor5.rollMeta.floor).toBe(5);
-    expect(floor200.rollMeta.floor).toBe(200);
+    expect(floor10.rollMeta.floor).toBe(10);
+    expect(floor120.rollMeta.floor).toBe(120);
     expect(floor1.enemies.length).toBeGreaterThanOrEqual(1);
-    expect(floor5.enemies.length).toBeGreaterThanOrEqual(1);
-    expect(floor200.enemies.length).toBeGreaterThanOrEqual(1);
+    expect(floor10.enemies.length).toBeGreaterThanOrEqual(1);
+    expect(floor120.enemies.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("covers floors 1-200 and marks boss floors in crestoria dungeon table", () => {
+  it("covers floors 1-120 and marks boss floors every 10 floors", () => {
     const dungeon = (dungeonEnemyTableData.dungeons as any[]).find(
       (entry) => entry.dungeonId === "crestoria_dungeon_1_200"
     );
     expect(dungeon).toBeTruthy();
-    expect(dungeon.floors).toHaveLength(200);
+    expect(dungeon.floors).toHaveLength(120);
     expect(dungeon.floors[0].floor).toBe(1);
-    expect(dungeon.floors[199].floor).toBe(200);
+    expect(dungeon.floors[119].floor).toBe(120);
     const bossFloors = dungeon.floors.filter((floor: any) => floor.isBossFloor).map((floor: any) => floor.floor);
-    expect(bossFloors).toContain(5);
-    expect(bossFloors).toContain(200);
-    expect(bossFloors.length).toBeGreaterThanOrEqual(20);
+    expect(bossFloors).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
   });
 
   it("raises weighted average enemy power across a T boundary (70F -> 71F)", () => {
@@ -82,16 +80,16 @@ describe("game/encounter", () => {
     expect(f71).toBeGreaterThan(f70 * 1.1);
   });
 
-  it("creates a boss encounter for Lepus with boss metadata", () => {
+  it("creates floor-based zodiac boss encounters with boss metadata", () => {
     const result = createBossEncounter({
       dungeonId: "crestoria_dungeon_1_200",
-      floor: 5,
+      floor: 10,
       seed: 123,
     });
     expect(result.enemies).toHaveLength(1);
-    expect(result.enemies[0]?.name).toBe("レプス");
+    expect(result.enemies[0]?.name).toBe("星霊導師アリエス");
     expect(result.rollMeta.enemyCount).toBe(1);
     expect(result.rollMeta.encounterKind).toBe("BOSS");
-    expect(result.rollMeta.bossName).toBe("レプス");
+    expect(result.rollMeta.bossName).toBe("星霊導師アリエス");
   });
 });
