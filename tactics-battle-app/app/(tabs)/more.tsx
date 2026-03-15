@@ -384,8 +384,8 @@ export default function SettingsScreen() {
                 <Text style={styles.rowText}>{locale === "ja" ? "倉庫" : "Inventory"}</Text>
               </Pressable>
               <View style={styles.divider} />
-              <Pressable style={styles.row} onPress={() => router.push("/debug/battle-effects")}>
-                <Text style={styles.rowText}>{locale === "ja" ? "デバッグ画面" : "Debug Screens"}</Text>
+              <Pressable style={styles.row} onPress={() => router.push("../debug")}>
+                <Text style={styles.rowText}>{locale === "ja" ? "デバッグ画面" : "Debug Screen"}</Text>
               </Pressable>
             </View>
           </View>

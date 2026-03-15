@@ -34,12 +34,23 @@ export type GenerateEncounterParams = {
   dungeonId: string;
   floor: number;
   seed: number;
+  scaleOverrides?: EncounterScaleOverrides;
 };
 
 export type CreateBossEncounterParams = {
   dungeonId: string;
   floor: number;
   seed: number;
+  scaleOverrides?: EncounterScaleOverrides;
+};
+
+export type EncounterScaleOverrides = {
+  statScaleMultiplier?: number;
+  statScaleAdd?: number;
+  statScalePerFloorAdd?: number;
+  hpScaleMultiplier?: number;
+  hpScaleAdd?: number;
+  hpScalePerFloorAdd?: number;
 };
 
 type FloorTable = {
@@ -93,6 +104,21 @@ const normalizeScale = (value: number | undefined): number => {
 
 const DEF_DAMPENING = 0.3;
 const SPD_DAMPENING = 0.2;
+
+const resolveScaleOverride = (params: {
+  baseScale: number | undefined;
+  floor: number;
+  multiplier?: number;
+  add?: number;
+  perFloorAdd?: number;
+}): number => {
+  const base = normalizeScale(params.baseScale);
+  const floorOffset = Math.max(0, params.floor - 1);
+  const multiplier = normalizeScale(params.multiplier);
+  const add = Number.isFinite(params.add) ? (params.add as number) : 0;
+  const perFloorAdd = Number.isFinite(params.perFloorAdd) ? (params.perFloorAdd as number) : 0;
+  return Math.max(0.1, base * multiplier + add + floorOffset * perFloorAdd);
+};
 
 const scaleStats = (
   stats: Stats,
@@ -157,7 +183,22 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
     enemies.push({
       enemyId: picked.enemyId,
       name: enemyMaster.name,
-      stats: scaleStats(enemyMaster.stats, picked),
+      stats: scaleStats(enemyMaster.stats, {
+        statScale: resolveScaleOverride({
+          baseScale: picked.statScale,
+          floor,
+          multiplier: params.scaleOverrides?.statScaleMultiplier,
+          add: params.scaleOverrides?.statScaleAdd,
+          perFloorAdd: params.scaleOverrides?.statScalePerFloorAdd,
+        }),
+        hpScale: resolveScaleOverride({
+          baseScale: picked.hpScale,
+          floor,
+          multiplier: params.scaleOverrides?.hpScaleMultiplier,
+          add: params.scaleOverrides?.hpScaleAdd,
+          perFloorAdd: params.scaleOverrides?.hpScalePerFloorAdd,
+        }),
+      }),
       level: picked.level,
     });
   }
@@ -181,7 +222,22 @@ export const createBossEncounter = (params: CreateBossEncounterParams): Encounte
       {
         enemyId: LEPUS_BOSS_ID,
         name: LEPUS_BOSS_NAME,
-        stats: { ...LEPUS_BOSS_STATS },
+        stats: scaleStats(LEPUS_BOSS_STATS, {
+          statScale: resolveScaleOverride({
+            baseScale: 1,
+            floor,
+            multiplier: params.scaleOverrides?.statScaleMultiplier,
+            add: params.scaleOverrides?.statScaleAdd,
+            perFloorAdd: params.scaleOverrides?.statScalePerFloorAdd,
+          }),
+          hpScale: resolveScaleOverride({
+            baseScale: 1,
+            floor,
+            multiplier: params.scaleOverrides?.hpScaleMultiplier,
+            add: params.scaleOverrides?.hpScaleAdd,
+            perFloorAdd: params.scaleOverrides?.hpScalePerFloorAdd,
+          }),
+        }),
       },
     ],
     rollMeta: {
