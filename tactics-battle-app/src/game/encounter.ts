@@ -86,6 +86,49 @@ type WeightedEncounterEntry = {
   level?: number;
 };
 
+const EXTRA_ENCOUNTERS_BY_TABLE: Partial<Record<string, WeightedEncounterEntry[]>> = {
+  T01: [{ enemyId: "wolf", weight: 12, level: 1, statScale: 1, hpScale: 2 }],
+  T06: [
+    { enemyId: "ghoul", weight: 12 },
+    { enemyId: "scorpion", weight: 10 },
+  ],
+  T07: [
+    { enemyId: "lizardman", weight: 15 },
+    { enemyId: "giant_bat", weight: 12 },
+    { enemyId: "rock_lizard", weight: 12 },
+  ],
+  T08: [
+    { enemyId: "lizardman", weight: 15, statScale: 1.204 },
+    { enemyId: "wraith", weight: 12 },
+  ],
+  T09: [
+    { enemyId: "lizardman", weight: 16 },
+    { enemyId: "ghoul", weight: 10 },
+    { enemyId: "scorpion", weight: 10 },
+  ],
+  T10: [
+    { enemyId: "banshee", weight: 12 },
+    { enemyId: "death_knight", weight: 10 },
+  ],
+  T12: [{ enemyId: "minotaur", weight: 18 }],
+  T13: [
+    { enemyId: "minotaur", weight: 18 },
+    { enemyId: "storm_harpy", weight: 12 },
+  ],
+  T14: [{ enemyId: "champion_minotaur", weight: 16 }],
+  T15: [
+    { enemyId: "cyclops", weight: 18 },
+    { enemyId: "golem", weight: 16 },
+    { enemyId: "vampire", weight: 14 },
+  ],
+  T16: [
+    { enemyId: "elder_cyclops", weight: 14 },
+    { enemyId: "cyclops", weight: 14, statScale: 1.185 },
+    { enemyId: "vampire", weight: 12, statScale: 1.185 },
+    { enemyId: "shield_golem", weight: 12 },
+  ],
+};
+
 const normalizeScale = (value: number | undefined): number => {
   if (value === undefined) return 1;
   if (!Number.isFinite(value) || value <= 0) return 1;
@@ -150,6 +193,23 @@ const pickWeightedEnemy = (
   return entries[entries.length - 1];
 };
 
+const getEffectiveEncounters = (floorTable: FloorTable): WeightedEncounterEntry[] => [
+  ...floorTable.encounters,
+  ...(floorTable.tableId ? EXTRA_ENCOUNTERS_BY_TABLE[floorTable.tableId] ?? [] : []),
+];
+
+export const listNormalEncounterEnemyIds = (): string[] => {
+  const ids = new Set<string>();
+  for (const dungeon of DUNGEON_TABLE) {
+    for (const floorTable of dungeon.floors) {
+      for (const entry of getEffectiveEncounters(floorTable)) {
+        ids.add(entry.enemyId);
+      }
+    }
+  }
+  return [...ids];
+};
+
 export const generateEncounter = (params: GenerateEncounterParams): EncounterResult => {
   const floor = Math.max(1, params.floor);
   const rng = createSeededRng(params.seed);
@@ -163,9 +223,10 @@ export const generateEncounter = (params: GenerateEncounterParams): EncounterRes
   }
 
   const enemyCount = 1 + Math.floor(rng() * 3);
+  const effectiveEncounters = getEffectiveEncounters(floorTable);
   const enemies: EncounterEnemy[] = [];
   for (let i = 0; i < enemyCount; i += 1) {
-    const picked = pickWeightedEnemy(floorTable.encounters, rng);
+    const picked = pickWeightedEnemy(effectiveEncounters, rng);
     const enemyMaster = ENEMY_MASTER.get(picked.enemyId);
     if (!enemyMaster) {
       throw new Error(`Unknown enemy id in table: ${picked.enemyId}`);

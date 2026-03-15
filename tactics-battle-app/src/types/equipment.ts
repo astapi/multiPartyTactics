@@ -141,9 +141,13 @@ export type MonsterDropRollParams = {
 export type ResolvedMonsterLootConfig = {
   perEnemyDropChance: number;
   mutationChance: number;
-  categoryWeights: Partial<Record<EquipmentCategory, number>>;
 };
 
 export type ResolvedChestLootConfig = {
   categoryWeights: Partial<Record<EquipmentCategory, number>>;
+};
+
+export type MonsterDropTableEntry = {
+  enemyId: string;
+  baseItemIds: string[];
 };

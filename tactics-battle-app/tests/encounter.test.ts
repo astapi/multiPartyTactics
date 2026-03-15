@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createBossEncounter, generateEncounter } from "@/game/encounter";
+import { createBossEncounter, generateEncounter, listNormalEncounterEnemyIds } from "@/game/encounter";
 import dungeonEnemyTableData from "@/data/dungeonEnemyTable.json";
 import enemiesData from "@/data/enemies.json";
 
@@ -51,6 +51,19 @@ describe("game/encounter", () => {
     expect(dungeon.floors[119].floor).toBe(120);
     const bossFloors = dungeon.floors.filter((floor: any) => floor.isBossFloor).map((floor: any) => floor.floor);
     expect(bossFloors).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
+  });
+
+  it("includes implemented missing monsters in the normal encounter pool", () => {
+    const ids = new Set(listNormalEncounterEnemyIds());
+    expect(ids.has("wolf")).toBe(true);
+    expect(ids.has("giant_bat")).toBe(true);
+    expect(ids.has("wraith")).toBe(true);
+    expect(ids.has("ghoul")).toBe(true);
+    expect(ids.has("scorpion")).toBe(true);
+    expect(ids.has("banshee")).toBe(true);
+    expect(ids.has("cyclops")).toBe(true);
+    expect(ids.has("vampire")).toBe(true);
+    expect(ids.has("shield_golem")).toBe(true);
   });
 
   it("raises weighted average enemy power across a T boundary (70F -> 71F)", () => {

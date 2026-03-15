@@ -12,7 +12,6 @@ type LootTableJson = {
     monster: {
       perEnemyDropChance: number;
       mutationChance: number;
-      categoryWeights: CategoryWeights;
     };
     chest: {
       categoryWeights: CategoryWeights;
@@ -70,15 +69,7 @@ export const resolveMonsterLootConfig = (dungeonId: string, floor: number): Reso
     dungeonOverride?.monster?.mutationChance ?? floorBand?.monster?.mutationChance ?? raw.defaults.monster.mutationChance,
     "monster.mutationChance"
   );
-  const categoryWeights = validateWeights(
-    mergeWeights(
-      mergeWeights(raw.defaults.monster.categoryWeights, floorBand?.monster?.categoryWeights),
-      dungeonOverride?.monster?.categoryWeights
-    ),
-    "monster.categoryWeights"
-  );
-
-  return { perEnemyDropChance, mutationChance, categoryWeights };
+  return { perEnemyDropChance, mutationChance };
 };
 
 export const resolveChestLootConfig = (dungeonId: string, floor: number): ResolvedChestLootConfig => {

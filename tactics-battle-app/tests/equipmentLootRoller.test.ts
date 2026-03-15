@@ -6,13 +6,13 @@ import type { EncounterResult } from "@/game/encounter";
 const encounter: EncounterResult = {
   enemies: [
     {
-      enemyId: "goblin",
-      name: "Goblin",
+      enemyId: "goblin_archer",
+      name: "Goblin Archer",
       stats: { maxHp: 10, atk: 5, def: 5, spd: 5, maxMp: 0, mpRegen: 0 },
     },
     {
-      enemyId: "slime",
-      name: "Slime",
+      enemyId: "skeleton_knight",
+      name: "Skeleton Knight",
       stats: { maxHp: 10, atk: 5, def: 5, spd: 5, maxMp: 0, mpRegen: 0 },
     },
   ],
@@ -22,6 +22,14 @@ const encounter: EncounterResult = {
     seed: 77,
     enemyCount: 2,
   },
+};
+
+const findSeedThatDrops = (params: Omit<Parameters<typeof rollMonsterDrops>[0], "seed">, enemyIndex: number): number => {
+  for (let seed = 1; seed <= 10000; seed += 1) {
+    const result = rollMonsterDrops({ ...params, seed });
+    if (result[enemyIndex]?.reward) return seed;
+  }
+  throw new Error(`No dropping seed found for enemyIndex=${enemyIndex}`);
 };
 
 describe("game/loot/equipmentLootRoller", () => {
@@ -102,13 +110,14 @@ describe("game/loot/equipmentLootRoller", () => {
   });
 
   it("rolls per-enemy monster drops with stable grant keys", () => {
-    const rolls = rollMonsterDrops({
+    const baseParams = {
       dungeonId: "crestoria_dungeon_1_200",
       floor: 2,
       battleSessionId: "session-1",
       encounter,
-      seed: 99,
-    });
+    };
+    const seed = findSeedThatDrops(baseParams, 0);
+    const rolls = rollMonsterDrops({ ...baseParams, seed });
     expect(rolls).toHaveLength(encounter.enemies.length);
     for (const row of rolls) {
       if (!row.reward) continue;
@@ -120,6 +129,21 @@ describe("game/loot/equipmentLootRoller", () => {
         expect(item.can_mutate).toBe(true);
       }
     }
+  });
+
+  it("resolves monster drops from enemy-specific item mappings", () => {
+    const baseParams = {
+      dungeonId: "crestoria_dungeon_1_200",
+      floor: 11,
+      battleSessionId: "session-mapping",
+      encounter: {
+        ...encounter,
+        enemies: [encounter.enemies[0]],
+      },
+    };
+    const seed = findSeedThatDrops(baseParams, 0);
+    const [row] = rollMonsterDrops({ ...baseParams, seed });
+    expect(["bone_throwing_knife", "beast_bone_bow"]).toContain(row.reward?.baseItemId);
   });
 
   it("is deterministic for identical monster drop inputs", () => {

@@ -2,17 +2,7 @@
   "defaults": {
     "monster": {
       "perEnemyDropChance": 0.18,
-      "mutationChance": 0.08,
-      "categoryWeights": {
-        "one_handed_sword": 14,
-        "dagger": 14,
-        "throwing_knife": 10,
-        "two_handed_axe": 12,
-        "two_handed_hammer": 10,
-        "bow": 12,
-        "staff": 14,
-        "shield": 14
-      }
+      "mutationChance": 0.08
     },
     "chest": {
       "categoryWeights": {

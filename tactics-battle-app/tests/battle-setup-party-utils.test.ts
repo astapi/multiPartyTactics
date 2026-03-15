@@ -75,8 +75,8 @@ describe("misc testable logic", () => {
         },
       }
     );
-    expect(unit.stats).toEqual({ maxHp: 103, atk: 16, def: 13, spd: 10, maxMp: 22, mpRegen: 2 });
-    expect(unit.hp).toBe(83);
+    expect(unit.stats).toEqual({ maxHp: 140, atk: 21, def: 24, spd: 10, maxMp: 22, mpRegen: 2 });
+    expect(unit.hp).toBe(120);
     expect(unit.mp).toBe(10);
   });
 

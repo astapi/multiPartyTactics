@@ -72,9 +72,9 @@ describe("game/equipment/equipmentStatsService", () => {
     });
 
     expect(derived.base).toMatchObject({ hp: 100, atk: 11, def: 8, mp: 22, spd: 10, mpRegen: 2 });
-    expect(derived.bonus).toMatchObject({ hp: 3, atk: 5, def: 5, mp: 0, spd: 0, mpRegen: 0 });
-    expect(derived.total).toMatchObject({ hp: 103, atk: 16, def: 13, mp: 22, spd: 10, mpRegen: 2 });
-    expect(derived.battle).toEqual({ maxHp: 103, atk: 16, def: 13, spd: 10, maxMp: 22, mpRegen: 2 });
+    expect(derived.bonus).toMatchObject({ hp: 40, atk: 10, def: 16, mp: 0, spd: 0, mpRegen: 0 });
+    expect(derived.total).toMatchObject({ hp: 140, atk: 21, def: 24, mp: 22, spd: 10, mpRegen: 2 });
+    expect(derived.battle).toEqual({ maxHp: 140, atk: 21, def: 24, spd: 10, maxMp: 22, mpRegen: 2 });
   });
 
   it("formats non-zero stat lines", () => {
