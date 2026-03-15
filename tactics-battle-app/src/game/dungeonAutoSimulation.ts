@@ -153,7 +153,7 @@ export const DEFAULT_SIMULATION_PARTY: SimulationPartyTemplate[] = [
 
 export const DEFAULT_SIMULATION_LOSS_WEIGHTS: SimulationLossWeights = {
   remainingFloorPenalty: 10000,
-  targetExplorationRuns: 200 * 40,
+  targetExplorationRuns: 120 * 40,
   explorationRunDeviationPenalty: 5,
   targetBattleTurns: 4,
   battleTurnDeviationPenalty: 500,
@@ -179,7 +179,7 @@ const DEFAULT_PARAMETERS: Required<
 > = {
   dungeonId: "crestoria_dungeon_1_200",
   startFloor: 1,
-  targetFloor: 200,
+  targetFloor: 120,
   maxFailuresPerFloor: 50,
   battleMaxTurns: 50,
 };

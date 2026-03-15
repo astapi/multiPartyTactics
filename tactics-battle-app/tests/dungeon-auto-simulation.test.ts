@@ -59,8 +59,8 @@ describe("game/dungeonAutoSimulation", () => {
 
   it("目標階層到達時はLv100に近いほどlossが良くなる", () => {
     const common = {
-      targetFloor: 200 as const,
-      reachedFloor: 200 as const,
+      targetFloor: 120 as const,
+      reachedFloor: 120 as const,
       explorationRuns: 100,
       totalFailures: 20,
       failureCountOnFinalFloor: 0,
@@ -106,8 +106,8 @@ describe("game/dungeonAutoSimulation", () => {
 
   it("目標冒険回数に近いほどlossが良くなる", () => {
     const common = {
-      targetFloor: 200 as const,
-      reachedFloor: 200 as const,
+      targetFloor: 120 as const,
+      reachedFloor: 120 as const,
       battleCount: 100,
       averageBattleTurns: 4,
       totalFailures: 999,
@@ -128,7 +128,7 @@ describe("game/dungeonAutoSimulation", () => {
 
     const nearTargetRuns = calculateSimulationLoss({
       ...common,
-      explorationRuns: 8000,
+      explorationRuns: 5000,
     });
     const farTargetRuns = calculateSimulationLoss({
       ...common,
@@ -143,8 +143,8 @@ describe("game/dungeonAutoSimulation", () => {
 
   it("平均戦闘ターン数が4に近いほどlossが良くなる", () => {
     const common = {
-      targetFloor: 200 as const,
-      reachedFloor: 200 as const,
+      targetFloor: 120 as const,
+      reachedFloor: 120 as const,
       explorationRuns: 8000,
       battleCount: 100,
       totalFailures: 999,

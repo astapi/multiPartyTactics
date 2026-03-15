@@ -8,8 +8,8 @@ export type DungeonOption = {
 export const DUNGEONS: DungeonOption[] = [
   {
     id: "crestoria_dungeon_1_200",
-    floorLabel: "1-200F",
+    floorLabel: "1-120F",
     minFloor: 1,
-    floors: 200,
+    floors: 120,
   },
 ];

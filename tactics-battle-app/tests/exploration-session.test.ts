@@ -157,11 +157,11 @@ describe("game/explorationSession", () => {
     expect(state.status).toBe("RUN_COMPLETE");
   });
 
-  it("B5はしきい値到達後にボス遭遇を提示する", () => {
+  it("B10はしきい値到達後にボス遭遇を提示する", () => {
     let state = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 501,
       config: {
         explorationPercentGainPerStep: 25,
@@ -175,19 +175,19 @@ describe("game/explorationSession", () => {
     state = advanceExplorationStep(state);
     state = advanceExplorationStep(state);
 
-    expect(state.floorProgressMap[5]?.explorationPercent).toBe(50);
+    expect(state.floorProgressMap[10]?.explorationPercent).toBe(50);
     expect(state.status).toBe("AWAITING_BOSS_DECISION");
     expect(state.pendingBossEncounter?.enemies).toHaveLength(1);
-    expect(state.pendingBossEncounter?.enemies[0]?.name).toBe("レプス");
+    expect(state.pendingBossEncounter?.enemies[0]?.name).toBe("星霊導師アリエス");
     expect(state.events.some((event) => event.type === "BOSS_ENCOUNTER")).toBe(true);
     expect(state.events.some((event) => event.type === "STAIRS_DISCOVERED")).toBe(false);
   });
 
-  it("B5ボス見送り後は同一ランで再提示しない", () => {
+  it("B10ボス見送り後は同一ランで再提示しない", () => {
     let state = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 502,
       config: {
         explorationPercentGainPerStep: 100,
@@ -212,11 +212,11 @@ describe("game/explorationSession", () => {
     expect(state.status).not.toBe("FLOOR_CLEARED");
   });
 
-  it("B5ボス勝利で階段発見済みになりFLOOR_CLEAREDになる", () => {
+  it("B10ボス勝利で階段発見済みになりFLOOR_CLEAREDになる", () => {
     let state = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 503,
       config: {
         explorationPercentGainPerStep: 100,
@@ -230,16 +230,16 @@ describe("game/explorationSession", () => {
     state = applyBossEncounterDecision(state, "FIGHT");
     state = applyBossBattleResult(state, "WIN");
 
-    expect(state.floorProgressMap[5]?.stairsDiscovered).toBe(true);
+    expect(state.floorProgressMap[10]?.stairsDiscovered).toBe(true);
     expect(state.status).toBe("FLOOR_CLEARED");
     expect(state.events.some((event) => event.type === "FLOOR_CLEAR")).toBe(true);
   });
 
-  it("B5ボス敗北/引分ではFLOOR_CLEAREDにならない", () => {
+  it("B10ボス敗北/引分ではFLOOR_CLEAREDにならない", () => {
     let loseState = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 504,
       config: {
         explorationPercentGainPerStep: 100,
@@ -253,13 +253,13 @@ describe("game/explorationSession", () => {
     loseState = applyBossEncounterDecision(loseState, "FIGHT");
     loseState = applyBossBattleResult(loseState, "LOSE");
     expect(loseState.status).toBe("RUNNING");
-    expect(loseState.floorProgressMap[5]?.stairsDiscovered).toBe(false);
+    expect(loseState.floorProgressMap[10]?.stairsDiscovered).toBe(false);
     expect(loseState.events.some((event) => event.type === "FLOOR_CLEAR")).toBe(false);
 
     let drawState = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 505,
       config: {
         explorationPercentGainPerStep: 100,
@@ -273,17 +273,17 @@ describe("game/explorationSession", () => {
     drawState = applyBossEncounterDecision(drawState, "FIGHT");
     drawState = applyBossBattleResult(drawState, "DRAW");
     expect(drawState.status).toBe("RUNNING");
-    expect(drawState.floorProgressMap[5]?.stairsDiscovered).toBe(false);
+    expect(drawState.floorProgressMap[10]?.stairsDiscovered).toBe(false);
     expect(drawState.events.some((event) => event.type === "FLOOR_CLEAR")).toBe(false);
   });
 
-  it("B5は到達直後ではなく設定step経過後にボス提示される", () => {
+  it("B10は到達直後ではなく設定step経過後にボス提示される", () => {
     let state = createExplorationSession({
       dungeon,
       party,
-      floor: 5,
+      floor: 10,
       seed: 506,
-      persistedProgress: [{ floor: 5, explorationPercent: 100, stairsDiscovered: false }],
+      persistedProgress: [{ floor: 10, explorationPercent: 100, stairsDiscovered: false }],
       config: {
         explorationPercentGainPerStep: 0,
         stairsDiscoveryThresholdPercent: 40,
