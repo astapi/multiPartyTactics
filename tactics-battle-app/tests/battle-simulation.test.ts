@@ -230,6 +230,55 @@ describe("game/battleSimulation", () => {
     expect(result.logs.some((log) => log.actionType === "heal_self")).toBe(true);
   });
 
+  it("records actorId on battle logs so same-name characters stay distinguishable", () => {
+    const party = [
+      makeUnit({
+        id: "same-name-1",
+        name: "Shion",
+        classId: "SWORDMAN",
+        stats: { atk: 20, def: 3, spd: 20, maxHp: 30, maxMp: 0, mpRegen: 0 },
+        hp: 30,
+        mp: 0,
+      }),
+      makeUnit({
+        id: "same-name-2",
+        name: "Shion",
+        classId: "WITCH",
+        stats: { atk: 10, def: 1, spd: 10, spi: 20, maxHp: 24, maxMp: 20, mpRegen: 0 },
+        hp: 24,
+        mp: 20,
+      }),
+    ];
+    const enemies = [
+      toEncounter("slime", "Slime", { maxHp: 40, atk: 1, def: 0, spd: 1, maxMp: 0, mpRegen: 0 }),
+    ];
+    const fireball = makeSkill({
+      id: "fireball",
+      name: "Fireball",
+      type: "attack",
+      target: "ENEMY",
+      mpCost: 4,
+      multiplier: 2,
+    });
+    const rules = [makeRule({ id: "r1", characterId: "same-name-2", skillId: "fireball" })];
+
+    const result = simulateBattle({
+      sessionId: "same-name-session",
+      seed: 7,
+      party,
+      enemies,
+      tacticsByCharacter: { "same-name-2": rules },
+      skillMap: new Map([[fireball.id, fireball]]),
+      maxTurns: 1,
+    });
+
+    const shionLogs = result.logs.filter((log) => log.actorName === "Shion");
+    expect(shionLogs.length).toBeGreaterThanOrEqual(2);
+    expect(shionLogs.map((log) => log.actorId)).toEqual(
+      expect.arrayContaining(["same-name-1", "same-name-2"])
+    );
+  });
+
   it("returns LOSE from enemy branch when party is wiped by poison before enemy acts", () => {
     const party = [
       makeUnit({

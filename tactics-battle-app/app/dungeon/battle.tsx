@@ -48,6 +48,7 @@ import { useI18n } from "@/i18n";
 import { CharacterRecord, TacticsRuleRecord } from "@/types/models";
 import { BATTLE_SPEED_OPTIONS, BattleSpeedMultiplier } from "@/constants/battleSpeed";
 import { getEnemyImage, getEnemySizeScale, isBossEnemyId } from "@/constants/enemyImages";
+import { resolveBattleLogActorImage } from "@/features/battle/log/actorIcon";
 import { useBattleStore } from "@/stores/battleStore";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
@@ -885,11 +886,21 @@ export default function BattleScreen() {
               {logRows.length === 0 ? (
                 <Text style={styles.logLineMuted}>{t("battle.ui.logWaiting")}</Text>
               ) : (
-                logRows.map((log, idx) => (
-                  <Text key={`${log.turn}-${idx}`} style={styles.logLine}>
-                    {formatBattleLogMessage(log, t)}
-                  </Text>
-                ))
+                logRows.map((log, idx) => {
+                  const actorImage = resolveBattleLogActorImage(log, params.party, params.enemies);
+                  return (
+                    <View key={`${log.turn}-${idx}`} style={styles.logRow}>
+                      <View style={styles.logIconWrap}>
+                        {actorImage ? (
+                          <Image source={actorImage} style={styles.logIcon} resizeMode="cover" />
+                        ) : (
+                          <View style={styles.logIconPlaceholder} />
+                        )}
+                      </View>
+                      <Text style={styles.logLine}>{formatBattleLogMessage(log, t)}</Text>
+                    </View>
+                  );
+                })
               )}
             </ScrollView>
           </View>
@@ -1137,11 +1148,41 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "flex-end",
     paddingVertical: 4,
+    gap: 6,
+  },
+  logRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  logIconWrap: {
+    width: 22,
+    height: 22,
+    marginTop: 1,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  logIcon: {
+    width: 22,
+    height: 22,
+  },
+  logIconPlaceholder: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.28)",
   },
   logLine: {
     color: "#666666",
     fontSize: 13,
     lineHeight: 19,
+    flex: 1,
   },
   logLineMuted: {
     color: "#9b9b9b",
