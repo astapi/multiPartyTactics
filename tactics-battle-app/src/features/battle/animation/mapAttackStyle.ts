@@ -8,6 +8,8 @@ export const mapAttackStyleFromUnit = (unit: Unit): BattleAttackStyle => {
       return "sword";
     case "THIEF":
       return "dagger";
+    case "PORTER":
+      return "generic";
     case "BERSERKER":
       return "axe2h";
     default:

@@ -6,7 +6,26 @@ export type ClassId =
   | "BERSERKER"
   | "CLERIC"
   | "WITCH"
-  | "THIEF";
+  | "THIEF"
+  | "PORTER";
+
+export type AdventurerTraitId =
+  | "LOUD_FOOTSTEPS"
+  | "LOUD_VOICE"
+  | "MENTAL_RESIST"
+  | "MENTAL_WEAKNESS"
+  | "HERO"
+  | "PORTER"
+  | "LUCKY_DROP";
+
+export type CharacterGrowthProfile = {
+  innateHpRate: number;
+  innateAtkBonus: number;
+  innateDefBonus: number;
+  innateSpiBonus: number;
+  innateSpdBonus: number;
+  growthMultiplier: number;
+};
 
 export type CharacterRecord = {
   id: string;
@@ -19,11 +38,51 @@ export type CharacterRecord = {
   baseMaxHp: number;
   baseAtk: number;
   baseDef: number;
+  baseSpi: number;
   baseSpd: number;
   baseMaxMp: number;
   baseMpRegen: number;
   currentHp: number;
   currentMp: number;
+  age: number;
+  growthMultiplier: number;
+  traitIds: AdventurerTraitId[];
+  innateHpRate: number;
+  innateAtkBonus: number;
+  innateDefBonus: number;
+  innateSpiBonus: number;
+  innateSpdBonus: number;
+};
+
+export type TavernCandidateRecord = {
+  id: string;
+  name: string;
+  classId: ClassId;
+  constellationId: ConstellationId;
+  level: number;
+  age: number;
+  growthMultiplier: number;
+  traitIds: AdventurerTraitId[];
+  priceGold: number;
+  baseMaxHp: number;
+  baseAtk: number;
+  baseDef: number;
+  baseSpi: number;
+  baseSpd: number;
+  baseMaxMp: number;
+  baseMpRegen: number;
+  innateHpRate: number;
+  innateAtkBonus: number;
+  innateDefBonus: number;
+  innateSpiBonus: number;
+  innateSpdBonus: number;
+  generatedAt: string;
+};
+
+export type TavernRefreshState = {
+  lastGeneratedAt: string;
+  nextRefreshAt: string;
+  seed: number;
 };
 
 export type PartyRecord = {

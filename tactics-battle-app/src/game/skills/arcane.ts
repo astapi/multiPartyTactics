@@ -10,6 +10,7 @@ export const ARCANE_SKILLS: Skill[] = [
     mpCost: 8,
     cooldown: 3,
     multiplier: 1.3,
+    powerStat: "spi",
     tags: ["damage", "aoe"],
   },
   {
@@ -22,6 +23,7 @@ export const ARCANE_SKILLS: Skill[] = [
     cooldown: 3,
     hitCount: 3,
     hitMultiplier: 1.0,
+    powerStat: "spi",
     randomizeTargetPerHit: true,
     tags: ["damage", "multi_hit"],
   },

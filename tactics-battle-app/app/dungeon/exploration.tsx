@@ -26,7 +26,7 @@ import { useBattleStore } from "@/stores/battleStore";
 import { useExplorationRunStore } from "@/stores/explorationRunStore";
 import type { BattleStatus } from "@/types/models";
 import type { EquipmentReward } from "@/types/equipment";
-import { toUnit } from "@/game/partyMapper";
+import { toPartyUnits } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
 
 const HERO_IMAGE = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
@@ -207,7 +207,7 @@ export default function ExplorationScreen() {
         const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
           partyRecords.map((record) => record.id)
         );
-        const party = partyRecords.map((record) => toUnit(record, equippedByCharacterId[record.id] ?? {}));
+        const party = toPartyUnits(partyRecords, equippedByCharacterId);
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
         const persistedProgressList = await dungeonExplorationProgressRepository.listByDungeon(resolvedDungeonId);

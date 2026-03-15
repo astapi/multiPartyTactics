@@ -5,13 +5,16 @@ type BaseStats = {
   maxHp: number;
   atk: number;
   def: number;
+  spi: number;
   spd: number;
   maxMp: number;
   mpRegen: number;
 };
 
-export const BASE_STATS_BY_CLASS: Record<ClassId, BaseStats> = {
-  ...Object.fromEntries(
-    CLASS_MASTER.map((classInfo) => [classInfo.id, classInfo.baseStats])
-  ),
-} as Record<ClassId, BaseStats>;
+export const BASE_STATS_BY_CLASS: Record<ClassId, BaseStats> = CLASS_MASTER.reduce(
+  (acc, classInfo) => {
+    acc[classInfo.id] = classInfo.baseStats;
+    return acc;
+  },
+  {} as Record<ClassId, BaseStats>
+);

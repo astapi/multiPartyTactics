@@ -79,8 +79,8 @@ export const hireCharacterService = {
 
       await db.runAsync(
         `INSERT INTO characters
-        (id, name, class_id, constellation_id, level, exp, base_max_hp, base_atk, base_def, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, name, class_id, constellation_id, level, exp, base_max_hp, base_atk, base_def, base_spi, base_spd, base_max_mp, base_mp_regen, current_hp, current_mp, age, growth_multiplier, trait_ids_json, innate_hp_rate, innate_atk_bonus, innate_def_bonus, innate_spi_bonus, innate_spd_bonus)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           characterId,
           trimmedName,
@@ -91,11 +91,20 @@ export const hireCharacterService = {
           base.maxHp,
           base.atk,
           base.def,
+          base.spi,
           base.spd,
           base.maxMp,
           base.mpRegen,
           base.maxHp,
           base.maxMp,
+          18,
+          1,
+          "[]",
+          1,
+          0,
+          0,
+          0,
+          0,
         ]
       );
 

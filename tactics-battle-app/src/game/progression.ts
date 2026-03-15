@@ -7,6 +7,7 @@ export type StatBlock = {
   maxHp: number;
   atk: number;
   def: number;
+  spi: number;
   spd: number;
   maxMp: number;
   mpRegen: number;
@@ -46,21 +47,23 @@ const getRequiredExpForLevelUp = (level: number): number => {
 };
 
 const GROWTH_RATE_BY_CLASS: Record<ClassId, GrowthRate> = {
-  GUARDIAN: { maxHp: 6.0, atk: 0.55, def: 1.0, spd: 0.25, maxMp: 0.6, mpRegen: 0.005 },
-  SWORDMAN: { maxHp: 5.0, atk: 0.9, def: 0.6, spd: 0.5, maxMp: 0.6, mpRegen: 0.005 },
-  BERSERKER: { maxHp: 5.5, atk: 1.1, def: 0.45, spd: 0.45, maxMp: 0.4, mpRegen: 0.004 },
-  CLERIC: { maxHp: 4.0, atk: 0.35, def: 0.45, spd: 0.5, maxMp: 1.2, mpRegen: 0.01 },
-  WITCH: { maxHp: 3.5, atk: 0.45, def: 0.35, spd: 0.6, maxMp: 1.4, mpRegen: 0.012 },
-  THIEF: { maxHp: 4.5, atk: 0.8, def: 0.35, spd: 0.95, maxMp: 0.7, mpRegen: 0.006 },
+  GUARDIAN: { maxHp: 6.0, atk: 0.55, def: 1.0, spi: 0.2, spd: 0.25, maxMp: 0.6, mpRegen: 0.005 },
+  SWORDMAN: { maxHp: 5.0, atk: 0.9, def: 0.6, spi: 0.25, spd: 0.5, maxMp: 0.6, mpRegen: 0.005 },
+  BERSERKER: { maxHp: 5.5, atk: 1.1, def: 0.45, spi: 0.15, spd: 0.45, maxMp: 0.4, mpRegen: 0.004 },
+  CLERIC: { maxHp: 4.0, atk: 0.35, def: 0.45, spi: 1.1, spd: 0.5, maxMp: 1.2, mpRegen: 0.01 },
+  WITCH: { maxHp: 3.5, atk: 0.45, def: 0.35, spi: 1.3, spd: 0.6, maxMp: 1.4, mpRegen: 0.012 },
+  THIEF: { maxHp: 4.5, atk: 0.8, def: 0.35, spi: 0.3, spd: 0.95, maxMp: 0.7, mpRegen: 0.006 },
+  PORTER: { maxHp: 4.8, atk: 0.45, def: 0.55, spi: 0.35, spd: 0.4, maxMp: 0.5, mpRegen: 0.005 },
 };
 
 const BASE_LEVEL_STATS_BY_CLASS: Record<ClassId, StatBlock> = {
-  GUARDIAN: { maxHp: 120, atk: 8, def: 10, spd: 8, maxMp: 20, mpRegen: 2 },
-  SWORDMAN: { maxHp: 100, atk: 11, def: 8, spd: 10, maxMp: 22, mpRegen: 2 },
-  BERSERKER: { maxHp: 110, atk: 14, def: 6, spd: 9, maxMp: 18, mpRegen: 2 },
-  CLERIC: { maxHp: 80, atk: 5, def: 6, spd: 10, maxMp: 35, mpRegen: 2 },
-  WITCH: { maxHp: 75, atk: 6, def: 5, spd: 11, maxMp: 30, mpRegen: 2 },
-  THIEF: { maxHp: 90, atk: 12, def: 5, spd: 12, maxMp: 25, mpRegen: 2 },
+  GUARDIAN: { maxHp: 120, atk: 8, def: 10, spi: 5, spd: 8, maxMp: 20, mpRegen: 2 },
+  SWORDMAN: { maxHp: 100, atk: 11, def: 8, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 },
+  BERSERKER: { maxHp: 110, atk: 14, def: 6, spi: 4, spd: 9, maxMp: 18, mpRegen: 2 },
+  CLERIC: { maxHp: 80, atk: 5, def: 6, spi: 13, spd: 10, maxMp: 35, mpRegen: 2 },
+  WITCH: { maxHp: 75, atk: 6, def: 5, spi: 15, spd: 11, maxMp: 30, mpRegen: 2 },
+  THIEF: { maxHp: 90, atk: 12, def: 5, spi: 6, spd: 12, maxMp: 25, mpRegen: 2 },
+  PORTER: { maxHp: 95, atk: 7, def: 7, spi: 7, spd: 9, maxMp: 18, mpRegen: 2 },
 };
 
 const TOTAL_EXP_FOR_LEVEL: number[] = (() => {
@@ -141,9 +144,91 @@ export const getBaseStatsForClassLevel = (
     maxHp: base.maxHp + Math.floor(levelOffset * (growth.maxHp + constellationBonus.maxHp)),
     atk: base.atk + Math.floor(levelOffset * (growth.atk + constellationBonus.atk)),
     def: base.def + Math.floor(levelOffset * (growth.def + constellationBonus.def)),
+    spi: base.spi + Math.floor(levelOffset * (growth.spi + constellationBonus.spi)),
     spd: base.spd + Math.floor(levelOffset * (growth.spd + constellationBonus.spd)),
     maxMp: base.maxMp + Math.floor(levelOffset * (growth.maxMp + constellationBonus.maxMp)),
     mpRegen: base.mpRegen + Math.floor(levelOffset * (growth.mpRegen + constellationBonus.mpRegen)),
+  };
+};
+
+export const getGrowthRateForClass = (classId: ClassId): GrowthRate => GROWTH_RATE_BY_CLASS[classId];
+
+export const getBaseLevelStatsForClass = (classId: ClassId): StatBlock => BASE_LEVEL_STATS_BY_CLASS[classId];
+
+export const getCharacterGrowthProfile = (record: Pick<
+  CharacterRecord,
+  | "innateHpRate"
+  | "innateAtkBonus"
+  | "innateDefBonus"
+  | "innateSpiBonus"
+  | "innateSpdBonus"
+  | "growthMultiplier"
+>): {
+  innateHpRate: number;
+  innateAtkBonus: number;
+  innateDefBonus: number;
+  innateSpiBonus: number;
+  innateSpdBonus: number;
+  growthMultiplier: number;
+} => ({
+  innateHpRate: Number.isFinite(record.innateHpRate) ? record.innateHpRate : 1,
+  innateAtkBonus: Math.floor(record.innateAtkBonus ?? 0),
+  innateDefBonus: Math.floor(record.innateDefBonus ?? 0),
+  innateSpiBonus: Math.floor(record.innateSpiBonus ?? 0),
+  innateSpdBonus: Math.floor(record.innateSpdBonus ?? 0),
+  growthMultiplier: Number.isFinite(record.growthMultiplier) ? record.growthMultiplier : 1,
+});
+
+export const getCharacterStatsAtLevel = (
+  record: Pick<
+    CharacterRecord,
+    | "classId"
+    | "constellationId"
+    | "growthMultiplier"
+    | "innateHpRate"
+    | "innateAtkBonus"
+    | "innateDefBonus"
+    | "innateSpiBonus"
+    | "innateSpdBonus"
+  >,
+  level: number
+): StatBlock => {
+  const lv = clamp(safeInt(level), 1, MAX_CHARACTER_LEVEL);
+  const levelOffset = lv - 1;
+  const base = getBaseLevelStatsForClass(record.classId);
+  const growth = getGrowthRateForClass(record.classId);
+  const constellationBonus = getConstellationGrowthBonus(record.constellationId);
+  const profile = getCharacterGrowthProfile(record);
+
+  const baseHp = Math.max(1, Math.floor(base.maxHp * profile.innateHpRate));
+  const growthMultiplier = profile.growthMultiplier;
+
+  return {
+    maxHp:
+      baseHp +
+      Math.floor(levelOffset * (growth.maxHp + constellationBonus.maxHp) * growthMultiplier),
+    atk:
+      base.atk +
+      profile.innateAtkBonus +
+      Math.floor(levelOffset * (growth.atk + constellationBonus.atk) * growthMultiplier),
+    def:
+      base.def +
+      profile.innateDefBonus +
+      Math.floor(levelOffset * (growth.def + constellationBonus.def) * growthMultiplier),
+    spi:
+      base.spi +
+      profile.innateSpiBonus +
+      Math.floor(levelOffset * (growth.spi + constellationBonus.spi) * growthMultiplier),
+    spd:
+      base.spd +
+      profile.innateSpdBonus +
+      Math.floor(levelOffset * (growth.spd + constellationBonus.spd) * growthMultiplier),
+    maxMp:
+      base.maxMp +
+      Math.floor(levelOffset * (growth.maxMp + constellationBonus.maxMp) * growthMultiplier),
+    mpRegen:
+      base.mpRegen +
+      Math.floor(levelOffset * (growth.mpRegen + constellationBonus.mpRegen) * growthMultiplier),
   };
 };
 
@@ -164,7 +249,7 @@ export const applyExperienceToCharacter = (
     getTotalExpForLevel(MAX_CHARACTER_LEVEL)
   );
   const newLevel = getLevelFromTotalExp(nextExp);
-  const nextStats = getBaseStatsForClassLevel(record.classId, newLevel, record.constellationId);
+  const nextStats = getCharacterStatsAtLevel(record, newLevel);
 
   const nextCharacter: CharacterRecord = {
     ...record,
@@ -173,6 +258,7 @@ export const applyExperienceToCharacter = (
     baseMaxHp: nextStats.maxHp,
     baseAtk: nextStats.atk,
     baseDef: nextStats.def,
+    baseSpi: nextStats.spi,
     baseSpd: nextStats.spd,
     baseMaxMp: nextStats.maxMp,
     baseMpRegen: nextStats.mpRegen,

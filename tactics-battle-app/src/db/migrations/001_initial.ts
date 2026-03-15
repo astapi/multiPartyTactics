@@ -2,18 +2,27 @@ export const MIGRATION_001 = `
 CREATE TABLE IF NOT EXISTS characters (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  class_id TEXT NOT NULL CHECK (class_id IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF')),
+  class_id TEXT NOT NULL CHECK (class_id IN ('GUARDIAN', 'SWORDMAN', 'BERSERKER', 'CLERIC', 'WITCH', 'THIEF', 'PORTER')),
   constellation_id TEXT NOT NULL DEFAULT 'ARIES',
   level INTEGER DEFAULT 1,
   exp INTEGER NOT NULL DEFAULT 0,
   base_max_hp INTEGER,
   base_atk INTEGER,
   base_def INTEGER,
+  base_spi INTEGER NOT NULL DEFAULT 0,
   base_spd INTEGER,
   base_max_mp INTEGER,
   base_mp_regen INTEGER,
   current_hp INTEGER,
-  current_mp INTEGER
+  current_mp INTEGER,
+  age INTEGER NOT NULL DEFAULT 18,
+  growth_multiplier REAL NOT NULL DEFAULT 1,
+  trait_ids_json TEXT NOT NULL DEFAULT '[]',
+  innate_hp_rate REAL NOT NULL DEFAULT 1,
+  innate_atk_bonus INTEGER NOT NULL DEFAULT 0,
+  innate_def_bonus INTEGER NOT NULL DEFAULT 0,
+  innate_spi_bonus INTEGER NOT NULL DEFAULT 0,
+  innate_spd_bonus INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS parties (

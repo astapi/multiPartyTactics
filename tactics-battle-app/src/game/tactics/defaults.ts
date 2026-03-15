@@ -187,6 +187,8 @@ export const buildDefaultTacticsForClass = (
       return witchDefaultTactics(characterId);
     case "THIEF":
       return thiefDefaultTactics(characterId);
+    case "PORTER":
+      return [];
     default:
       return [];
   }
