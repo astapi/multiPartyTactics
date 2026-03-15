@@ -1,7 +1,7 @@
 import { getRandomConstellationId } from "@/constants/constellations";
 import { CLASS_MASTER } from "@/constants/classes";
 import { getCharacterStatsAtLevel } from "@/game/progression";
-import type { ClassId, TavernCandidateRecord } from "@/types/models";
+import type { AdventurerTraitId, ClassId, TavernCandidateRecord } from "@/types/models";
 import { generateId } from "@/utils/id";
 import { createSeededRng } from "@/utils/rng";
 import { getClassInnateTraits, hasTrait, rollRandomTrait } from "./traits";
@@ -22,7 +22,7 @@ const AUTO_NAMES = [
 ];
 
 const MIN_LEVEL = 1;
-const MAX_LEVEL = 29;
+const MAX_LEVEL = 15;
 const MIN_AGE = 16;
 const MAX_AGE = 49;
 
@@ -53,6 +53,20 @@ const buildUniqueName = (usedNames: Set<string>, rng: () => number): string => {
 
 const getClassBaseCost = (classId: ClassId): number =>
   CLASS_MASTER.find((entry) => entry.id === classId)?.hiringCost ?? 5000;
+
+const getCandidatePrice = (classId: ClassId, level: number, traitIds: string[]): number =>
+  Math.floor(
+    (getClassBaseCost(classId) +
+      (level - 1) * 120 +
+      (hasTrait(traitIds, "HERO") ? 3000 : 0)) /
+      3
+  );
+
+export const isCurrentCandidateSpec = (candidate: TavernCandidateRecord): boolean =>
+  candidate.level >= MIN_LEVEL &&
+  candidate.level <= MAX_LEVEL &&
+  candidate.priceGold ===
+    getCandidatePrice(candidate.classId, candidate.level, candidate.traitIds as AdventurerTraitId[]);
 
 const createCandidate = (
   rng: () => number,
@@ -93,10 +107,7 @@ const createCandidate = (
     age,
     growthMultiplier,
     traitIds,
-    priceGold:
-      getClassBaseCost(classId) +
-      (level - 1) * 120 +
-      (hasTrait(traitIds, "HERO") ? 3000 : 0),
+    priceGold: getCandidatePrice(classId, level, traitIds),
     baseMaxHp: stats.maxHp,
     baseAtk: stats.atk,
     baseDef: stats.def,

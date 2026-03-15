@@ -54,7 +54,7 @@ const candidate: TavernCandidateRecord = {
   age: 24,
   growthMultiplier: 1,
   traitIds: ["LUCKY_DROP"],
-  priceGold: 6820,
+  priceGold: 2273,
   baseMaxHp: 128,
   baseAtk: 25,
   baseDef: 9,
@@ -88,12 +88,24 @@ vi.mock("@/constants/classes", () => {
   };
 });
 
+const {
+  listCandidatesMock,
+  getRefreshStateMock,
+  replaceCandidatesMock,
+  getCandidateByIdMock,
+} = vi.hoisted(() => ({
+  listCandidatesMock: vi.fn(),
+  getRefreshStateMock: vi.fn(),
+  replaceCandidatesMock: vi.fn(),
+  getCandidateByIdMock: vi.fn(),
+}));
+
 vi.mock("@/db/repositories/tavernRepository", () => ({
   tavernRepository: {
-    getCandidateById: vi.fn(async () => candidate),
-    listCandidates: vi.fn(async () => [candidate]),
-    getRefreshState: vi.fn(async () => null),
-    replaceCandidates: vi.fn(async () => undefined),
+    getCandidateById: getCandidateByIdMock,
+    listCandidates: listCandidatesMock,
+    getRefreshState: getRefreshStateMock,
+    replaceCandidates: replaceCandidatesMock,
   },
 }));
 
@@ -116,17 +128,22 @@ import { tavernService } from "@/features/guild/tavernService";
 
 describe("tavernService", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     fakeDb.wallet = { gold: 10000 };
     fakeDb.characters = [];
     fakeDb.deletedCandidateIds = [];
     fakeDb.tacticsCount = 0;
+    listCandidatesMock.mockResolvedValue([candidate]);
+    getRefreshStateMock.mockResolvedValue(null);
+    replaceCandidatesMock.mockResolvedValue(undefined);
+    getCandidateByIdMock.mockResolvedValue(candidate);
   });
 
   it("hires a tavern candidate and spends gold", async () => {
     const result = await tavernService.hireCandidate(candidate.id);
 
     expect(result.ok).toBe(true);
-    expect(fakeDb.wallet?.gold).toBe(3180);
+    expect(fakeDb.wallet?.gold).toBe(7727);
     expect(fakeDb.characters).toHaveLength(1);
     expect(fakeDb.deletedCandidateIds).toEqual([candidate.id]);
     expect(fakeDb.tacticsCount).toBe(1);
@@ -145,5 +162,49 @@ describe("tavernService", () => {
     });
     expect(fakeDb.characters).toHaveLength(0);
     expect(fakeDb.deletedCandidateIds).toHaveLength(0);
+  });
+
+  it("regenerates cached candidates when they do not match the current pricing spec", async () => {
+    const staleCandidate = {
+      ...candidate,
+      priceGold: 6820,
+    };
+    const freshCandidate = {
+      ...candidate,
+      id: "tavern-2",
+      priceGold: 2273,
+    };
+
+    listCandidatesMock.mockResolvedValue([staleCandidate, staleCandidate, staleCandidate, staleCandidate]);
+    getRefreshStateMock.mockResolvedValue({
+      lastGeneratedAt: "2026-03-15T00:00:00.000Z",
+      nextRefreshAt: "2099-03-15T01:00:00.000Z",
+      seed: 123,
+    });
+    replaceCandidatesMock.mockResolvedValue(undefined);
+
+    const result = await tavernService.getTavernState();
+
+    expect(replaceCandidatesMock).toHaveBeenCalledTimes(1);
+    expect(result.candidates).toHaveLength(4);
+    expect(result.candidates.every((entry) => entry.priceGold !== 6820)).toBe(true);
+  });
+
+  it("keeps the remaining candidates until refresh time even when one was hired", async () => {
+    const candidate2 = { ...candidate, id: "tavern-2", name: "カイン" };
+    const candidate3 = { ...candidate, id: "tavern-3", name: "リゼ" };
+    const candidate4 = { ...candidate, id: "tavern-4", name: "ノア" };
+
+    listCandidatesMock.mockResolvedValue([candidate2, candidate3, candidate4]);
+    getRefreshStateMock.mockResolvedValue({
+      lastGeneratedAt: "2026-03-15T00:00:00.000Z",
+      nextRefreshAt: "2099-03-15T01:00:00.000Z",
+      seed: 123,
+    });
+
+    const result = await tavernService.getTavernState();
+
+    expect(replaceCandidatesMock).not.toHaveBeenCalled();
+    expect(result.candidates).toEqual([candidate2, candidate3, candidate4]);
   });
 });
