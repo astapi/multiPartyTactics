@@ -68,7 +68,7 @@ type BattleResultSummary = {
 
 const BATTLE_BG = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const BATTLE_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
-const RESULT_AUTO_RETURN_DELAY_MS = 1200;
+const RESULT_AUTO_RETURN_BASE_DELAY_MS = 1200;
 const BATTLE_LOG_BASE_REVEAL_INTERVAL_MS = 900;
 const BATTLE_RESULT_I18N_KEY = {
   WIN: "battle.result.win",
@@ -245,6 +245,7 @@ export default function BattleScreen() {
   const resultLabel =
     isOutcomeBadgeVisible && finalOutcome ? t(BATTLE_RESULT_I18N_KEY[finalOutcome]) : null;
   const logRevealIntervalMs = Math.round(BATTLE_LOG_BASE_REVEAL_INTERVAL_MS / battleSpeedMultiplier);
+  const autoReturnDelayMs = Math.max(100, Math.round(RESULT_AUTO_RETURN_BASE_DELAY_MS / battleSpeedMultiplier));
   const handleCycleBattleSpeed = () => {
     const currentIndex = BATTLE_SPEED_OPTIONS.indexOf(battleSpeedMultiplier);
     const nextIndex = (currentIndex + 1) % BATTLE_SPEED_OPTIONS.length;
@@ -670,9 +671,9 @@ export default function BattleScreen() {
     autoReturnTriggeredRef.current = true;
     const timer = setTimeout(() => {
       router.back();
-    }, RESULT_AUTO_RETURN_DELAY_MS);
+    }, autoReturnDelayMs);
     return () => clearTimeout(timer);
-  }, [canAutoReturn, phase, router]);
+  }, [autoReturnDelayMs, canAutoReturn, phase, router]);
 
   const handleEnemyItemLayout = (enemyId: string, event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout;

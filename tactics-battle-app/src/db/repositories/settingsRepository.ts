@@ -59,7 +59,13 @@ export const settingsRepository = {
       [EXPLORATION_SPEED_MULTIPLIER_KEY]
     );
     const parsed = Number.parseFloat(row?.value ?? "");
-    return isExplorationSpeedMultiplier(parsed) ? parsed : 1;
+    if (isExplorationSpeedMultiplier(parsed)) return parsed;
+    const fallbackRow = await db.getFirstAsync<{ value: string | null }>(
+      "SELECT value FROM app_settings WHERE key = ?",
+      [BATTLE_SPEED_MULTIPLIER_KEY]
+    );
+    const fallbackParsed = Number.parseFloat(fallbackRow?.value ?? "");
+    return isBattleSpeedMultiplier(fallbackParsed) ? fallbackParsed : 1;
   },
 
   async setExplorationSpeedMultiplier(speed: ExplorationSpeedMultiplier): Promise<void> {

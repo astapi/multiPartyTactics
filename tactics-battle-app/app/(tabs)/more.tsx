@@ -159,7 +159,10 @@ export default function SettingsScreen() {
     setIsSavingBattleSpeed(true);
     setBattleSpeedMultiplier(nextSpeed);
     try {
-      await settingsRepository.setBattleSpeedMultiplier(nextSpeed);
+      await Promise.all([
+        settingsRepository.setBattleSpeedMultiplier(nextSpeed),
+        settingsRepository.setExplorationSpeedMultiplier(nextSpeed),
+      ]);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       Alert.alert(t("settings.alert.failTitle"), `${t("settings.alert.failBody")}\n${message}`);
