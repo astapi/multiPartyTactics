@@ -47,7 +47,7 @@ describe("adventurerGenerationService", () => {
 
     for (const candidate of candidates) {
       expect(candidate.level).toBeGreaterThanOrEqual(1);
-      expect(candidate.level).toBeLessThanOrEqual(29);
+      expect(candidate.level).toBeLessThanOrEqual(15);
       expect(candidate.age).toBeGreaterThanOrEqual(16);
       expect(candidate.age).toBeLessThanOrEqual(49);
       expect([1, 0.95]).toContain(candidate.growthMultiplier);
@@ -77,7 +77,9 @@ describe("adventurerGenerationService", () => {
                 : candidate.classId === "PORTER"
                   ? 4500
                   : 5500;
-        expect(candidate.priceGold).toBe(classBaseCost + (candidate.level - 1) * 120 + 3000);
+        expect(candidate.priceGold).toBe(
+          Math.floor((classBaseCost + (candidate.level - 1) * 120 + 3000) / 3)
+        );
       }
     }
   });

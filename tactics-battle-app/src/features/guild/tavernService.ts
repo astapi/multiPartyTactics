@@ -6,7 +6,7 @@ import { buildDefaultTacticsForClass } from "@/game/tactics/defaults";
 import type { TavernCandidateRecord, TavernRefreshState } from "@/types/models";
 import { generateId } from "@/utils/id";
 import { generateTimeSeed } from "@/utils/rng";
-import { adventurerGenerationService } from "./adventurerGenerationService";
+import { adventurerGenerationService, isCurrentCandidateSpec } from "./adventurerGenerationService";
 
 const CANDIDATE_COUNT = 4;
 const REFRESH_INTERVAL_MS = 60 * 60 * 1000;
@@ -38,10 +38,12 @@ export const tavernService = {
       tavernRepository.getRefreshState(),
     ]);
 
-    if (!forceRefresh && candidates.length === CANDIDATE_COUNT && !isExpired(refreshState, now)) {
+    const hasCurrentCandidates = candidates.every(isCurrentCandidateSpec);
+
+    if (!forceRefresh && refreshState && hasCurrentCandidates && !isExpired(refreshState, now)) {
       return {
         candidates,
-        refreshState: refreshState!,
+        refreshState,
       };
     }
 
