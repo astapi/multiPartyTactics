@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Tactics Battle App",
+    "name": "multiPTHakusla",
     "slug": "tactics-battle-app",
     "scheme": "tacticsbattle",
     "version": "0.1.0",
@@ -23,7 +23,8 @@
       "reactCompiler": true
     },
     "ios": {
-      "bundleIdentifier": "com.astapi.tactics-battle-app"
+      "bundleIdentifier": "com.astapi.multiPTHakusla",
+      "appleTeamId": "C554RLNNG7"
     },
     "android": {
       "package": "com.astapi.tacticsbattleapp"
