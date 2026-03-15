@@ -156,8 +156,10 @@ export default function ExplorationScreen() {
   const hasAppliedFloorClearRef = useRef(false);
   const awaitingBossBattleReturnRef = useRef(false);
   const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
+  const [resultGoldTotal, setResultGoldTotal] = useState(0);
   const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
   const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
+  const latestBattleGold = useBattleStore((s) => s.latestBattleGold);
   const latestBattleDrops = useBattleStore((s) => s.latestBattleDrops);
   const latestBattlePartySync = useBattleStore((s) => s.latestBattlePartySync);
   const latestBattleStatus = useBattleStore((s) => s.status);
@@ -244,6 +246,7 @@ export default function ExplorationScreen() {
           members: nextPartySnapshot,
         });
         setResultItems([]);
+        setResultGoldTotal(0);
         setNextEncounterIndex(0);
         setIsPaused(false);
       } catch (err) {
@@ -337,16 +340,22 @@ export default function ExplorationScreen() {
     if (processedBattleRewardSessionIdsRef.current.has(latestBattleSessionId)) return;
 
     processedBattleRewardSessionIdsRef.current.add(latestBattleSessionId);
-    if (!latestBattleDrops || latestBattleDrops.length === 0) return;
-    setResultItems((prev) => [
-      ...prev,
-      ...latestBattleDrops.map((label, index) => ({
-        key: `battle:${latestBattleSessionId}:${index}`,
-        source: "BATTLE" as const,
-        label,
-      })),
-    ]);
-  }, [latestBattleDrops, latestBattleExplorationSeed, latestBattleSessionId, result]);
+    if ((!latestBattleDrops || latestBattleDrops.length === 0) && latestBattleGold <= 0) return;
+    if (latestBattleGold > 0) {
+      setResultGoldTotal((prev) => prev + latestBattleGold);
+    }
+    setResultItems((prev) => {
+      const next = [...prev];
+      for (let index = 0; index < latestBattleDrops.length; index += 1) {
+        next.push({
+          key: `battle:${latestBattleSessionId}:${index}`,
+          source: "BATTLE" as const,
+          label: latestBattleDrops[index],
+        });
+      }
+      return next;
+    });
+  }, [latestBattleDrops, latestBattleExplorationSeed, latestBattleGold, latestBattleSessionId, result]);
 
   useEffect(() => {
     if (!result) return;
@@ -786,6 +795,13 @@ export default function ExplorationScreen() {
                 {`B${floor}F / ${currentTick} step`}
               </Text>
 
+              <Text style={styles.resultSectionTitle}>{t("battle.result.goldTitle")}</Text>
+              <View style={styles.resultGoldCard}>
+                <Text style={styles.resultGoldValue}>
+                  {t("battle.result.goldValue", { gold: resultGoldTotal })}
+                </Text>
+              </View>
+
               <Text style={styles.resultSectionTitle}>探索した階の探索度</Text>
               <ScrollView
                 style={styles.resultListBox}
@@ -1058,6 +1074,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#374151",
+  },
+  resultGoldCard: {
+    borderWidth: 1,
+    borderColor: "#f3e8b3",
+    borderRadius: 10,
+    backgroundColor: "#fff9db",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  resultGoldValue: {
+    color: "#5b4300",
+    fontSize: 18,
+    fontWeight: "800",
   },
   resultListBox: {
     maxHeight: 140,

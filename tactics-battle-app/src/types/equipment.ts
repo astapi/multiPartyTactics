@@ -149,5 +149,6 @@ export type ResolvedChestLootConfig = {
 
 export type MonsterDropTableEntry = {
   enemyId: string;
+  gold: number;
   baseItemIds: string[];
 };

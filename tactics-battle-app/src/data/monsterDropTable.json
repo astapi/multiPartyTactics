@@ -1,75 +1,359 @@
 {
   "drops": [
-    { "enemyId": "acid_slime", "baseItemIds": ["crystal_throwing_knife"] },
-    { "enemyId": "banshee", "baseItemIds": ["light_bone_throwing_knife"] },
-    { "enemyId": "cave_troll", "baseItemIds": ["stone_edge_axe"] },
-    { "enemyId": "champion_minotaur", "baseItemIds": ["dreadbeast_axe"] },
-    { "enemyId": "construct_artillery", "baseItemIds": ["crystal_edge_axe"] },
-    { "enemyId": "construct_proto", "baseItemIds": ["crystal_shortblade"] },
-    { "enemyId": "construct_shield", "baseItemIds": ["crystal_shield"] },
-    { "enemyId": "cyclops", "baseItemIds": ["giant_bone_sword"] },
-    { "enemyId": "death_knight", "baseItemIds": ["dragon_bone_maul"] },
-    { "enemyId": "dragon_whelp", "baseItemIds": ["dragon_fang_sword"] },
-    { "enemyId": "elder_cyclops", "baseItemIds": ["twinstring_bone_bow"] },
-    { "enemyId": "feral_rat", "baseItemIds": ["light_bone_throwing_knife"] },
-    { "enemyId": "ghoul", "baseItemIds": ["giant_bone_hammer"] },
-    { "enemyId": "giant_rat", "baseItemIds": ["beast_bone_sword"] },
-    { "enemyId": "giant_bat", "baseItemIds": ["beast_fang_sword"] },
-    { "enemyId": "goblin_archer", "baseItemIds": ["bone_throwing_knife", "beast_bone_bow"] },
-    { "enemyId": "goblin_mage", "baseItemIds": ["mana_crystal_staff"] },
-    { "enemyId": "goblin_scout", "baseItemIds": ["black_claw_dagger"] },
-    { "enemyId": "goblin_shaman", "baseItemIds": ["blackwood_bow"] },
-    { "enemyId": "goblin_warrior", "baseItemIds": ["black_claw_axe"] },
-    { "enemyId": "golem", "baseItemIds": ["crystal_edge_axe"] },
-    { "enemyId": "hill_giant", "baseItemIds": ["giant_bone_sword"] },
-    { "enemyId": "hobgoblin", "baseItemIds": ["black_claw_axe", "stone_hide_sword"] },
-    { "enemyId": "iron_gargoyle", "baseItemIds": ["crystal_bow"] },
-    { "enemyId": "kobold_captain", "baseItemIds": ["black_claw_sword"] },
-    { "enemyId": "kobold_mage", "baseItemIds": ["crystal_staff"] },
-    { "enemyId": "kobold_scout", "baseItemIds": ["fang_dagger"] },
-    { "enemyId": "kobold_spearman", "baseItemIds": ["beast_fang_sword"] },
-    { "enemyId": "kobold_trapper", "baseItemIds": ["fang_throwing_knife"] },
-    { "enemyId": "lizardman", "baseItemIds": ["scale_steel_sword", "dragon_claw_dagger", "dragonsinew_bow", "scale_shield"] },
-    { "enemyId": "lizardman_champion", "baseItemIds": ["dragon_scale_sword"] },
-    { "enemyId": "lizardman_guard", "baseItemIds": ["scale_shield"] },
-    { "enemyId": "lizardman_hunter", "baseItemIds": ["dragonsinew_bow"] },
-    { "enemyId": "lizardman_shaman", "baseItemIds": ["deep_ore_staff"] },
-    { "enemyId": "lizardman_spearman", "baseItemIds": ["scale_steel_sword"] },
-    { "enemyId": "lizardman_warrior", "baseItemIds": ["dragon_claw_dagger"] },
-    { "enemyId": "minotaur", "baseItemIds": ["giant_bone_shortblade", "dragon_fang_axe"] },
-    { "enemyId": "minotaur_axeman", "baseItemIds": ["dragon_fang_axe"] },
-    { "enemyId": "minotaur_berserker", "baseItemIds": ["heavy_bone_maul"] },
-    { "enemyId": "minotaur_champion", "baseItemIds": ["dreadbeast_axe"] },
-    { "enemyId": "minotaur_guard", "baseItemIds": ["giant_bone_shortblade"] },
-    { "enemyId": "minotaur_priest", "baseItemIds": ["dragon_bone_maul"] },
-    { "enemyId": "minotaur_raider", "baseItemIds": ["giant_bone_shortblade"] },
-    { "enemyId": "obsidian_gargoyle", "baseItemIds": ["crystal_edge_sword"] },
-    { "enemyId": "orc_berserker", "baseItemIds": ["beast_fang_axe"] },
-    { "enemyId": "orc_blackguard", "baseItemIds": ["dreadbeast_fang"] },
-    { "enemyId": "orc_hunter", "baseItemIds": ["black_claw_throwing_knife", "beast_sinew_bow"] },
-    { "enemyId": "orc_mage", "baseItemIds": ["crystal_staff"] },
-    { "enemyId": "orc_shaman", "baseItemIds": ["deep_ore_staff"] },
-    { "enemyId": "orc_veteran", "baseItemIds": ["giant_bone_axe"] },
-    { "enemyId": "orc_warrior", "baseItemIds": ["giant_bone_axe"] },
-    { "enemyId": "plague_rat", "baseItemIds": ["bone_dagger"] },
-    { "enemyId": "rock_lizard", "baseItemIds": ["stone_hide_sword"] },
-    { "enemyId": "rock_troll", "baseItemIds": ["stone_hide_shield"] },
-    { "enemyId": "scorpion", "baseItemIds": ["carapace_shield"] },
-    { "enemyId": "shadow_rat", "baseItemIds": ["black_claw_throwing_knife"] },
-    { "enemyId": "shield_golem", "baseItemIds": ["crystal_shield"] },
-    { "enemyId": "skeleton_archer", "baseItemIds": ["crystal_throwing_knife", "dragonbone_bow"] },
-    { "enemyId": "skeleton_knight", "baseItemIds": ["bone_shield"] },
-    { "enemyId": "skeleton_mage", "baseItemIds": ["skeleton_staff"] },
-    { "enemyId": "skeleton_soldier", "baseItemIds": ["bone_dagger"] },
-    { "enemyId": "slime", "baseItemIds": ["bone_throwing_knife"] },
-    { "enemyId": "stone_gargoyle", "baseItemIds": ["crystal_shortblade", "dragon_scale_shield"] },
-    { "enemyId": "stone_giant", "baseItemIds": ["giant_bone_sword"] },
-    { "enemyId": "storm_harpy", "baseItemIds": ["twin_fang_dagger"] },
-    { "enemyId": "toxic_slime", "baseItemIds": ["carapace_maul"] },
-    { "enemyId": "vampire", "baseItemIds": ["dreadbeast_blade", "twin_blade_throwing_knife"] },
-    { "enemyId": "war_troll", "baseItemIds": ["dragon_bone_axe"] },
-    { "enemyId": "wolf", "baseItemIds": ["beast_bone_sword"] },
-    { "enemyId": "wraith", "baseItemIds": ["black_claw_sword", "soul_core_staff"] },
-    { "enemyId": "young_dragon", "baseItemIds": ["dragon_scale_sword"] }
+    {
+      "enemyId": "acid_slime",
+      "gold": 13,
+      "baseItemIds": ["crystal_throwing_knife"]
+    },
+    {
+      "enemyId": "banshee",
+      "gold": 34,
+      "baseItemIds": ["light_bone_throwing_knife"]
+    },
+    {
+      "enemyId": "cave_troll",
+      "gold": 28,
+      "baseItemIds": ["stone_edge_axe"]
+    },
+    {
+      "enemyId": "champion_minotaur",
+      "gold": 48,
+      "baseItemIds": ["dreadbeast_axe"]
+    },
+    {
+      "enemyId": "construct_artillery",
+      "gold": 52,
+      "baseItemIds": ["crystal_edge_axe"]
+    },
+    {
+      "enemyId": "construct_proto",
+      "gold": 48,
+      "baseItemIds": ["crystal_shortblade"]
+    },
+    {
+      "enemyId": "construct_shield",
+      "gold": 52,
+      "baseItemIds": ["crystal_shield"]
+    },
+    {
+      "enemyId": "cyclops",
+      "gold": 48,
+      "baseItemIds": ["giant_bone_sword"]
+    },
+    {
+      "enemyId": "death_knight",
+      "gold": 35,
+      "baseItemIds": ["dragon_bone_maul"]
+    },
+    {
+      "enemyId": "dragon_whelp",
+      "gold": 38,
+      "baseItemIds": ["dragon_fang_sword"]
+    },
+    {
+      "enemyId": "elder_cyclops",
+      "gold": 52,
+      "baseItemIds": ["twinstring_bone_bow"]
+    },
+    {
+      "enemyId": "feral_rat",
+      "gold": 17,
+      "baseItemIds": ["light_bone_throwing_knife"]
+    },
+    {
+      "enemyId": "ghoul",
+      "gold": 18,
+      "baseItemIds": ["giant_bone_hammer"]
+    },
+    {
+      "enemyId": "giant_rat",
+      "gold": 5,
+      "baseItemIds": ["beast_bone_sword"]
+    },
+    {
+      "enemyId": "giant_bat",
+      "gold": 21,
+      "baseItemIds": ["beast_fang_sword"]
+    },
+    {
+      "enemyId": "goblin_archer",
+      "gold": 13,
+      "baseItemIds": ["bone_throwing_knife", "beast_bone_bow"]
+    },
+    {
+      "enemyId": "goblin_mage",
+      "gold": 18,
+      "baseItemIds": ["mana_crystal_staff"]
+    },
+    {
+      "enemyId": "goblin_scout",
+      "gold": 9,
+      "baseItemIds": ["black_claw_dagger"]
+    },
+    {
+      "enemyId": "goblin_shaman",
+      "gold": 27,
+      "baseItemIds": ["blackwood_bow"]
+    },
+    {
+      "enemyId": "goblin_warrior",
+      "gold": 9,
+      "baseItemIds": ["black_claw_axe"]
+    },
+    {
+      "enemyId": "golem",
+      "gold": 48,
+      "baseItemIds": ["crystal_edge_axe"]
+    },
+    {
+      "enemyId": "hill_giant",
+      "gold": 48,
+      "baseItemIds": ["giant_bone_sword"]
+    },
+    {
+      "enemyId": "hobgoblin",
+      "gold": 17,
+      "baseItemIds": ["black_claw_axe", "stone_hide_sword"]
+    },
+    {
+      "enemyId": "iron_gargoyle",
+      "gold": 40,
+      "baseItemIds": ["crystal_bow"]
+    },
+    {
+      "enemyId": "kobold_captain",
+      "gold": 18,
+      "baseItemIds": ["black_claw_sword"]
+    },
+    {
+      "enemyId": "kobold_mage",
+      "gold": 22,
+      "baseItemIds": ["crystal_staff"]
+    },
+    {
+      "enemyId": "kobold_scout",
+      "gold": 9,
+      "baseItemIds": ["fang_dagger"]
+    },
+    {
+      "enemyId": "kobold_spearman",
+      "gold": 9,
+      "baseItemIds": ["beast_fang_sword"]
+    },
+    {
+      "enemyId": "kobold_trapper",
+      "gold": 13,
+      "baseItemIds": ["fang_throwing_knife"]
+    },
+    {
+      "enemyId": "lizardman",
+      "gold": 26,
+      "baseItemIds": ["scale_steel_sword", "dragon_claw_dagger", "dragonsinew_bow", "scale_shield"]
+    },
+    {
+      "enemyId": "lizardman_champion",
+      "gold": 39,
+      "baseItemIds": ["dragon_scale_sword"]
+    },
+    {
+      "enemyId": "lizardman_guard",
+      "gold": 35,
+      "baseItemIds": ["scale_shield"]
+    },
+    {
+      "enemyId": "lizardman_hunter",
+      "gold": 31,
+      "baseItemIds": ["dragonsinew_bow"]
+    },
+    {
+      "enemyId": "lizardman_shaman",
+      "gold": 31,
+      "baseItemIds": ["deep_ore_staff"]
+    },
+    {
+      "enemyId": "lizardman_spearman",
+      "gold": 26,
+      "baseItemIds": ["scale_steel_sword"]
+    },
+    {
+      "enemyId": "lizardman_warrior",
+      "gold": 26,
+      "baseItemIds": ["dragon_claw_dagger"]
+    },
+    {
+      "enemyId": "minotaur",
+      "gold": 43,
+      "baseItemIds": ["giant_bone_shortblade", "dragon_fang_axe"]
+    },
+    {
+      "enemyId": "minotaur_axeman",
+      "gold": 48,
+      "baseItemIds": ["dragon_fang_axe"]
+    },
+    {
+      "enemyId": "minotaur_berserker",
+      "gold": 48,
+      "baseItemIds": ["heavy_bone_maul"]
+    },
+    {
+      "enemyId": "minotaur_champion",
+      "gold": 52,
+      "baseItemIds": ["dreadbeast_axe"]
+    },
+    {
+      "enemyId": "minotaur_guard",
+      "gold": 48,
+      "baseItemIds": ["giant_bone_shortblade"]
+    },
+    {
+      "enemyId": "minotaur_priest",
+      "gold": 52,
+      "baseItemIds": ["dragon_bone_maul"]
+    },
+    {
+      "enemyId": "minotaur_raider",
+      "gold": 44,
+      "baseItemIds": ["giant_bone_shortblade"]
+    },
+    {
+      "enemyId": "obsidian_gargoyle",
+      "gold": 44,
+      "baseItemIds": ["crystal_edge_sword"]
+    },
+    {
+      "enemyId": "orc_berserker",
+      "gold": 31,
+      "baseItemIds": ["beast_fang_axe"]
+    },
+    {
+      "enemyId": "orc_blackguard",
+      "gold": 39,
+      "baseItemIds": ["dreadbeast_fang"]
+    },
+    {
+      "enemyId": "orc_hunter",
+      "gold": 27,
+      "baseItemIds": ["black_claw_throwing_knife", "beast_sinew_bow"]
+    },
+    {
+      "enemyId": "orc_mage",
+      "gold": 31,
+      "baseItemIds": ["crystal_staff"]
+    },
+    {
+      "enemyId": "orc_shaman",
+      "gold": 35,
+      "baseItemIds": ["deep_ore_staff"]
+    },
+    {
+      "enemyId": "orc_veteran",
+      "gold": 31,
+      "baseItemIds": ["giant_bone_axe"]
+    },
+    {
+      "enemyId": "orc_warrior",
+      "gold": 21,
+      "baseItemIds": ["giant_bone_axe"]
+    },
+    {
+      "enemyId": "plague_rat",
+      "gold": 9,
+      "baseItemIds": ["bone_dagger"]
+    },
+    {
+      "enemyId": "rock_lizard",
+      "gold": 22,
+      "baseItemIds": ["stone_hide_sword"]
+    },
+    {
+      "enemyId": "rock_troll",
+      "gold": 36,
+      "baseItemIds": ["stone_hide_shield"]
+    },
+    {
+      "enemyId": "scorpion",
+      "gold": 18,
+      "baseItemIds": ["carapace_shield"]
+    },
+    {
+      "enemyId": "shadow_rat",
+      "gold": 25,
+      "baseItemIds": ["black_claw_throwing_knife"]
+    },
+    {
+      "enemyId": "shield_golem",
+      "gold": 52,
+      "baseItemIds": ["crystal_shield"]
+    },
+    {
+      "enemyId": "skeleton_archer",
+      "gold": 17,
+      "baseItemIds": ["crystal_throwing_knife", "dragonbone_bow"]
+    },
+    {
+      "enemyId": "skeleton_knight",
+      "gold": 22,
+      "baseItemIds": ["bone_shield"]
+    },
+    {
+      "enemyId": "skeleton_mage",
+      "gold": 35,
+      "baseItemIds": ["skeleton_staff"]
+    },
+    {
+      "enemyId": "skeleton_soldier",
+      "gold": 9,
+      "baseItemIds": ["bone_dagger"]
+    },
+    {
+      "enemyId": "slime",
+      "gold": 5,
+      "baseItemIds": ["bone_throwing_knife"]
+    },
+    {
+      "enemyId": "stone_gargoyle",
+      "gold": 32,
+      "baseItemIds": ["crystal_shortblade", "dragon_scale_shield"]
+    },
+    {
+      "enemyId": "stone_giant",
+      "gold": 52,
+      "baseItemIds": ["giant_bone_sword"]
+    },
+    {
+      "enemyId": "storm_harpy",
+      "gold": 42,
+      "baseItemIds": ["twin_fang_dagger"]
+    },
+    {
+      "enemyId": "toxic_slime",
+      "gold": 25,
+      "baseItemIds": ["carapace_maul"]
+    },
+    {
+      "enemyId": "vampire",
+      "gold": 51,
+      "baseItemIds": ["dreadbeast_blade", "twin_blade_throwing_knife"]
+    },
+    {
+      "enemyId": "war_troll",
+      "gold": 44,
+      "baseItemIds": ["dragon_bone_axe"]
+    },
+    {
+      "enemyId": "wolf",
+      "gold": 5,
+      "baseItemIds": ["beast_bone_sword"]
+    },
+    {
+      "enemyId": "wraith",
+      "gold": 30,
+      "baseItemIds": ["black_claw_sword", "soul_core_staff"]
+    },
+    {
+      "enemyId": "young_dragon",
+      "gold": 50,
+      "baseItemIds": ["dragon_scale_sword"]
+    }
   ]
 }

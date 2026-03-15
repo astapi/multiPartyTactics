@@ -28,6 +28,7 @@ import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charac
 import { equipmentInventoryRepository } from "@/db/repositories/equipmentInventoryRepository";
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
+import { walletRepository } from "@/db/repositories/walletRepository";
 import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
 import { getAttackTrailPreset } from "@/features/battle/animation/presets";
 import type {
@@ -42,6 +43,7 @@ import { BattleOutcome, BattleReplayState, simulateBattle } from "@/game/battleS
 import { EncounterResult, generateEncounter } from "@/game/encounter";
 import { computeCharacterDerivedStats, toBaseResource } from "@/game/equipment/equipmentStatsService";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
+import { getMonsterDropGold } from "@/game/loot/monsterDropTableService";
 import { toPartyUnits } from "@/game/partyMapper";
 import { applyExperienceToCharacter, calculateBattleExp } from "@/game/progression";
 import { useI18n } from "@/i18n";
@@ -61,6 +63,7 @@ type BattleResultLevelUp = {
   statUps: Array<{ statKey: LevelUpStatKey; amount: number }>;
 };
 type BattleResultSummary = {
+  goldGained: number;
   expGained: number;
   expRecipientCount: number;
   levelUps: BattleResultLevelUp[];
@@ -213,6 +216,7 @@ export default function BattleScreen() {
   const [resolvedFloor, setResolvedFloor] = useState(1);
   const [resolvedSeed, setResolvedSeed] = useState<number | null>(null);
   const [battleCompleted, setBattleCompleted] = useState(false);
+  const [battleResultSummary, setBattleResultSummary] = useState<BattleResultSummary | null>(null);
   const [revealedLogCount, setRevealedLogCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [battleSpeedMultiplier, setBattleSpeedMultiplier] = useState<BattleSpeedMultiplier>(1);
@@ -349,6 +353,7 @@ export default function BattleScreen() {
         setStatus("IDLE");
         setPendingExplorationPartySync(null);
         setBattleCompleted(false);
+        setBattleResultSummary(null);
         setRevealedLogCount(0);
         setIsPaused(false);
         setReplayStates([]);
@@ -419,6 +424,7 @@ export default function BattleScreen() {
       let combinedLogs = result.logs;
       let combinedReplayStates = result.replayStates;
       const nextResultSummary: BattleResultSummary = {
+        goldGained: 0,
         expGained: 0,
         expRecipientCount: 0,
         levelUps: [],
@@ -445,6 +451,14 @@ export default function BattleScreen() {
         mpRegen: t("battle.result.stat.mpRegen"),
       };
       if (result.outcome === "WIN") {
+        const goldGain = encounterData.enemies.reduce(
+          (sum, enemy) => sum + getMonsterDropGold(enemy.enemyId),
+          0
+        );
+        nextResultSummary.goldGained = goldGain;
+        if (goldGain > 0) {
+          await walletRepository.addGold(goldGain);
+        }
         const alivePartyIds = new Set(
           result.finalParty.filter((member) => member.hp > 0).map((member) => member.id)
         );
@@ -504,6 +518,19 @@ export default function BattleScreen() {
 
       const resultSummaryLogRecords: typeof result.logs = [];
       const resultLogTurn = Math.max(0, result.turns);
+      resultSummaryLogRecords.push({
+        battleSessionId: nextSessionId,
+        turn: resultLogTurn,
+        actorName: "RESULT",
+        actionType: "RESULT_GOLD",
+        targetName: null,
+        damage: 0,
+        healing: 0,
+        logMessage:
+          locale === "ja"
+            ? `${t("battle.result.goldTitle")}: ${t("battle.result.goldValue", { gold: nextResultSummary.goldGained })}`
+            : `${t("battle.result.goldTitle")}: ${t("battle.result.goldValue", { gold: nextResultSummary.goldGained })}`,
+      });
       resultSummaryLogRecords.push({
         battleSessionId: nextSessionId,
         turn: resultLogTurn,
@@ -589,9 +616,11 @@ export default function BattleScreen() {
       setSessionId(nextSessionId);
       setStatus(result.outcome);
       setLogs(combinedLogs);
+      setBattleResultSummary(nextResultSummary);
       setLatestBattleRewards({
         sessionId: nextSessionId,
         explorationSeed: resolvedSeed,
+        gold: nextResultSummary.goldGained,
         drops: nextResultSummary.drops,
       });
       setLatestBattlePartySync({
@@ -735,6 +764,7 @@ export default function BattleScreen() {
         logs: [],
         turnText: "Turn --",
         isPaused,
+        resultSummary: null,
         onPausePress: () => setIsPaused((prev) => !prev),
       });
     }
@@ -758,6 +788,7 @@ export default function BattleScreen() {
         logs: [],
         turnText: "Turn --",
         isPaused,
+        resultSummary: null,
         onPausePress: () => setIsPaused((prev) => !prev),
       });
     }
@@ -791,6 +822,7 @@ export default function BattleScreen() {
       logs,
       turnText: "Turn --",
       isPaused,
+      resultSummary: null,
       onPausePress: () => setIsPaused((prev) => !prev),
     });
   }
@@ -817,6 +849,7 @@ export default function BattleScreen() {
     logs: visibleLogs,
     turnText: displayTurn > 0 ? `Turn ${displayTurn}` : "Turn --",
     isPaused,
+    resultSummary: battleResultSummary,
     onPausePress: () => setIsPaused((prev) => !prev),
   });
 
@@ -827,6 +860,7 @@ export default function BattleScreen() {
     logs: typeof logs;
     turnText: string;
     isPaused: boolean;
+    resultSummary: BattleResultSummary | null;
     onPausePress: () => void;
   }) {
     const logRows = params.logs;
@@ -871,6 +905,17 @@ export default function BattleScreen() {
               </Pressable>
             </View>
           </View>
+
+          {params.resultSummary ? (
+            <View style={styles.resultSummaryCard}>
+              <View style={styles.resultSummaryRow}>
+                <Text style={styles.resultSummaryLabel}>{t("battle.result.goldTitle")}</Text>
+                <Text style={styles.resultSummaryValue}>
+                  {t("battle.result.goldValue", { gold: params.resultSummary.goldGained })}
+                </Text>
+              </View>
+            </View>
+          ) : null}
 
           <View style={styles.logSection}>
             <View style={styles.logHeader}>
@@ -1117,6 +1162,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#ececec",
   },
   autoBadgeText: { color: "#555555", fontWeight: "600", fontSize: 10 },
+  resultSummaryCard: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#f3e8b3",
+    backgroundColor: "#fff9db",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  resultSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  resultSummaryLabel: {
+    color: "#7c5b00",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  resultSummaryValue: {
+    color: "#5b4300",
+    fontSize: 16,
+    fontWeight: "800",
+  },
   logSection: {
     flex: 1,
     backgroundColor: "#f5f5f5",
