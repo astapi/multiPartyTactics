@@ -1,4 +1,5 @@
 import { createSeededRng } from "@/utils/rng";
+import { normalizeEquipmentStats } from "@/game/equipment/equipmentStatsService";
 import {
   buildEquipmentDisplayName,
   getEquipmentById,
@@ -12,6 +13,7 @@ import type {
   EquipmentCategory,
   EquipmentMasterItem,
   EquipmentReward,
+  EquipmentStats,
   MonsterDropRollParams,
   TreasureChestRollParams,
 } from "@/types/equipment";
@@ -55,27 +57,53 @@ const toReward = (
   baseItem: EquipmentMasterItem,
   mutationPrefixId: string | null,
   sourceType: EquipmentReward["sourceType"],
-  grantKey: string
+  grantKey: string,
+  grantedStats?: EquipmentStats | null
 ): EquipmentReward => ({
   baseItemId: baseItem.id,
   mutationPrefixId,
+  grantedStats: grantedStats ? normalizeEquipmentStats(grantedStats) : null,
   sourceType,
   grantKey,
   displayName: buildEquipmentDisplayName(baseItem.id, mutationPrefixId),
   category: baseItem.category,
 });
 
+type ChestCandidate = {
+  baseItem: EquipmentMasterItem;
+  grantedStats?: EquipmentStats | null;
+  chestTier: number;
+};
+
+const CHEST_OVERRIDE_ITEMS: ChestCandidate[] = [
+  { baseItem: getEquipmentById("bronze_sword"), grantedStats: { atk: 20 }, chestTier: 10 },
+  { baseItem: getEquipmentById("iron_sword"), grantedStats: { atk: 30 }, chestTier: 20 },
+  { baseItem: getEquipmentById("bronze_dagger"), grantedStats: { atk: 14, spd: 6 }, chestTier: 10 },
+  { baseItem: getEquipmentById("iron_dagger"), grantedStats: { atk: 21, spd: 9 }, chestTier: 20 },
+  { baseItem: getEquipmentById("wood_staff"), grantedStats: { spi: 20, mp: 12 }, chestTier: 10 },
+  { baseItem: getEquipmentById("oak_staff"), grantedStats: { spi: 30, mp: 18 }, chestTier: 20 },
+  { baseItem: getEquipmentById("wood_shield"), grantedStats: { hp: 40, def: 16 }, chestTier: 10 },
+  { baseItem: getEquipmentById("iron_shield"), grantedStats: { hp: 60, def: 24 }, chestTier: 20 },
+];
+
 const buildChestTierCandidates = () => {
   const all = listEquipmentBySource("chest");
-  const tierMap = new Map<number, Map<EquipmentCategory, EquipmentMasterItem[]>>();
+  const tierMap = new Map<number, Map<EquipmentCategory, ChestCandidate[]>>();
   for (const item of all) {
     const tier = item.chestTier;
     if (tier == null) continue;
     if (!tierMap.has(tier)) tierMap.set(tier, new Map());
     const catMap = tierMap.get(tier)!;
     const list = catMap.get(item.category) ?? [];
-    list.push(item);
+    list.push({ baseItem: item, chestTier: tier });
     catMap.set(item.category, list);
+  }
+  for (const candidate of CHEST_OVERRIDE_ITEMS) {
+    if (!tierMap.has(candidate.chestTier)) tierMap.set(candidate.chestTier, new Map());
+    const catMap = tierMap.get(candidate.chestTier)!;
+    const list = catMap.get(candidate.baseItem.category) ?? [];
+    list.push(candidate);
+    catMap.set(candidate.baseItem.category, list);
   }
   return tierMap;
 };
@@ -100,7 +128,7 @@ export const rollTreasureChestEquipment = (params: TreasureChestRollParams): Equ
   const candidates = tierCandidates.get(category) ?? [];
   const item = pickOne(candidates, rng);
   const grantKey = `treasure:${params.dungeonId}:${floor}:${params.explorationSeed}:${params.tick}`;
-  return toReward(item, null, "TREASURE_CHEST", grantKey);
+  return toReward(item.baseItem, null, "TREASURE_CHEST", grantKey, item.grantedStats);
 };
 
 export const rollMonsterDrops = (

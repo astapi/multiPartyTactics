@@ -1,5 +1,6 @@
 import { isClassId } from "@/constants/classes";
 import { getDb } from "@/db/database";
+import { parseEquipmentStatsJson, toEquipmentStatsKey } from "@/game/equipment/equipmentStatsService";
 import { canCharacterEquipItem, getEquipSlotForCategory } from "@/game/equipment/equipmentRules";
 import { getEquipmentById } from "@/game/loot/equipmentMasterService";
 import type { CharacterEquipmentRecord, EquipmentSlot } from "@/types/equipment";
@@ -12,6 +13,7 @@ type EquipInput = {
   slotType: EquipmentSlot;
   baseItemId: string;
   mutationPrefixId: string | null;
+  grantedStats?: CharacterEquipmentRecord["grantedStats"];
 };
 
 type UnequipInput = {
@@ -26,6 +28,7 @@ const mapCharacterEquipment = (row: any): CharacterEquipmentRecord => ({
   slotType: row.slot_type,
   baseItemId: row.base_item_id,
   mutationPrefixId: row.mutation_prefix_id ?? null,
+  grantedStats: parseEquipmentStatsJson(row.granted_stats_json),
   equippedAt: row.equipped_at,
 });
 
@@ -71,21 +74,24 @@ const addStackQuantityTx = async (
   db: Awaited<ReturnType<typeof getDb>>,
   baseItemId: string,
   mutationPrefixId: string | null,
-  quantity: number
+  quantity: number,
+  grantedStats?: CharacterEquipmentRecord["grantedStats"]
 ): Promise<void> => {
   if (!Number.isFinite(quantity) || quantity <= 0) {
     throw new Error("addStackQuantityTx requires a positive quantity");
   }
   const mutationPrefixKey = toMutationPrefixKey(mutationPrefixId);
+  const statsKey = toEquipmentStatsKey(grantedStats);
+  const grantedStatsJson = statsKey ? JSON.stringify(grantedStats) : null;
   await db.runAsync(
     `INSERT INTO equipment_inventory_stacks
-      (base_item_id, mutation_prefix_id, mutation_prefix_key, quantity, created_at, updated_at)
-     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-     ON CONFLICT(base_item_id, mutation_prefix_key)
+      (base_item_id, mutation_prefix_id, mutation_prefix_key, stats_key, granted_stats_json, quantity, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+     ON CONFLICT(base_item_id, mutation_prefix_key, stats_key)
      DO UPDATE SET
        quantity = equipment_inventory_stacks.quantity + excluded.quantity,
        updated_at = CURRENT_TIMESTAMP`,
-    [baseItemId, mutationPrefixId, mutationPrefixKey, quantity]
+    [baseItemId, mutationPrefixId, mutationPrefixKey, statsKey, grantedStatsJson, quantity]
   );
 };
 
@@ -93,18 +99,21 @@ const consumeStackQuantityTx = async (
   db: Awaited<ReturnType<typeof getDb>>,
   baseItemId: string,
   mutationPrefixId: string | null,
-  quantity: number
+  quantity: number,
+  grantedStats?: CharacterEquipmentRecord["grantedStats"]
 ): Promise<boolean> => {
   if (!Number.isFinite(quantity) || quantity <= 0) {
     throw new Error("consumeStackQuantityTx requires a positive quantity");
   }
   const mutationPrefixKey = toMutationPrefixKey(mutationPrefixId);
+  const statsKey = toEquipmentStatsKey(grantedStats);
   const row = await db.getFirstAsync<any>(
     `SELECT *
      FROM equipment_inventory_stacks
      WHERE base_item_id = ? AND mutation_prefix_key = ?
+       AND stats_key = ?
      LIMIT 1`,
-    [baseItemId, mutationPrefixKey]
+    [baseItemId, mutationPrefixKey, statsKey]
   );
   if (!row || row.quantity < quantity) return false;
 
@@ -112,8 +121,8 @@ const consumeStackQuantityTx = async (
   if (nextQuantity <= 0) {
     await db.runAsync(
       `DELETE FROM equipment_inventory_stacks
-       WHERE base_item_id = ? AND mutation_prefix_key = ?`,
-      [baseItemId, mutationPrefixKey]
+       WHERE base_item_id = ? AND mutation_prefix_key = ? AND stats_key = ?`,
+      [baseItemId, mutationPrefixKey, statsKey]
     );
     return true;
   }
@@ -193,7 +202,8 @@ export const characterEquipmentRepository = {
       if (
         current &&
         current.baseItemId === input.baseItemId &&
-        current.mutationPrefixId === input.mutationPrefixId
+        current.mutationPrefixId === input.mutationPrefixId &&
+        toEquipmentStatsKey(current.grantedStats) === toEquipmentStatsKey(input.grantedStats)
       ) {
         await db.execAsync("COMMIT;");
         return;
@@ -203,26 +213,34 @@ export const characterEquipmentRepository = {
         db,
         input.baseItemId,
         input.mutationPrefixId,
-        1
+        1,
+        input.grantedStats
       );
       if (!consumed) {
         throw new Error("装備対象が所持品にありません");
       }
 
       if (current) {
-        await addStackQuantityTx(db, current.baseItemId, current.mutationPrefixId, 1);
+        await addStackQuantityTx(db, current.baseItemId, current.mutationPrefixId, 1, current.grantedStats);
       }
 
       await db.runAsync(
         `INSERT INTO character_equipment_slots
-          (character_id, slot_type, base_item_id, mutation_prefix_id, equipped_at)
-         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+          (character_id, slot_type, base_item_id, mutation_prefix_id, granted_stats_json, equipped_at)
+         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
          ON CONFLICT(character_id, slot_type)
          DO UPDATE SET
            base_item_id = excluded.base_item_id,
            mutation_prefix_id = excluded.mutation_prefix_id,
+           granted_stats_json = excluded.granted_stats_json,
            equipped_at = CURRENT_TIMESTAMP`,
-        [input.characterId, input.slotType, input.baseItemId, input.mutationPrefixId]
+        [
+          input.characterId,
+          input.slotType,
+          input.baseItemId,
+          input.mutationPrefixId,
+          input.grantedStats ? JSON.stringify(input.grantedStats) : null,
+        ]
       );
 
       await db.execAsync("COMMIT;");
@@ -253,7 +271,7 @@ export const characterEquipmentRepository = {
          WHERE character_id = ? AND slot_type = ?`,
         [input.characterId, input.slotType]
       );
-      await addStackQuantityTx(db, current.baseItemId, current.mutationPrefixId, 1);
+      await addStackQuantityTx(db, current.baseItemId, current.mutationPrefixId, 1, current.grantedStats);
       await db.execAsync("COMMIT;");
     } catch (error) {
       try {

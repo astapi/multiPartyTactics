@@ -68,6 +68,7 @@ export const shopEquipmentRepository = {
        FROM shop_equipment_catalog c
        LEFT JOIN equipment_inventory_stacks s
          ON s.base_item_id = c.base_item_id
+        AND s.stats_key = ''
        WHERE c.is_enabled = 1
        GROUP BY c.base_item_id, c.price_gold, c.is_enabled
        ORDER BY c.base_item_id ASC`
@@ -128,8 +129,8 @@ export const shopEquipmentRepository = {
       const grantKey = `${generateId("shop_purchase")}:${baseItemId}`;
       await db.runAsync(
         `INSERT INTO equipment_grants
-          (grant_key, source_type, base_item_id, mutation_prefix_id, quantity, context_json, created_at)
-         VALUES (?, 'SHOP_PURCHASE', ?, NULL, 1, ?, CURRENT_TIMESTAMP)`,
+          (grant_key, source_type, base_item_id, mutation_prefix_id, granted_stats_json, quantity, context_json, created_at)
+         VALUES (?, 'SHOP_PURCHASE', ?, NULL, NULL, 1, ?, CURRENT_TIMESTAMP)`,
         [
           grantKey,
           baseItemId,
@@ -141,9 +142,9 @@ export const shopEquipmentRepository = {
       );
       await db.runAsync(
         `INSERT INTO equipment_inventory_stacks
-          (base_item_id, mutation_prefix_id, mutation_prefix_key, quantity, created_at, updated_at)
-         VALUES (?, NULL, '', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-         ON CONFLICT(base_item_id, mutation_prefix_key)
+          (base_item_id, mutation_prefix_id, mutation_prefix_key, stats_key, granted_stats_json, quantity, created_at, updated_at)
+         VALUES (?, NULL, '', '', NULL, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT(base_item_id, mutation_prefix_key, stats_key)
          DO UPDATE SET
            quantity = equipment_inventory_stacks.quantity + 1,
            updated_at = CURRENT_TIMESTAMP`,

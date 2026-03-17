@@ -115,7 +115,7 @@ export default function CharacterDetailScreen() {
         slotLabel: "Weapon",
         itemName: weaponLabel,
         hint: equippedBySlot.weapon
-          ? formatStatSummary(getEquipmentById(equippedBySlot.weapon.baseItemId).stats, locale) || "--"
+          ? formatStatSummary(equippedBySlot.weapon.grantedStats ?? getEquipmentById(equippedBySlot.weapon.baseItemId).stats, locale) || "--"
           : "--",
       },
       {
@@ -123,7 +123,7 @@ export default function CharacterDetailScreen() {
         slotLabel: "Armor",
         itemName: armorLabel,
         hint: equippedBySlot.armor
-          ? formatStatSummary(getEquipmentById(equippedBySlot.armor.baseItemId).stats, locale) || "--"
+          ? formatStatSummary(equippedBySlot.armor.grantedStats ?? getEquipmentById(equippedBySlot.armor.baseItemId).stats, locale) || "--"
           : "--",
       },
     ],

@@ -92,7 +92,7 @@ export default function EquipmentChangeScreen() {
         ...stack,
         displayName: buildEquipmentDisplayName(stack.baseItemId, stack.mutationPrefixId),
         slotType: getEquipSlotForCategory(item.category),
-        statSummary: formatStatSummary(item.stats, locale),
+        statSummary: formatStatSummary(stack.grantedStats ?? item.stats, locale),
       };
     });
   }, [inventoryStacks, locale]);
@@ -119,7 +119,7 @@ export default function EquipmentChangeScreen() {
   }, [currentEquipped, locale]);
   const currentEquippedStatSummary = useMemo(() => {
     if (!currentEquipped) return "--";
-    return formatStatSummary(getEquipmentById(currentEquipped.baseItemId).stats, locale) || "--";
+    return formatStatSummary(currentEquipped.grantedStats ?? getEquipmentById(currentEquipped.baseItemId).stats, locale) || "--";
   }, [currentEquipped, locale]);
 
   const onEquip = useCallback(
@@ -132,6 +132,7 @@ export default function EquipmentChangeScreen() {
           slotType: tab,
           baseItemId: row.baseItemId,
           mutationPrefixId: row.mutationPrefixId,
+          grantedStats: row.grantedStats,
         });
         await load();
       } catch (error) {
@@ -212,7 +213,7 @@ export default function EquipmentChangeScreen() {
             filteredInventory.map((row) => {
               const itemName = locale === "ja" ? row.displayName.jp : row.displayName.en;
               return (
-                <Pressable key={`${row.baseItemId}:${row.mutationPrefixId ?? ""}`} style={styles.itemCard} onPress={() => void onEquip(row)} disabled={busy}>
+                <Pressable key={`${row.baseItemId}:${row.mutationPrefixId ?? ""}:${row.statSummary}`} style={styles.itemCard} onPress={() => void onEquip(row)} disabled={busy}>
                   <View style={styles.itemIcon}>{getInventoryIcon(tab)}</View>
                   <View style={styles.currentTextWrap}>
                     <Text style={styles.itemName}>{itemName}</Text>

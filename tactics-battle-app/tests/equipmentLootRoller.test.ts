@@ -51,8 +51,8 @@ describe("game/loot/equipmentLootRoller", () => {
     expect(a.mutationPrefixId).toBeNull();
     expect(a.grantKey).toBe("treasure:crestoria_dungeon_1_200:2:12345:7");
     const item = getEquipmentById(a.baseItemId);
-    expect(item.source).toBe("chest");
-    expect(item.chestTier).toBe(10);
+    expect(["shop", "chest"]).toContain(item.source);
+    expect(a.category).toBe(item.category);
   });
 
   it("rolls tier-appropriate chest items for different floors", () => {
@@ -64,23 +64,28 @@ describe("game/loot/equipmentLootRoller", () => {
 
     const tier10 = rollTreasureChestEquipment({ ...base, floor: 5 });
     const tier10Item = getEquipmentById(tier10.baseItemId);
-    expect(tier10Item.chestTier).toBe(10);
-    expect(tier10Item.id).toMatch(/^chest_bronze_/);
+    expect(tier10.category).not.toBe("two_handed_axe");
+    expect(tier10.category).not.toBe("bow");
+    if (tier10Item.source === "chest") {
+      expect(tier10Item.chestTier).toBe(10);
+    } else {
+      expect(tier10.grantedStats).toBeTruthy();
+    }
 
     const tier30 = rollTreasureChestEquipment({ ...base, floor: 25 });
     const tier30Item = getEquipmentById(tier30.baseItemId);
     expect(tier30Item.chestTier).toBe(30);
-    expect(tier30Item.id).toMatch(/^chest_steel_/);
+    expect(tier30Item.id).toMatch(/^steel_/);
 
     const tier100 = rollTreasureChestEquipment({ ...base, floor: 95 });
     const tier100Item = getEquipmentById(tier100.baseItemId);
     expect(tier100Item.chestTier).toBe(100);
-    expect(tier100Item.id).toMatch(/^chest_cobalt_/);
+    expect(tier100Item.id).toMatch(/^cobalt_/);
 
     const tier190 = rollTreasureChestEquipment({ ...base, floor: 185 });
     const tier190Item = getEquipmentById(tier190.baseItemId);
     expect(tier190Item.chestTier).toBe(190);
-    expect(tier190Item.id).toMatch(/^chest_chaos_/);
+    expect(tier190Item.id).toMatch(/^chaos_/);
   });
 
   it("clamps floors above 190 to tier 190", () => {

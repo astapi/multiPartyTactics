@@ -10,8 +10,18 @@ import { dungeonExplorationProgressRepository } from "@/db/repositories/dungeonE
 import { dungeonPartyUiRepository } from "@/db/repositories/dungeonPartyUiRepository";
 import { partiesRepository } from "@/db/repositories/partiesRepository";
 import { buildDungeonPartyCardState, DungeonPartyCardAction } from "@/features/dungeon/partyCardState";
+import {
+  DEFAULT_DUNGEON_RETURN_CONDITION,
+  DUNGEON_RETURN_CONDITIONS,
+  normalizeDungeonReturnCondition,
+} from "@/game/explorationReturn";
 import { useI18n } from "@/i18n";
-import { DungeonFloorExplorationProgressRecord, DungeonPartyUiStateRecord, PartyWithMembers } from "@/types/models";
+import {
+  DungeonFloorExplorationProgressRecord,
+  DungeonPartyUiStateRecord,
+  DungeonReturnCondition,
+  PartyWithMembers,
+} from "@/types/models";
 
 const colors = {
   bgPrimary: "#ffffff",
@@ -30,8 +40,6 @@ const colors = {
 } as const;
 
 const DEFAULT_DUNGEON_ID = DUNGEONS[0]?.id ?? "crestoria_dungeon_1_200";
-const DEFAULT_EXPLORATION_STEP_COUNT = 40;
-const EXPLORATION_STEP_COUNT_OPTIONS = [20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
 
 const clampFloor = (floor: number, maxFloor: number) => Math.max(1, Math.min(Math.max(1, maxFloor), floor));
 const sanitizeSelectedFloor = (params: {
@@ -87,18 +95,11 @@ const computeMaxUnlockedFloor = (params: {
   }
   return clampFloor(unlockedFloor, maxFloor);
 };
-const normalizeStepCount = (value: number | null | undefined): number => {
-  const parsed = Math.max(1, Math.floor(value ?? DEFAULT_EXPLORATION_STEP_COUNT));
-  return EXPLORATION_STEP_COUNT_OPTIONS.includes(parsed as (typeof EXPLORATION_STEP_COUNT_OPTIONS)[number])
-    ? parsed
-    : DEFAULT_EXPLORATION_STEP_COUNT;
-};
-
 const defaultUiState = (partyId: string, dungeonId: string): DungeonPartyUiStateRecord => ({
   partyId,
   dungeonId,
   selectedFloor: null,
-  stepCount: DEFAULT_EXPLORATION_STEP_COUNT,
+  returnCondition: DEFAULT_DUNGEON_RETURN_CONDITION,
   mode: "IDLE",
   autoRunCount: 0,
   autoLootCount: 0,
@@ -175,7 +176,7 @@ export default function DungeonScreen() {
   );
   const pickerParty = pickerPartyId ? partyById.get(pickerPartyId) ?? null : null;
   const pickerUiState = pickerPartyId ? uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID) : null;
-  const pickerStepCount = normalizeStepCount(pickerUiState?.stepCount);
+  const pickerReturnCondition = normalizeDungeonReturnCondition(pickerUiState?.returnCondition);
   const pickerSelectedFloor = useMemo(
     () =>
       sanitizeSelectedFloor({
@@ -228,7 +229,7 @@ export default function DungeonScreen() {
         partyId,
         dungeonId: DEFAULT_DUNGEON_ID,
         selectedFloor: clampedFloor,
-        stepCount: normalizeStepCount(current.stepCount),
+        returnCondition: normalizeDungeonReturnCondition(current.returnCondition),
         mode: "IDLE",
         autoRunCount: current.autoRunCount,
         autoLootCount: current.autoLootCount,
@@ -239,14 +240,14 @@ export default function DungeonScreen() {
     [maxFloor, maxUnlockedFloor, uiStateMap, upsertUiState]
   );
 
-  const handleSelectStepCount = useCallback(
-    async (partyId: string, stepCount: number) => {
+  const handleSelectReturnCondition = useCallback(
+    async (partyId: string, returnCondition: DungeonReturnCondition) => {
       const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
       await upsertUiState({
         ...current,
         partyId,
         dungeonId: DEFAULT_DUNGEON_ID,
-        stepCount: normalizeStepCount(stepCount),
+        returnCondition: normalizeDungeonReturnCondition(returnCondition),
       });
     },
     [uiStateMap, upsertUiState]
@@ -277,7 +278,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "AUTO",
           selectedFloor,
-          stepCount: normalizeStepCount(current.stepCount),
+          returnCondition: normalizeDungeonReturnCondition(current.returnCondition),
         });
         return;
       }
@@ -289,7 +290,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "IDLE",
           selectedFloor,
-          stepCount: normalizeStepCount(current.stepCount),
+          returnCondition: normalizeDungeonReturnCondition(current.returnCondition),
         });
         return;
       }
@@ -301,7 +302,7 @@ export default function DungeonScreen() {
           dungeonId: DEFAULT_DUNGEON_ID,
           mode: "EXPLORE",
           selectedFloor,
-          stepCount: normalizeStepCount(current.stepCount),
+          returnCondition: normalizeDungeonReturnCondition(current.returnCondition),
         });
         router.push({
           pathname: "/dungeon/exploration",
@@ -309,7 +310,7 @@ export default function DungeonScreen() {
             dungeonId: DEFAULT_DUNGEON_ID,
             floor: String(selectedFloor),
             partyId,
-            steps: String(normalizeStepCount(current.stepCount)),
+            returnCondition: normalizeDungeonReturnCondition(current.returnCondition),
           },
         });
       }
@@ -420,7 +421,7 @@ export default function DungeonScreen() {
         }
         renderItem={({ item: entry, index }) => {
           const uiState = uiStateMap[entry.party.id] ?? defaultUiState(entry.party.id, DEFAULT_DUNGEON_ID);
-          const stepCount = normalizeStepCount(uiState.stepCount);
+          const returnCondition = normalizeDungeonReturnCondition(uiState.returnCondition);
           const safeSelectedFloor = sanitizeSelectedFloor({
             floor: uiState.selectedFloor,
             maxUnlockedFloor,
@@ -515,7 +516,7 @@ export default function DungeonScreen() {
                       </Pressable>
                     ) : null}
                     <Pressable style={styles.floorChip} onPress={() => openFloorPicker(entry.party.id)}>
-                      <Text style={styles.floorChipText}>{t("dungeon.ui.step.short", { steps: stepCount })}</Text>
+                      <Text style={styles.floorChipText}>{t(`dungeon.ui.returnCondition.${returnCondition}` as any)}</Text>
                     </Pressable>
                   </View>
                 ) : null}
@@ -593,18 +594,18 @@ export default function DungeonScreen() {
             </View>
 
             <View style={styles.stepPickerSection}>
-              <Text style={styles.stepPickerTitle}>{t("dungeon.ui.stepPicker.title")}</Text>
+              <Text style={styles.stepPickerTitle}>{t("dungeon.ui.returnConditionPicker.title")}</Text>
               <View style={styles.stepPickerOptions}>
-                {EXPLORATION_STEP_COUNT_OPTIONS.map((stepCount) => {
-                  const active = stepCount === pickerStepCount;
+                {DUNGEON_RETURN_CONDITIONS.map((returnCondition) => {
+                  const active = returnCondition === pickerReturnCondition;
                   return (
                     <Pressable
-                      key={`picker-step-${stepCount}`}
+                      key={`picker-return-condition-${returnCondition}`}
                       style={[styles.stepPickerOption, active ? styles.stepPickerOptionActive : null]}
-                      onPress={() => pickerPartyId && void handleSelectStepCount(pickerPartyId, stepCount)}
+                      onPress={() => pickerPartyId && void handleSelectReturnCondition(pickerPartyId, returnCondition)}
                     >
                       <Text style={[styles.stepPickerOptionText, active ? styles.stepPickerOptionTextActive : null]}>
-                        {t("dungeon.ui.step.short", { steps: stepCount })}
+                        {t(`dungeon.ui.returnCondition.${returnCondition}` as any)}
                       </Text>
                     </Pressable>
                   );

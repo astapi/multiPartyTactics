@@ -168,8 +168,8 @@ export default function InventoryScreen() {
           category: item.category,
           displayName: locale === "ja" ? display.jp : display.en,
           quantity: stack.quantity,
-          source: item.source,
-          statSummary: formatStatSummary(item.stats, locale),
+          source: stack.grantedStats && item.source === "shop" ? "chest" : item.source,
+          statSummary: formatStatSummary(stack.grantedStats ?? item.stats, locale),
         };
       });
 
@@ -190,7 +190,7 @@ export default function InventoryScreen() {
             displayName: locale === "ja" ? display.jp : display.en,
             characterName: character.name,
             slotType,
-            statSummary: formatStatSummary(item.stats, locale),
+            statSummary: formatStatSummary(entry.grantedStats ?? item.stats, locale),
           });
         }
       }

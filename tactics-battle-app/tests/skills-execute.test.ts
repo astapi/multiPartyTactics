@@ -204,6 +204,22 @@ describe("game/skills/execute", () => {
     expect(targetB.hp).toBeLessThan(50);
   });
 
+  it("reports overkill damage instead of clamping display damage to remaining hp", () => {
+    const actor = makeUnit({ mp: 20, stats: { atk: 50 } });
+    const target = makeUnit({ id: "enemy-overkill", name: "Slime", hp: 10, stats: { maxHp: 10, def: 0 } });
+    const skill = makeSkill({
+      id: "slash",
+      type: "attack",
+      multiplier: 1,
+    });
+
+    const result = executeSkill(actor, target, skill, () => 0.5);
+
+    expect(target.hp).toBe(0);
+    expect(result.damage).toBeGreaterThan(10);
+    expect(result.hitResults[0].damage).toBe(result.damage);
+  });
+
   it("supports taunt/cover markers and item consumption", () => {
     const actor = makeUnit({ mp: 0, stats: { maxMp: 20 } });
     actor.mp = 5;
