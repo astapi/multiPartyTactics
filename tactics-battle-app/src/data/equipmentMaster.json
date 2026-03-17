@@ -30,7 +30,7 @@
       "en": "Beastbone Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 135
+        "atk": 30
       }
     },
     {
@@ -41,7 +41,7 @@
       "en": "Beastfang Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 175
+        "atk": 40
       }
     },
     {
@@ -52,7 +52,7 @@
       "en": "Blackclaw Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 185
+        "atk": 50
       }
     },
     {
@@ -63,7 +63,7 @@
       "en": "Stonehide Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 175
+        "atk": 60
       }
     },
     {
@@ -74,7 +74,7 @@
       "en": "Scalesteel Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 175
+        "atk": 70
       }
     },
     {
@@ -85,7 +85,7 @@
       "en": "Dragonfang Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 285
+        "atk": 80
       }
     },
     {
@@ -96,7 +96,7 @@
       "en": "Dragonscale Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 285
+        "atk": 90
       }
     },
     {
@@ -107,7 +107,7 @@
       "en": "Giantbone Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 235
+        "atk": 100
       }
     },
     {
@@ -118,7 +118,7 @@
       "en": "Dreadbeast Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 235
+        "atk": 110
       }
     },
     {
@@ -129,7 +129,7 @@
       "en": "Crystal-Edge Sword",
       "can_mutate": true,
       "stats": {
-        "atk": 225
+        "atk": 120
       }
     },
     {
@@ -164,8 +164,8 @@
       "en": "Bone Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 82,
-        "spd": 38
+        "atk": 21,
+        "spd": 9
       }
     },
     {
@@ -176,8 +176,8 @@
       "en": "Fang Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 82,
-        "spd": 38
+        "atk": 28,
+        "spd": 12
       }
     },
     {
@@ -188,8 +188,8 @@
       "en": "Blackclaw Dagger",
       "can_mutate": true,
       "stats": {
-        "atk": 82,
-        "spd": 38
+        "atk": 35,
+        "spd": 15
       }
     },
     {
@@ -200,8 +200,8 @@
       "en": "Dragonclaw Dagger",
       "can_mutate": true,
       "stats": {
-        "atk": 110,
-        "spd": 50
+        "atk": 42,
+        "spd": 18
       }
     },
     {
@@ -212,8 +212,8 @@
       "en": "Giantbone Shortblade",
       "can_mutate": true,
       "stats": {
-        "atk": 138,
-        "spd": 62
+        "atk": 49,
+        "spd": 21
       }
     },
     {
@@ -224,8 +224,8 @@
       "en": "Crystal Shortblade",
       "can_mutate": true,
       "stats": {
-        "atk": 124,
-        "spd": 56
+        "atk": 56,
+        "spd": 24
       }
     },
     {
@@ -236,8 +236,8 @@
       "en": "Dreadbeast Fang",
       "can_mutate": true,
       "stats": {
-        "atk": 131,
-        "spd": 59
+        "atk": 63,
+        "spd": 27
       }
     },
     {
@@ -248,8 +248,8 @@
       "en": "Twinfang Dagger",
       "can_mutate": true,
       "stats": {
-        "atk": 145,
-        "spd": 65
+        "atk": 70,
+        "spd": 30
       }
     },
     {
@@ -260,8 +260,8 @@
       "en": "Bone Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 69,
-        "spd": 21
+        "atk": 8,
+        "spd": 2
       }
     },
     {
@@ -272,8 +272,8 @@
       "en": "Fang Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 69,
-        "spd": 21
+        "atk": 16,
+        "spd": 4
       }
     },
     {
@@ -284,8 +284,8 @@
       "en": "Blackclaw Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 93,
-        "spd": 27
+        "atk": 24,
+        "spd": 6
       }
     },
     {
@@ -296,8 +296,8 @@
       "en": "Crystal Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 77,
-        "spd": 23
+        "atk": 32,
+        "spd": 8
       }
     },
     {
@@ -308,8 +308,8 @@
       "en": "Lightbone Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 109,
-        "spd": 31
+        "atk": 40,
+        "spd": 10
       }
     },
     {
@@ -320,8 +320,8 @@
       "en": "Twinblade Throwing Blade",
       "can_mutate": true,
       "stats": {
-        "atk": 141,
-        "spd": 39
+        "atk": 48,
+        "spd": 12
       }
     },
     {
@@ -354,7 +354,7 @@
       "en": "Giantbone Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 149
+        "atk": 36
       }
     },
     {
@@ -365,7 +365,7 @@
       "en": "Beastfang Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 173
+        "atk": 48
       }
     },
     {
@@ -376,7 +376,7 @@
       "en": "Blackclaw Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 137
+        "atk": 60
       }
     },
     {
@@ -387,7 +387,7 @@
       "en": "Stone-Edge Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 173
+        "atk": 72
       }
     },
     {
@@ -398,7 +398,7 @@
       "en": "Dragonfang Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 209
+        "atk": 84
       }
     },
     {
@@ -409,7 +409,7 @@
       "en": "Dragonbone Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 221
+        "atk": 96
       }
     },
     {
@@ -420,7 +420,7 @@
       "en": "Dreadbeast Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 221
+        "atk": 108
       }
     },
     {
@@ -431,7 +431,7 @@
       "en": "Crystal-Edge Axe",
       "can_mutate": true,
       "stats": {
-        "atk": 233
+        "atk": 120
       }
     },
     {
@@ -466,7 +466,7 @@
       "en": "Giantbone Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 154,
+        "atk": 30,
         "def": 12
       }
     },
@@ -478,7 +478,7 @@
       "en": "Stone-Mass Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 202,
+        "atk": 40,
         "def": 16
       }
     },
@@ -490,7 +490,7 @@
       "en": "Carapace Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 154,
+        "atk": 50,
         "def": 20
       }
     },
@@ -502,7 +502,7 @@
       "en": "Dragonbone Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 190,
+        "atk": 60,
         "def": 24
       }
     },
@@ -514,7 +514,7 @@
       "en": "Heavybone Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 226,
+        "atk": 70,
         "def": 28
       }
     },
@@ -526,7 +526,7 @@
       "en": "Crystal-Head Maul",
       "can_mutate": true,
       "stats": {
-        "atk": 250,
+        "atk": 80,
         "def": 32
       }
     },
@@ -562,8 +562,8 @@
       "en": "Beastbone Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 95,
-        "spd": 25
+        "atk": 27,
+        "spd": 6
       }
     },
     {
@@ -574,8 +574,8 @@
       "en": "Beastsinew Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 113,
-        "spd": 29
+        "atk": 36,
+        "spd": 8
       }
     },
     {
@@ -586,8 +586,8 @@
       "en": "Blackwood Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 113,
-        "spd": 29
+        "atk": 45,
+        "spd": 10
       }
     },
     {
@@ -598,8 +598,8 @@
       "en": "Dragonbone Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 104,
-        "spd": 27
+        "atk": 54,
+        "spd": 12
       }
     },
     {
@@ -610,8 +610,8 @@
       "en": "Dragonsinew Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 113,
-        "spd": 29
+        "atk": 63,
+        "spd": 14
       }
     },
     {
@@ -622,8 +622,8 @@
       "en": "Crystal Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 149,
-        "spd": 37
+        "atk": 72,
+        "spd": 16
       }
     },
     {
@@ -634,8 +634,8 @@
       "en": "Twinstring Bone Bow",
       "can_mutate": true,
       "stats": {
-        "atk": 176,
-        "spd": 43
+        "atk": 81,
+        "spd": 18
       }
     },
     {
@@ -670,8 +670,8 @@
       "en": "Mana-Crystal Staff",
       "can_mutate": true,
       "stats": {
-        "spi": 105,
-        "mp": 65
+        "spi": 30,
+        "mp": 18
       }
     },
     {
@@ -682,8 +682,8 @@
       "en": "Skeleton Staff",
       "can_mutate": true,
       "stats": {
-        "spi": 145,
-        "mp": 89
+        "spi": 40,
+        "mp": 24
       }
     },
     {
@@ -694,8 +694,8 @@
       "en": "Soulcore Staff",
       "can_mutate": true,
       "stats": {
-        "spi": 135,
-        "mp": 83
+        "spi": 50,
+        "mp": 30
       }
     },
     {
@@ -706,8 +706,8 @@
       "en": "Crystal Staff",
       "can_mutate": true,
       "stats": {
-        "spi": 135,
-        "mp": 83
+        "spi": 60,
+        "mp": 36
       }
     },
     {
@@ -718,8 +718,8 @@
       "en": "Deep Ore Staff",
       "can_mutate": true,
       "stats": {
-        "spi": 145,
-        "mp": 89
+        "spi": 70,
+        "mp": 42
       }
     },
     {
@@ -757,8 +757,8 @@
       "en": "Bone Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 245,
-        "def": 101
+        "hp": 60,
+        "def": 24
       }
     },
     {
@@ -770,8 +770,8 @@
       "en": "Carapace Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 245,
-        "def": 101
+        "hp": 80,
+        "def": 32
       }
     },
     {
@@ -783,8 +783,8 @@
       "en": "Scale Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 265,
-        "def": 109
+        "hp": 100,
+        "def": 40
       }
     },
     {
@@ -796,8 +796,8 @@
       "en": "Dragon Scale Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 305,
-        "def": 125
+        "hp": 120,
+        "def": 48
       }
     },
     {
@@ -809,8 +809,8 @@
       "en": "Stonehide Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 325,
-        "def": 133
+        "hp": 140,
+        "def": 56
       }
     },
     {
@@ -822,37 +822,12 @@
       "en": "Crystal Shield",
       "can_mutate": true,
       "stats": {
-        "hp": 405,
-        "def": 165
+        "hp": 160,
+        "def": 64
       }
     },
     {
-      "id": "chest_bronze_sword",
-      "category": "one_handed_sword",
-      "source": "chest",
-      "jp": "ブロンズソード",
-      "en": "Bronze Sword",
-      "can_mutate": false,
-      "chestTier": 10,
-      "stats": {
-        "atk": 130
-      }
-    },
-    {
-      "id": "chest_bronze_dagger",
-      "category": "dagger",
-      "source": "chest",
-      "jp": "ブロンズダガー",
-      "en": "Bronze Dagger",
-      "can_mutate": false,
-      "chestTier": 10,
-      "stats": {
-        "atk": 77,
-        "spd": 33
-      }
-    },
-    {
-      "id": "chest_bronze_throwing_blade",
+      "id": "bronze_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ブロンズ投刃",
@@ -860,64 +835,12 @@
       "can_mutate": false,
       "chestTier": 10,
       "stats": {
-        "atk": 56,
-        "spd": 14
+        "atk": 16,
+        "spd": 4
       }
     },
     {
-      "id": "chest_bronze_staff",
-      "category": "staff",
-      "source": "chest",
-      "jp": "ブロンズスタッフ",
-      "en": "Bronze Staff",
-      "can_mutate": false,
-      "chestTier": 10,
-      "stats": {
-        "spi": 80,
-        "mp": 48
-      }
-    },
-    {
-      "id": "chest_bronze_shield",
-      "category": "shield",
-      "shieldSize": "large",
-      "source": "chest",
-      "jp": "ブロンズシールド",
-      "en": "Bronze Shield",
-      "can_mutate": false,
-      "chestTier": 10,
-      "stats": {
-        "hp": 180,
-        "def": 72
-      }
-    },
-    {
-      "id": "chest_iron_sword",
-      "category": "one_handed_sword",
-      "source": "chest",
-      "jp": "アイアンソード",
-      "en": "Iron Sword",
-      "can_mutate": false,
-      "chestTier": 20,
-      "stats": {
-        "atk": 140
-      }
-    },
-    {
-      "id": "chest_iron_dagger",
-      "category": "dagger",
-      "source": "chest",
-      "jp": "アイアンダガー",
-      "en": "Iron Dagger",
-      "can_mutate": false,
-      "chestTier": 20,
-      "stats": {
-        "atk": 84,
-        "spd": 36
-      }
-    },
-    {
-      "id": "chest_iron_throwing_blade",
+      "id": "iron_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "アイアン投刃",
@@ -925,39 +848,12 @@
       "can_mutate": false,
       "chestTier": 20,
       "stats": {
-        "atk": 64,
-        "spd": 16
+        "atk": 24,
+        "spd": 6
       }
     },
     {
-      "id": "chest_iron_staff",
-      "category": "staff",
-      "source": "chest",
-      "jp": "アイアンスタッフ",
-      "en": "Iron Staff",
-      "can_mutate": false,
-      "chestTier": 20,
-      "stats": {
-        "spi": 90,
-        "mp": 54
-      }
-    },
-    {
-      "id": "chest_iron_shield",
-      "category": "shield",
-      "shieldSize": "large",
-      "source": "chest",
-      "jp": "アイアンシールド",
-      "en": "Iron Shield",
-      "can_mutate": false,
-      "chestTier": 20,
-      "stats": {
-        "hp": 200,
-        "def": 80
-      }
-    },
-    {
-      "id": "chest_steel_sword",
+      "id": "steel_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "スチールソード",
@@ -965,11 +861,11 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "atk": 150
+        "atk": 40
       }
     },
     {
-      "id": "chest_steel_dagger",
+      "id": "steel_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "スチールダガー",
@@ -977,12 +873,12 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "atk": 91,
-        "spd": 39
+        "atk": 28,
+        "spd": 12
       }
     },
     {
-      "id": "chest_steel_throwing_blade",
+      "id": "steel_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "スチール投刃",
@@ -990,12 +886,12 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "atk": 72,
-        "spd": 18
+        "atk": 32,
+        "spd": 8
       }
     },
     {
-      "id": "chest_steel_axe",
+      "id": "steel_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "スチールアクス",
@@ -1003,11 +899,11 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "atk": 132
+        "atk": 36
       }
     },
     {
-      "id": "chest_steel_bow",
+      "id": "steel_bow",
       "category": "bow",
       "source": "chest",
       "jp": "スチールボウ",
@@ -1015,12 +911,12 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "atk": 90,
-        "spd": 20
+        "atk": 27,
+        "spd": 6
       }
     },
     {
-      "id": "chest_steel_staff",
+      "id": "steel_staff",
       "category": "staff",
       "source": "chest",
       "jp": "スチールスタッフ",
@@ -1028,12 +924,12 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "spi": 100,
-        "mp": 60
+        "spi": 40,
+        "mp": 24
       }
     },
     {
-      "id": "chest_steel_shield",
+      "id": "steel_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1042,12 +938,12 @@
       "can_mutate": false,
       "chestTier": 30,
       "stats": {
-        "hp": 220,
-        "def": 88
+        "hp": 80,
+        "def": 32
       }
     },
     {
-      "id": "chest_silver_sword",
+      "id": "silver_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "シルバーソード",
@@ -1055,11 +951,11 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "atk": 160
+        "atk": 50
       }
     },
     {
-      "id": "chest_silver_dagger",
+      "id": "silver_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "シルバーダガー",
@@ -1067,12 +963,12 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "atk": 98,
-        "spd": 42
+        "atk": 35,
+        "spd": 15
       }
     },
     {
-      "id": "chest_silver_throwing_blade",
+      "id": "silver_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "シルバー投刃",
@@ -1080,12 +976,12 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "atk": 80,
-        "spd": 20
+        "atk": 40,
+        "spd": 10
       }
     },
     {
-      "id": "chest_silver_axe",
+      "id": "silver_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "シルバーアクス",
@@ -1093,11 +989,11 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "atk": 144
+        "atk": 48
       }
     },
     {
-      "id": "chest_silver_bow",
+      "id": "silver_bow",
       "category": "bow",
       "source": "chest",
       "jp": "シルバーボウ",
@@ -1105,12 +1001,12 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "atk": 99,
-        "spd": 22
+        "atk": 36,
+        "spd": 8
       }
     },
     {
-      "id": "chest_silver_staff",
+      "id": "silver_staff",
       "category": "staff",
       "source": "chest",
       "jp": "シルバースタッフ",
@@ -1118,12 +1014,12 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "spi": 110,
-        "mp": 66
+        "spi": 50,
+        "mp": 30
       }
     },
     {
-      "id": "chest_silver_shield",
+      "id": "silver_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1132,12 +1028,12 @@
       "can_mutate": false,
       "chestTier": 40,
       "stats": {
-        "hp": 240,
-        "def": 96
+        "hp": 100,
+        "def": 40
       }
     },
     {
-      "id": "chest_crimson_sword",
+      "id": "crimson_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "クリムゾンソード",
@@ -1145,11 +1041,11 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "atk": 170
+        "atk": 60
       }
     },
     {
-      "id": "chest_crimson_dagger",
+      "id": "crimson_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "クリムゾンダガー",
@@ -1157,12 +1053,12 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "atk": 105,
-        "spd": 45
+        "atk": 42,
+        "spd": 18
       }
     },
     {
-      "id": "chest_crimson_throwing_blade",
+      "id": "crimson_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "クリムゾン投刃",
@@ -1170,12 +1066,12 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "atk": 88,
-        "spd": 22
+        "atk": 48,
+        "spd": 12
       }
     },
     {
-      "id": "chest_crimson_axe",
+      "id": "crimson_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "クリムゾンアクス",
@@ -1183,11 +1079,11 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "atk": 156
+        "atk": 60
       }
     },
     {
-      "id": "chest_crimson_bow",
+      "id": "crimson_bow",
       "category": "bow",
       "source": "chest",
       "jp": "クリムゾンボウ",
@@ -1195,12 +1091,12 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "atk": 108,
-        "spd": 24
+        "atk": 45,
+        "spd": 10
       }
     },
     {
-      "id": "chest_crimson_staff",
+      "id": "crimson_staff",
       "category": "staff",
       "source": "chest",
       "jp": "クリムゾンスタッフ",
@@ -1208,12 +1104,12 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "spi": 120,
-        "mp": 72
+        "spi": 60,
+        "mp": 36
       }
     },
     {
-      "id": "chest_crimson_shield",
+      "id": "crimson_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1222,12 +1118,12 @@
       "can_mutate": false,
       "chestTier": 50,
       "stats": {
-        "hp": 260,
-        "def": 104
+        "hp": 120,
+        "def": 48
       }
     },
     {
-      "id": "chest_platinum_sword",
+      "id": "platinum_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "プラチナソード",
@@ -1235,11 +1131,11 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "atk": 180
+        "atk": 70
       }
     },
     {
-      "id": "chest_platinum_dagger",
+      "id": "platinum_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "プラチナダガー",
@@ -1247,12 +1143,12 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "atk": 112,
-        "spd": 48
+        "atk": 49,
+        "spd": 21
       }
     },
     {
-      "id": "chest_platinum_throwing_blade",
+      "id": "platinum_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "プラチナ投刃",
@@ -1260,12 +1156,12 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "atk": 96,
-        "spd": 24
+        "atk": 56,
+        "spd": 14
       }
     },
     {
-      "id": "chest_platinum_axe",
+      "id": "platinum_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "プラチナアクス",
@@ -1273,11 +1169,11 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "atk": 168
+        "atk": 72
       }
     },
     {
-      "id": "chest_platinum_bow",
+      "id": "platinum_bow",
       "category": "bow",
       "source": "chest",
       "jp": "プラチナボウ",
@@ -1285,12 +1181,12 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "atk": 117,
-        "spd": 26
+        "atk": 54,
+        "spd": 12
       }
     },
     {
-      "id": "chest_platinum_staff",
+      "id": "platinum_staff",
       "category": "staff",
       "source": "chest",
       "jp": "プラチナスタッフ",
@@ -1298,12 +1194,12 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "spi": 130,
-        "mp": 78
+        "spi": 70,
+        "mp": 42
       }
     },
     {
-      "id": "chest_platinum_shield",
+      "id": "platinum_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1312,12 +1208,12 @@
       "can_mutate": false,
       "chestTier": 60,
       "stats": {
-        "hp": 280,
-        "def": 112
+        "hp": 140,
+        "def": 56
       }
     },
     {
-      "id": "chest_mythril_sword",
+      "id": "mythril_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "ミスリルソード",
@@ -1325,11 +1221,11 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "atk": 190
+        "atk": 80
       }
     },
     {
-      "id": "chest_mythril_dagger",
+      "id": "mythril_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "ミスリルダガー",
@@ -1337,12 +1233,12 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "atk": 119,
-        "spd": 51
+        "atk": 56,
+        "spd": 24
       }
     },
     {
-      "id": "chest_mythril_throwing_blade",
+      "id": "mythril_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ミスリル投刃",
@@ -1350,12 +1246,12 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "atk": 104,
-        "spd": 26
+        "atk": 64,
+        "spd": 16
       }
     },
     {
-      "id": "chest_mythril_axe",
+      "id": "mythril_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "ミスリルアクス",
@@ -1363,11 +1259,11 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "atk": 180
+        "atk": 84
       }
     },
     {
-      "id": "chest_mythril_bow",
+      "id": "mythril_bow",
       "category": "bow",
       "source": "chest",
       "jp": "ミスリルボウ",
@@ -1375,12 +1271,12 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "atk": 126,
-        "spd": 28
+        "atk": 63,
+        "spd": 14
       }
     },
     {
-      "id": "chest_mythril_staff",
+      "id": "mythril_staff",
       "category": "staff",
       "source": "chest",
       "jp": "ミスリルスタッフ",
@@ -1388,12 +1284,12 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "spi": 140,
-        "mp": 84
+        "spi": 80,
+        "mp": 48
       }
     },
     {
-      "id": "chest_mythril_shield",
+      "id": "mythril_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1402,12 +1298,12 @@
       "can_mutate": false,
       "chestTier": 70,
       "stats": {
-        "hp": 300,
-        "def": 120
+        "hp": 160,
+        "def": 64
       }
     },
     {
-      "id": "chest_orichalcum_sword",
+      "id": "orichalcum_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "オリハルコンソード",
@@ -1415,11 +1311,11 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "atk": 200
+        "atk": 90
       }
     },
     {
-      "id": "chest_orichalcum_dagger",
+      "id": "orichalcum_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "オリハルコンダガー",
@@ -1427,12 +1323,12 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "atk": 126,
-        "spd": 54
+        "atk": 63,
+        "spd": 27
       }
     },
     {
-      "id": "chest_orichalcum_throwing_blade",
+      "id": "orichalcum_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "オリハルコン投刃",
@@ -1440,12 +1336,12 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "atk": 112,
-        "spd": 28
+        "atk": 72,
+        "spd": 18
       }
     },
     {
-      "id": "chest_orichalcum_axe",
+      "id": "orichalcum_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "オリハルコンアクス",
@@ -1453,11 +1349,11 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "atk": 192
+        "atk": 96
       }
     },
     {
-      "id": "chest_orichalcum_bow",
+      "id": "orichalcum_bow",
       "category": "bow",
       "source": "chest",
       "jp": "オリハルコンボウ",
@@ -1465,12 +1361,12 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "atk": 135,
-        "spd": 30
+        "atk": 72,
+        "spd": 16
       }
     },
     {
-      "id": "chest_orichalcum_staff",
+      "id": "orichalcum_staff",
       "category": "staff",
       "source": "chest",
       "jp": "オリハルコンスタッフ",
@@ -1478,12 +1374,12 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "spi": 150,
-        "mp": 90
+        "spi": 90,
+        "mp": 54
       }
     },
     {
-      "id": "chest_orichalcum_shield",
+      "id": "orichalcum_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1492,12 +1388,12 @@
       "can_mutate": false,
       "chestTier": 80,
       "stats": {
-        "hp": 320,
-        "def": 128
+        "hp": 180,
+        "def": 72
       }
     },
     {
-      "id": "chest_adamant_sword",
+      "id": "adamant_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "アダマンソード",
@@ -1505,11 +1401,11 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "atk": 210
+        "atk": 100
       }
     },
     {
-      "id": "chest_adamant_dagger",
+      "id": "adamant_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "アダマンダガー",
@@ -1517,12 +1413,12 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "atk": 133,
-        "spd": 57
+        "atk": 70,
+        "spd": 30
       }
     },
     {
-      "id": "chest_adamant_throwing_blade",
+      "id": "adamant_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "アダマン投刃",
@@ -1530,12 +1426,12 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "atk": 120,
-        "spd": 30
+        "atk": 80,
+        "spd": 20
       }
     },
     {
-      "id": "chest_adamant_axe",
+      "id": "adamant_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "アダマンアクス",
@@ -1543,11 +1439,11 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "atk": 204
+        "atk": 108
       }
     },
     {
-      "id": "chest_adamant_bow",
+      "id": "adamant_bow",
       "category": "bow",
       "source": "chest",
       "jp": "アダマンボウ",
@@ -1555,12 +1451,12 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "atk": 144,
-        "spd": 32
+        "atk": 81,
+        "spd": 18
       }
     },
     {
-      "id": "chest_adamant_staff",
+      "id": "adamant_staff",
       "category": "staff",
       "source": "chest",
       "jp": "アダマンスタッフ",
@@ -1568,12 +1464,12 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "spi": 160,
-        "mp": 96
+        "spi": 100,
+        "mp": 60
       }
     },
     {
-      "id": "chest_adamant_shield",
+      "id": "adamant_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1582,12 +1478,12 @@
       "can_mutate": false,
       "chestTier": 90,
       "stats": {
-        "hp": 340,
-        "def": 136
+        "hp": 200,
+        "def": 80
       }
     },
     {
-      "id": "chest_cobalt_sword",
+      "id": "cobalt_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "コバルトソード",
@@ -1595,11 +1491,11 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "atk": 220
+        "atk": 110
       }
     },
     {
-      "id": "chest_cobalt_dagger",
+      "id": "cobalt_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "コバルトダガー",
@@ -1607,12 +1503,12 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "atk": 140,
-        "spd": 60
+        "atk": 77,
+        "spd": 33
       }
     },
     {
-      "id": "chest_cobalt_throwing_blade",
+      "id": "cobalt_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "コバルト投刃",
@@ -1620,12 +1516,12 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "atk": 128,
-        "spd": 32
+        "atk": 88,
+        "spd": 22
       }
     },
     {
-      "id": "chest_cobalt_axe",
+      "id": "cobalt_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "コバルトアクス",
@@ -1633,11 +1529,11 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "atk": 216
+        "atk": 120
       }
     },
     {
-      "id": "chest_cobalt_bow",
+      "id": "cobalt_bow",
       "category": "bow",
       "source": "chest",
       "jp": "コバルトボウ",
@@ -1645,12 +1541,12 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "atk": 153,
-        "spd": 34
+        "atk": 90,
+        "spd": 20
       }
     },
     {
-      "id": "chest_cobalt_staff",
+      "id": "cobalt_staff",
       "category": "staff",
       "source": "chest",
       "jp": "コバルトスタッフ",
@@ -1658,12 +1554,12 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "spi": 170,
-        "mp": 102
+        "spi": 110,
+        "mp": 66
       }
     },
     {
-      "id": "chest_cobalt_shield",
+      "id": "cobalt_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1672,12 +1568,12 @@
       "can_mutate": false,
       "chestTier": 100,
       "stats": {
-        "hp": 360,
-        "def": 144
+        "hp": 220,
+        "def": 88
       }
     },
     {
-      "id": "chest_moonstone_sword",
+      "id": "moonstone_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "ムーンストーンソード",
@@ -1685,11 +1581,11 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "atk": 230
+        "atk": 120
       }
     },
     {
-      "id": "chest_moonstone_dagger",
+      "id": "moonstone_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "ムーンストーンダガー",
@@ -1697,12 +1593,12 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "atk": 147,
-        "spd": 63
+        "atk": 84,
+        "spd": 36
       }
     },
     {
-      "id": "chest_moonstone_throwing_blade",
+      "id": "moonstone_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ムーンストーン投刃",
@@ -1710,12 +1606,12 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "atk": 136,
-        "spd": 34
+        "atk": 96,
+        "spd": 24
       }
     },
     {
-      "id": "chest_moonstone_axe",
+      "id": "moonstone_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "ムーンストーンアクス",
@@ -1723,11 +1619,11 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "atk": 228
+        "atk": 132
       }
     },
     {
-      "id": "chest_moonstone_bow",
+      "id": "moonstone_bow",
       "category": "bow",
       "source": "chest",
       "jp": "ムーンストーンボウ",
@@ -1735,12 +1631,12 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "atk": 162,
-        "spd": 36
+        "atk": 99,
+        "spd": 22
       }
     },
     {
-      "id": "chest_moonstone_staff",
+      "id": "moonstone_staff",
       "category": "staff",
       "source": "chest",
       "jp": "ムーンストーンスタッフ",
@@ -1748,12 +1644,12 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "spi": 180,
-        "mp": 108
+        "spi": 120,
+        "mp": 72
       }
     },
     {
-      "id": "chest_moonstone_shield",
+      "id": "moonstone_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1762,12 +1658,12 @@
       "can_mutate": false,
       "chestTier": 110,
       "stats": {
-        "hp": 380,
-        "def": 152
+        "hp": 240,
+        "def": 96
       }
     },
     {
-      "id": "chest_celestite_sword",
+      "id": "celestite_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "セレスタイトソード",
@@ -1775,11 +1671,11 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "atk": 240
+        "atk": 130
       }
     },
     {
-      "id": "chest_celestite_dagger",
+      "id": "celestite_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "セレスタイトダガー",
@@ -1787,12 +1683,12 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "atk": 154,
-        "spd": 66
+        "atk": 91,
+        "spd": 39
       }
     },
     {
-      "id": "chest_celestite_throwing_blade",
+      "id": "celestite_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "セレスタイト投刃",
@@ -1800,12 +1696,12 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "atk": 144,
-        "spd": 36
+        "atk": 104,
+        "spd": 26
       }
     },
     {
-      "id": "chest_celestite_axe",
+      "id": "celestite_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "セレスタイトアクス",
@@ -1813,11 +1709,11 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "atk": 240
+        "atk": 144
       }
     },
     {
-      "id": "chest_celestite_bow",
+      "id": "celestite_bow",
       "category": "bow",
       "source": "chest",
       "jp": "セレスタイトボウ",
@@ -1825,12 +1721,12 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "atk": 171,
-        "spd": 38
+        "atk": 108,
+        "spd": 24
       }
     },
     {
-      "id": "chest_celestite_staff",
+      "id": "celestite_staff",
       "category": "staff",
       "source": "chest",
       "jp": "セレスタイトスタッフ",
@@ -1838,12 +1734,12 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "spi": 190,
-        "mp": 114
+        "spi": 130,
+        "mp": 78
       }
     },
     {
-      "id": "chest_celestite_shield",
+      "id": "celestite_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1852,12 +1748,12 @@
       "can_mutate": false,
       "chestTier": 120,
       "stats": {
-        "hp": 400,
-        "def": 160
+        "hp": 260,
+        "def": 104
       }
     },
     {
-      "id": "chest_stardust_sword",
+      "id": "stardust_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "スターダストソード",
@@ -1865,11 +1761,11 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "atk": 250
+        "atk": 140
       }
     },
     {
-      "id": "chest_stardust_dagger",
+      "id": "stardust_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "スターダストダガー",
@@ -1877,12 +1773,12 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "atk": 161,
-        "spd": 69
+        "atk": 98,
+        "spd": 42
       }
     },
     {
-      "id": "chest_stardust_throwing_blade",
+      "id": "stardust_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "スターダスト投刃",
@@ -1890,12 +1786,12 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "atk": 152,
-        "spd": 38
+        "atk": 112,
+        "spd": 28
       }
     },
     {
-      "id": "chest_stardust_axe",
+      "id": "stardust_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "スターダストアクス",
@@ -1903,11 +1799,11 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "atk": 252
+        "atk": 156
       }
     },
     {
-      "id": "chest_stardust_bow",
+      "id": "stardust_bow",
       "category": "bow",
       "source": "chest",
       "jp": "スターダストボウ",
@@ -1915,12 +1811,12 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "atk": 180,
-        "spd": 40
+        "atk": 117,
+        "spd": 26
       }
     },
     {
-      "id": "chest_stardust_staff",
+      "id": "stardust_staff",
       "category": "staff",
       "source": "chest",
       "jp": "スターダストスタッフ",
@@ -1928,12 +1824,12 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "spi": 200,
-        "mp": 120
+        "spi": 140,
+        "mp": 84
       }
     },
     {
-      "id": "chest_stardust_shield",
+      "id": "stardust_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -1942,12 +1838,12 @@
       "can_mutate": false,
       "chestTier": 130,
       "stats": {
-        "hp": 420,
-        "def": 168
+        "hp": 280,
+        "def": 112
       }
     },
     {
-      "id": "chest_shadow_sword",
+      "id": "shadow_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "シャドウソード",
@@ -1955,11 +1851,11 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "atk": 260
+        "atk": 150
       }
     },
     {
-      "id": "chest_shadow_dagger",
+      "id": "shadow_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "シャドウダガー",
@@ -1967,12 +1863,12 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "atk": 168,
-        "spd": 72
+        "atk": 105,
+        "spd": 45
       }
     },
     {
-      "id": "chest_shadow_throwing_blade",
+      "id": "shadow_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "シャドウ投刃",
@@ -1980,12 +1876,12 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "atk": 160,
-        "spd": 40
+        "atk": 120,
+        "spd": 30
       }
     },
     {
-      "id": "chest_shadow_axe",
+      "id": "shadow_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "シャドウアクス",
@@ -1993,11 +1889,11 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "atk": 264
+        "atk": 168
       }
     },
     {
-      "id": "chest_shadow_bow",
+      "id": "shadow_bow",
       "category": "bow",
       "source": "chest",
       "jp": "シャドウボウ",
@@ -2005,12 +1901,12 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "atk": 189,
-        "spd": 42
+        "atk": 126,
+        "spd": 28
       }
     },
     {
-      "id": "chest_shadow_staff",
+      "id": "shadow_staff",
       "category": "staff",
       "source": "chest",
       "jp": "シャドウスタッフ",
@@ -2018,12 +1914,12 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "spi": 210,
-        "mp": 126
+        "spi": 150,
+        "mp": 90
       }
     },
     {
-      "id": "chest_shadow_shield",
+      "id": "shadow_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2032,12 +1928,12 @@
       "can_mutate": false,
       "chestTier": 140,
       "stats": {
-        "hp": 440,
-        "def": 176
+        "hp": 300,
+        "def": 120
       }
     },
     {
-      "id": "chest_dragonsteel_sword",
+      "id": "dragonsteel_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "ドラゴンスチールソード",
@@ -2045,11 +1941,11 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "atk": 270
+        "atk": 160
       }
     },
     {
-      "id": "chest_dragonsteel_dagger",
+      "id": "dragonsteel_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "ドラゴンスチールダガー",
@@ -2057,12 +1953,12 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "atk": 175,
-        "spd": 75
+        "atk": 112,
+        "spd": 48
       }
     },
     {
-      "id": "chest_dragonsteel_throwing_blade",
+      "id": "dragonsteel_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ドラゴンスチール投刃",
@@ -2070,12 +1966,12 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "atk": 168,
-        "spd": 42
+        "atk": 128,
+        "spd": 32
       }
     },
     {
-      "id": "chest_dragonsteel_axe",
+      "id": "dragonsteel_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "ドラゴンスチールアクス",
@@ -2083,11 +1979,11 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "atk": 276
+        "atk": 180
       }
     },
     {
-      "id": "chest_dragonsteel_bow",
+      "id": "dragonsteel_bow",
       "category": "bow",
       "source": "chest",
       "jp": "ドラゴンスチールボウ",
@@ -2095,12 +1991,12 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "atk": 198,
-        "spd": 44
+        "atk": 135,
+        "spd": 30
       }
     },
     {
-      "id": "chest_dragonsteel_staff",
+      "id": "dragonsteel_staff",
       "category": "staff",
       "source": "chest",
       "jp": "ドラゴンスチールスタッフ",
@@ -2108,12 +2004,12 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "spi": 220,
-        "mp": 132
+        "spi": 160,
+        "mp": 96
       }
     },
     {
-      "id": "chest_dragonsteel_shield",
+      "id": "dragonsteel_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2122,12 +2018,12 @@
       "can_mutate": false,
       "chestTier": 150,
       "stats": {
-        "hp": 460,
-        "def": 184
+        "hp": 320,
+        "def": 128
       }
     },
     {
-      "id": "chest_divine_sword",
+      "id": "divine_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "ディヴァインソード",
@@ -2135,11 +2031,11 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "atk": 280
+        "atk": 170
       }
     },
     {
-      "id": "chest_divine_dagger",
+      "id": "divine_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "ディヴァインダガー",
@@ -2147,12 +2043,12 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "atk": 182,
-        "spd": 78
+        "atk": 119,
+        "spd": 51
       }
     },
     {
-      "id": "chest_divine_throwing_blade",
+      "id": "divine_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ディヴァイン投刃",
@@ -2160,12 +2056,12 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "atk": 176,
-        "spd": 44
+        "atk": 136,
+        "spd": 34
       }
     },
     {
-      "id": "chest_divine_axe",
+      "id": "divine_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "ディヴァインアクス",
@@ -2173,11 +2069,11 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "atk": 288
+        "atk": 192
       }
     },
     {
-      "id": "chest_divine_bow",
+      "id": "divine_bow",
       "category": "bow",
       "source": "chest",
       "jp": "ディヴァインボウ",
@@ -2185,12 +2081,12 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "atk": 207,
-        "spd": 46
+        "atk": 144,
+        "spd": 32
       }
     },
     {
-      "id": "chest_divine_staff",
+      "id": "divine_staff",
       "category": "staff",
       "source": "chest",
       "jp": "ディヴァインスタッフ",
@@ -2198,12 +2094,12 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "spi": 230,
-        "mp": 138
+        "spi": 170,
+        "mp": 102
       }
     },
     {
-      "id": "chest_divine_shield",
+      "id": "divine_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2212,12 +2108,12 @@
       "can_mutate": false,
       "chestTier": 160,
       "stats": {
-        "hp": 480,
-        "def": 192
+        "hp": 340,
+        "def": 136
       }
     },
     {
-      "id": "chest_ethereal_sword",
+      "id": "ethereal_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "エーテルソード",
@@ -2225,11 +2121,11 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "atk": 290
+        "atk": 180
       }
     },
     {
-      "id": "chest_ethereal_dagger",
+      "id": "ethereal_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "エーテルダガー",
@@ -2237,12 +2133,12 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "atk": 189,
-        "spd": 81
+        "atk": 126,
+        "spd": 54
       }
     },
     {
-      "id": "chest_ethereal_throwing_blade",
+      "id": "ethereal_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "エーテル投刃",
@@ -2250,12 +2146,12 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "atk": 184,
-        "spd": 46
+        "atk": 144,
+        "spd": 36
       }
     },
     {
-      "id": "chest_ethereal_axe",
+      "id": "ethereal_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "エーテルアクス",
@@ -2263,11 +2159,11 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "atk": 300
+        "atk": 204
       }
     },
     {
-      "id": "chest_ethereal_bow",
+      "id": "ethereal_bow",
       "category": "bow",
       "source": "chest",
       "jp": "エーテルボウ",
@@ -2275,12 +2171,12 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "atk": 216,
-        "spd": 48
+        "atk": 153,
+        "spd": 34
       }
     },
     {
-      "id": "chest_ethereal_staff",
+      "id": "ethereal_staff",
       "category": "staff",
       "source": "chest",
       "jp": "エーテルスタッフ",
@@ -2288,12 +2184,12 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "spi": 240,
-        "mp": 144
+        "spi": 180,
+        "mp": 108
       }
     },
     {
-      "id": "chest_ethereal_shield",
+      "id": "ethereal_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2302,12 +2198,12 @@
       "can_mutate": false,
       "chestTier": 170,
       "stats": {
-        "hp": 500,
-        "def": 200
+        "hp": 360,
+        "def": 144
       }
     },
     {
-      "id": "chest_void_sword",
+      "id": "void_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "ヴォイドソード",
@@ -2315,11 +2211,11 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "atk": 300
+        "atk": 190
       }
     },
     {
-      "id": "chest_void_dagger",
+      "id": "void_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "ヴォイドダガー",
@@ -2327,12 +2223,12 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "atk": 196,
-        "spd": 84
+        "atk": 133,
+        "spd": 57
       }
     },
     {
-      "id": "chest_void_throwing_blade",
+      "id": "void_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "ヴォイド投刃",
@@ -2340,12 +2236,12 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "atk": 192,
-        "spd": 48
+        "atk": 152,
+        "spd": 38
       }
     },
     {
-      "id": "chest_void_axe",
+      "id": "void_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "ヴォイドアクス",
@@ -2353,11 +2249,11 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "atk": 312
+        "atk": 216
       }
     },
     {
-      "id": "chest_void_bow",
+      "id": "void_bow",
       "category": "bow",
       "source": "chest",
       "jp": "ヴォイドボウ",
@@ -2365,12 +2261,12 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "atk": 225,
-        "spd": 50
+        "atk": 162,
+        "spd": 36
       }
     },
     {
-      "id": "chest_void_staff",
+      "id": "void_staff",
       "category": "staff",
       "source": "chest",
       "jp": "ヴォイドスタッフ",
@@ -2378,12 +2274,12 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "spi": 250,
-        "mp": 150
+        "spi": 190,
+        "mp": 114
       }
     },
     {
-      "id": "chest_void_shield",
+      "id": "void_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2392,12 +2288,12 @@
       "can_mutate": false,
       "chestTier": 180,
       "stats": {
-        "hp": 520,
-        "def": 208
+        "hp": 380,
+        "def": 152
       }
     },
     {
-      "id": "chest_chaos_sword",
+      "id": "chaos_sword",
       "category": "one_handed_sword",
       "source": "chest",
       "jp": "カオスソード",
@@ -2405,11 +2301,11 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "atk": 310
+        "atk": 200
       }
     },
     {
-      "id": "chest_chaos_dagger",
+      "id": "chaos_dagger",
       "category": "dagger",
       "source": "chest",
       "jp": "カオスダガー",
@@ -2417,12 +2313,12 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "atk": 203,
-        "spd": 87
+        "atk": 140,
+        "spd": 60
       }
     },
     {
-      "id": "chest_chaos_throwing_blade",
+      "id": "chaos_throwing_blade",
       "category": "throwing_knife",
       "source": "chest",
       "jp": "カオス投刃",
@@ -2430,12 +2326,12 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "atk": 200,
-        "spd": 50
+        "atk": 160,
+        "spd": 40
       }
     },
     {
-      "id": "chest_chaos_axe",
+      "id": "chaos_axe",
       "category": "two_handed_axe",
       "source": "chest",
       "jp": "カオスアクス",
@@ -2443,11 +2339,11 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "atk": 324
+        "atk": 228
       }
     },
     {
-      "id": "chest_chaos_bow",
+      "id": "chaos_bow",
       "category": "bow",
       "source": "chest",
       "jp": "カオスボウ",
@@ -2455,12 +2351,12 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "atk": 234,
-        "spd": 52
+        "atk": 171,
+        "spd": 38
       }
     },
     {
-      "id": "chest_chaos_staff",
+      "id": "chaos_staff",
       "category": "staff",
       "source": "chest",
       "jp": "カオススタッフ",
@@ -2468,12 +2364,12 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "spi": 260,
-        "mp": 156
+        "spi": 200,
+        "mp": 120
       }
     },
     {
-      "id": "chest_chaos_shield",
+      "id": "chaos_shield",
       "category": "shield",
       "shieldSize": "large",
       "source": "chest",
@@ -2482,8 +2378,8 @@
       "can_mutate": false,
       "chestTier": 190,
       "stats": {
-        "hp": 540,
-        "def": 216
+        "hp": 400,
+        "def": 160
       }
     }
   ],

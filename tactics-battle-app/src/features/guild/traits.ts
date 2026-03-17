@@ -74,6 +74,6 @@ export const rollRandomTrait = (rng: () => number): AdventurerTraitId[] => {
 };
 
 export const hasTrait = (
-  traitIds: AdventurerTraitId[] | undefined,
+  traitIds: readonly string[] | undefined,
   traitId: AdventurerTraitId
 ): boolean => (traitIds ?? []).includes(traitId);

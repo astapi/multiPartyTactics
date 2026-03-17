@@ -1,10 +1,12 @@
 import { getDb } from "@/db/database";
+import { parseEquipmentStatsJson, toEquipmentStatsKey } from "@/game/equipment/equipmentStatsService";
 import type { EquipmentGrantRecord, EquipmentStackRecord } from "@/types/equipment";
 
 const mapStack = (row: any): EquipmentStackRecord => ({
   id: row.id,
   baseItemId: row.base_item_id,
   mutationPrefixId: row.mutation_prefix_id ?? null,
+  grantedStats: parseEquipmentStatsJson(row.granted_stats_json),
   quantity: row.quantity,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -27,51 +29,70 @@ export const equipmentInventoryRepository = {
     return rows.map(mapStack);
   },
 
-  async getStack(baseItemId: string, mutationPrefixId: string | null): Promise<EquipmentStackRecord | null> {
+  async getStack(
+    baseItemId: string,
+    mutationPrefixId: string | null,
+    grantedStats?: EquipmentGrantRecord["grantedStats"]
+  ): Promise<EquipmentStackRecord | null> {
     const db = await getDb();
     const mutationPrefixKey = toMutationPrefixKey(mutationPrefixId);
+    const statsKey = toEquipmentStatsKey(grantedStats);
     const row = await db.getFirstAsync<any>(
       `SELECT * FROM equipment_inventory_stacks
        WHERE base_item_id = ?
          AND mutation_prefix_key = ?
+         AND stats_key = ?
        LIMIT 1`,
-      [baseItemId, mutationPrefixKey]
+      [baseItemId, mutationPrefixKey, statsKey]
     );
     return row ? mapStack(row) : null;
   },
 
-  async addQuantity(baseItemId: string, mutationPrefixId: string | null, quantity: number): Promise<void> {
+  async addQuantity(
+    baseItemId: string,
+    mutationPrefixId: string | null,
+    quantity: number,
+    grantedStats?: EquipmentGrantRecord["grantedStats"]
+  ): Promise<void> {
     if (!Number.isFinite(quantity) || quantity <= 0) {
       throw new Error("addQuantity requires a positive quantity");
     }
     const db = await getDb();
     const mutationPrefixKey = toMutationPrefixKey(mutationPrefixId);
+    const statsKey = toEquipmentStatsKey(grantedStats);
+    const grantedStatsJson = statsKey ? JSON.stringify(grantedStats) : null;
     await db.runAsync(
       `INSERT INTO equipment_inventory_stacks
-        (base_item_id, mutation_prefix_id, mutation_prefix_key, quantity, created_at, updated_at)
-       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-       ON CONFLICT(base_item_id, mutation_prefix_key)
+        (base_item_id, mutation_prefix_id, mutation_prefix_key, stats_key, granted_stats_json, quantity, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ON CONFLICT(base_item_id, mutation_prefix_key, stats_key)
        DO UPDATE SET
          quantity = equipment_inventory_stacks.quantity + excluded.quantity,
          updated_at = CURRENT_TIMESTAMP`,
-      [baseItemId, mutationPrefixId, mutationPrefixKey, quantity]
+      [baseItemId, mutationPrefixId, mutationPrefixKey, statsKey, grantedStatsJson, quantity]
     );
   },
 
-  async consumeQuantity(baseItemId: string, mutationPrefixId: string | null, quantity: number): Promise<boolean> {
+  async consumeQuantity(
+    baseItemId: string,
+    mutationPrefixId: string | null,
+    quantity: number,
+    grantedStats?: EquipmentGrantRecord["grantedStats"]
+  ): Promise<boolean> {
     if (!Number.isFinite(quantity) || quantity <= 0) {
       throw new Error("consumeQuantity requires a positive quantity");
     }
     const db = await getDb();
-    const current = await this.getStack(baseItemId, mutationPrefixId);
+    const current = await this.getStack(baseItemId, mutationPrefixId, grantedStats);
     if (!current || current.quantity < quantity) return false;
     const nextQuantity = current.quantity - quantity;
     if (nextQuantity <= 0) {
       const mutationPrefixKey = toMutationPrefixKey(mutationPrefixId);
+      const statsKey = toEquipmentStatsKey(grantedStats);
       await db.runAsync(
         `DELETE FROM equipment_inventory_stacks
-         WHERE base_item_id = ? AND mutation_prefix_key = ?`,
-        [baseItemId, mutationPrefixKey]
+         WHERE base_item_id = ? AND mutation_prefix_key = ? AND stats_key = ?`,
+        [baseItemId, mutationPrefixKey, statsKey]
       );
       return true;
     }
@@ -93,17 +114,20 @@ export const equipmentInventoryRepository = {
 
     const db = await getDb();
     const mutationPrefixKey = toMutationPrefixKey(grant.mutationPrefixId);
+    const statsKey = toEquipmentStatsKey(grant.grantedStats);
+    const grantedStatsJson = statsKey ? JSON.stringify(grant.grantedStats) : null;
     await db.execAsync("BEGIN;");
     try {
       await db.runAsync(
         `INSERT INTO equipment_grants
-          (grant_key, source_type, base_item_id, mutation_prefix_id, quantity, context_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`,
+          (grant_key, source_type, base_item_id, mutation_prefix_id, granted_stats_json, quantity, context_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))`,
         [
           grant.grantKey,
           grant.sourceType,
           grant.baseItemId,
           grant.mutationPrefixId,
+          grantedStatsJson,
           grant.quantity,
           grant.contextJson,
           grant.createdAt ?? null,
@@ -112,13 +136,13 @@ export const equipmentInventoryRepository = {
 
       await db.runAsync(
         `INSERT INTO equipment_inventory_stacks
-          (base_item_id, mutation_prefix_id, mutation_prefix_key, quantity, created_at, updated_at)
-         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-         ON CONFLICT(base_item_id, mutation_prefix_key)
+          (base_item_id, mutation_prefix_id, mutation_prefix_key, stats_key, granted_stats_json, quantity, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT(base_item_id, mutation_prefix_key, stats_key)
          DO UPDATE SET
            quantity = equipment_inventory_stacks.quantity + excluded.quantity,
            updated_at = CURRENT_TIMESTAMP`,
-        [grant.baseItemId, grant.mutationPrefixId, mutationPrefixKey, grant.quantity]
+        [grant.baseItemId, grant.mutationPrefixId, mutationPrefixKey, statsKey, grantedStatsJson, grant.quantity]
       );
 
       await db.execAsync("COMMIT;");

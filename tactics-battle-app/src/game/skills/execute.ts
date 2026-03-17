@@ -159,14 +159,14 @@ export const executeSkill = (
         skill.powerStat === "spi"
           ? calculateMagicDamage(actor, attackTarget, perHitMultiplier, randomFactor)
           : calculatePhysicalDamage(actor, attackTarget, perHitMultiplier, randomFactor);
-      const dealt = applyDamage(attackTarget, dealtDamage);
-      damage += dealt;
+      applyDamage(attackTarget, dealtDamage);
+      damage += dealtDamage;
       hitCount += 1;
       resolvedTargetIds.add(attackTarget.id);
       hitResults.push({
         targetId: attackTarget.id,
         targetName: attackTarget.name,
-        damage: dealt,
+        damage: dealtDamage,
       });
     };
 

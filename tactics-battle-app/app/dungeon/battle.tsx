@@ -501,6 +501,7 @@ export default function BattleScreen() {
               sourceType: drop.reward.sourceType,
               baseItemId: drop.reward.baseItemId,
               mutationPrefixId: drop.reward.mutationPrefixId,
+              grantedStats: drop.reward.grantedStats,
               quantity: 1,
               contextJson: JSON.stringify({
                 dungeonId: resolvedDungeonId,

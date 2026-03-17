@@ -147,11 +147,17 @@ export type DungeonFloorExplorationProgressRecord = {
 
 export type DungeonPartyUiMode = "IDLE" | "EXPLORE" | "AUTO";
 
+export type DungeonReturnCondition =
+  | "ANY_MEMBER_DOWN"
+  | "INVENTORY_FULL"
+  | "BEFORE_BOSS"
+  | "UNTIL_WIPE_OR_CLEAR";
+
 export type DungeonPartyUiStateRecord = {
   partyId: string;
   dungeonId: string;
   selectedFloor: number | null;
-  stepCount: number;
+  returnCondition: DungeonReturnCondition;
   mode: DungeonPartyUiMode;
   autoRunCount: number;
   autoLootCount: number;

@@ -10,6 +10,8 @@ import { MIGRATION_010 } from "./migrations/010_shop_economy";
 import { MIGRATION_011 } from "./migrations/011_consumable_inventory";
 import { MIGRATION_012 } from "./migrations/012_crestoria_floor_cap";
 import { MIGRATION_013 } from "./migrations/013_tavern_and_character_traits";
+import { MIGRATION_014 } from "./migrations/014_equipment_instance_stats";
+import { MIGRATION_015 } from "./migrations/015_dungeon_party_ui_return_condition";
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DATABASE_NAME = "tactics_battle_v2.db";
@@ -76,12 +78,23 @@ export const initializeDatabase = async (): Promise<void> => {
     );
   }
 
+  const equipmentStackColumns = await db.getAllAsync<{ name: string }>(
+    "PRAGMA table_info(equipment_inventory_stacks)"
+  );
+  const equipmentStackColumnSet = new Set(equipmentStackColumns.map((column) => column.name));
+  if (!equipmentStackColumnSet.has("stats_key")) {
+    await db.execAsync(MIGRATION_014);
+  }
+
   const dungeonPartyUiColumns = await db.getAllAsync<{ name: string }>(
     "PRAGMA table_info(dungeon_party_ui_state)"
   );
   const dungeonPartyUiColumnSet = new Set(dungeonPartyUiColumns.map((column) => column.name));
   if (!dungeonPartyUiColumnSet.has("step_count")) {
     await db.execAsync(MIGRATION_008);
+  }
+  if (!dungeonPartyUiColumnSet.has("return_condition")) {
+    await db.execAsync(MIGRATION_015);
   }
 };
 

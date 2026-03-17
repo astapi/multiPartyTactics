@@ -44,6 +44,23 @@ export const normalizeEquipmentStats = (stats?: EquipmentStats): ResolvedEquipme
   mpRegen: Math.floor(stats?.mpRegen ?? 0),
 });
 
+export const toEquipmentStatsKey = (stats?: EquipmentStats | null): string => {
+  if (!stats) return "";
+  const normalized = normalizeEquipmentStats(stats);
+  const hasAnyValue = STAT_ORDER.some((key) => normalized[key] !== 0);
+  if (!hasAnyValue) return "";
+  return JSON.stringify(normalized);
+};
+
+export const parseEquipmentStatsJson = (value: unknown): EquipmentStats | null => {
+  if (typeof value !== "string" || value.length === 0) return null;
+  try {
+    return normalizeEquipmentStats(JSON.parse(value));
+  } catch {
+    return null;
+  }
+};
+
 export const sumEquipmentStats = (list: Array<EquipmentStats | undefined>): ResolvedEquipmentStats => {
   const out = { ...EMPTY_STATS };
   for (const raw of list) {
@@ -57,8 +74,10 @@ export const sumEquipmentStats = (list: Array<EquipmentStats | undefined>): Reso
 
 export const getEquipmentStatsByItem = (
   baseItemId: string,
-  _mutationPrefixId: string | null
+  _mutationPrefixId: string | null,
+  grantedStats?: EquipmentStats | null
 ): ResolvedEquipmentStats => {
+  if (grantedStats) return normalizeEquipmentStats(grantedStats);
   const item = getEquipmentById(baseItemId);
   return normalizeEquipmentStats(item.stats);
 };
@@ -88,7 +107,7 @@ export const computeCharacterDerivedStats = (
     (["weapon", "armor"] as const)
       .map((slot) => equippedBySlot[slot])
       .filter((entry): entry is CharacterEquipmentRecord => Boolean(entry))
-      .map((entry) => getEquipmentStatsByItem(entry.baseItemId, entry.mutationPrefixId))
+      .map((entry) => getEquipmentStatsByItem(entry.baseItemId, entry.mutationPrefixId, entry.grantedStats))
   );
   const total: ResolvedEquipmentStats = {
     hp: base.hp + bonus.hp,

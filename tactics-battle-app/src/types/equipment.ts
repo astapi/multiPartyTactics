@@ -74,6 +74,7 @@ export type EquipmentGrantSourceType =
 export type EquipmentReward = {
   baseItemId: string;
   mutationPrefixId: string | null;
+  grantedStats?: EquipmentStats | null;
   sourceType: Extract<EquipmentGrantSourceType, "MONSTER_DROP" | "TREASURE_CHEST">;
   grantKey: string;
   displayName: {
@@ -87,6 +88,7 @@ export type EquipmentStackRecord = {
   id: number;
   baseItemId: string;
   mutationPrefixId: string | null;
+  grantedStats?: EquipmentStats | null;
   quantity: number;
   createdAt: string;
   updatedAt: string;
@@ -97,6 +99,7 @@ export type CharacterEquipmentRecord = {
   slotType: EquipmentSlot;
   baseItemId: string;
   mutationPrefixId: string | null;
+  grantedStats?: EquipmentStats | null;
   equippedAt: string;
 };
 
@@ -105,6 +108,7 @@ export type EquipmentGrantRecord = {
   sourceType: EquipmentGrantSourceType;
   baseItemId: string;
   mutationPrefixId: string | null;
+  grantedStats?: EquipmentStats | null;
   quantity: number;
   contextJson: string;
   createdAt?: string;

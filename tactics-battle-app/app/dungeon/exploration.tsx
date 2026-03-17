@@ -14,6 +14,14 @@ import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { ExplorationSpeedMultiplier } from "@/constants/battleSpeed";
 import { ExplorationEvent, ExplorationResult } from "@/game/exploration";
 import {
+  calculateDungeonItemCapacity,
+  DEFAULT_DUNGEON_RETURN_CONDITION,
+  DEFAULT_DUNGEON_ITEM_CAPACITY,
+  hasAnyDownMember,
+  isPartyWiped,
+  normalizeDungeonReturnCondition,
+} from "@/game/explorationReturn";
+import {
   ExplorationSessionState,
   advanceExplorationStep,
   applyBossBattleResult,
@@ -24,15 +32,20 @@ import {
 import { useI18n } from "@/i18n";
 import { useBattleStore } from "@/stores/battleStore";
 import { useExplorationRunStore } from "@/stores/explorationRunStore";
-import type { BattleStatus } from "@/types/models";
+import type { BattleStatus, DungeonReturnCondition } from "@/types/models";
 import type { EquipmentReward } from "@/types/equipment";
 import { toPartyUnits } from "@/game/partyMapper";
 import { generateTimeSeed } from "@/utils/rng";
 
 const HERO_IMAGE = require("@/assets/images/backgrounds/dungeon_exploration.jpg");
 const EXPLORATION_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
-const DEFAULT_EXPLORATION_STEP_COUNT = 40;
-const MAX_EXPLORATION_STEP_COUNT = 100;
+const EXPLORATION_SAFETY_STEP_LIMIT = 9999;
+
+type ExplorationEndReason =
+  | "ANY_MEMBER_DOWN"
+  | "INVENTORY_FULL"
+  | "BEFORE_BOSS"
+  | "PARTY_WIPED";
 
 const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   LOG: "⋄",
@@ -131,15 +144,18 @@ type ExplorationResultItem = {
 export default function ExplorationScreen() {
   const router = useRouter();
   const { locale, t } = useI18n();
-  const params = useLocalSearchParams<{ dungeonId?: string; floor?: string; partyId?: string; steps?: string }>();
+  const params = useLocalSearchParams<{
+    dungeonId?: string;
+    floor?: string;
+    partyId?: string;
+    returnCondition?: string;
+  }>();
 
   const resolvedDungeonId = params.dungeonId ?? DUNGEONS[0]?.id ?? "crestoria_dungeon_1_200";
   const floor = Math.max(1, Number.parseInt(params.floor ?? "1", 10) || 1);
   const resolvedPartyId = params.partyId ?? DEFAULT_PARTY_ID;
-  const requestedSteps = Number.parseInt(params.steps ?? String(DEFAULT_EXPLORATION_STEP_COUNT), 10);
-  const explorationStepCount = Math.min(
-    MAX_EXPLORATION_STEP_COUNT,
-    Math.max(1, Number.isFinite(requestedSteps) ? requestedSteps : DEFAULT_EXPLORATION_STEP_COUNT)
+  const returnCondition: DungeonReturnCondition = normalizeDungeonReturnCondition(
+    params.returnCondition ?? DEFAULT_DUNGEON_RETURN_CONDITION
   );
 
   const [nextEncounterIndex, setNextEncounterIndex] = useState(0);
@@ -155,8 +171,10 @@ export default function ExplorationScreen() {
   const processedBattlePartySyncSessionIdsRef = useRef<Set<string>>(new Set());
   const hasAppliedFloorClearRef = useRef(false);
   const awaitingBossBattleReturnRef = useRef(false);
+  const [endReason, setEndReason] = useState<ExplorationEndReason | null>(null);
   const [resultItems, setResultItems] = useState<ExplorationResultItem[]>([]);
   const [resultGoldTotal, setResultGoldTotal] = useState(0);
+  const [itemCapacity, setItemCapacity] = useState(DEFAULT_DUNGEON_ITEM_CAPACITY);
   const latestBattleSessionId = useBattleStore((s) => s.latestBattleSessionId);
   const latestBattleExplorationSeed = useBattleStore((s) => s.latestBattleExplorationSeed);
   const latestBattleGold = useBattleStore((s) => s.latestBattleGold);
@@ -219,7 +237,7 @@ export default function ExplorationScreen() {
           dungeon,
           floor,
           seed,
-          config: { stepsPerRun: explorationStepCount },
+          config: { stepsPerRun: EXPLORATION_SAFETY_STEP_LIMIT },
           persistedProgress: persistedProgress
             ? [
                 {
@@ -249,6 +267,8 @@ export default function ExplorationScreen() {
         setResultGoldTotal(0);
         setNextEncounterIndex(0);
         setIsPaused(false);
+        setEndReason(null);
+        setItemCapacity(calculateDungeonItemCapacity(partyRecords));
       } catch (err) {
         console.error("Failed to initialize exploration:", err);
         if (mounted) {
@@ -262,7 +282,7 @@ export default function ExplorationScreen() {
     return () => {
       mounted = false;
     };
-  }, [explorationStepCount, floor, resolvedDungeonId, resolvedPartyId, setPendingExplorationPartySync, startExplorationRun]);
+  }, [floor, resolvedDungeonId, resolvedPartyId, setPendingExplorationPartySync, startExplorationRun]);
 
   useFocusEffect(
     useCallback(() => {
@@ -358,6 +378,14 @@ export default function ExplorationScreen() {
   }, [latestBattleDrops, latestBattleExplorationSeed, latestBattleGold, latestBattleSessionId, result]);
 
   useEffect(() => {
+    if (endReason) return;
+    if (returnCondition !== "INVENTORY_FULL") return;
+    if (resultItems.length < itemCapacity) return;
+    setIsPaused(true);
+    setEndReason("INVENTORY_FULL");
+  }, [endReason, itemCapacity, resultItems.length, returnCondition]);
+
+  useEffect(() => {
     if (!result) return;
     if (!latestBattlePartySync) return;
     if (latestBattlePartySync.explorationSeed !== result.seed) return;
@@ -410,6 +438,7 @@ export default function ExplorationScreen() {
               sourceType: reward.sourceType,
               baseItemId: reward.baseItemId,
               mutationPrefixId: reward.mutationPrefixId,
+              grantedStats: reward.grantedStats,
               quantity: 1,
               contextJson: JSON.stringify({
                 dungeonId: resolvedDungeonId,
@@ -447,6 +476,7 @@ export default function ExplorationScreen() {
 
   useEffect(() => {
     if (!session || !result) return;
+    if (endReason) return;
     if (session.status !== "AWAITING_BOSS_RESULT") return;
     if (!awaitingBossBattleReturnRef.current) return;
     if (latestBattleExplorationSeed !== result.seed) return;
@@ -457,7 +487,29 @@ export default function ExplorationScreen() {
       if (!prev) return prev;
       return applyBossBattleResult(prev, latestBattleStatus as Exclude<BattleStatus, "IDLE" | "IN_PROGRESS">);
     });
-  }, [latestBattleExplorationSeed, latestBattleStatus, result, session]);
+  }, [endReason, latestBattleExplorationSeed, latestBattleStatus, result, session]);
+
+  useEffect(() => {
+    if (endReason) return;
+    if (explorationRunMembers.length === 0) return;
+    if (returnCondition === "ANY_MEMBER_DOWN" && hasAnyDownMember(explorationRunMembers)) {
+      setIsPaused(true);
+      setEndReason("ANY_MEMBER_DOWN");
+      return;
+    }
+    if (isPartyWiped(explorationRunMembers)) {
+      setIsPaused(true);
+      setEndReason("PARTY_WIPED");
+    }
+  }, [endReason, explorationRunMembers, returnCondition]);
+
+  useEffect(() => {
+    if (endReason) return;
+    if (returnCondition !== "BEFORE_BOSS") return;
+    if (session?.status !== "AWAITING_BOSS_DECISION") return;
+    setIsPaused(true);
+    setEndReason("BEFORE_BOSS");
+  }, [endReason, returnCondition, session?.status]);
 
   useEffect(() => {
     if (!result || isNavigating) return;
@@ -555,17 +607,14 @@ export default function ExplorationScreen() {
     () => (result ? result.events.filter((event) => event.type === "TREASURE").length : 0),
     [result]
   );
-  const stepProgressRatio = useMemo(() => {
-    if (!result || result.totalTicks <= 0) return 0;
-    return Math.max(0, Math.min(1, currentTick / result.totalTicks));
-  }, [currentTick, result]);
   const currentFloor = session?.currentFloor ?? floor;
   const currentFloorProgress = session?.floorProgressMap[currentFloor];
   const currentFloorExplorationPercent = currentFloorProgress?.explorationPercent ?? 0;
   const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
   const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
   const isAwaitingBossDecision = session?.status === "AWAITING_BOSS_DECISION";
-  const isExplorationResultVisible = session?.status === "RUN_COMPLETE" || session?.status === "FLOOR_CLEARED";
+  const isExplorationResultVisible =
+    endReason !== null || session?.status === "RUN_COMPLETE" || session?.status === "FLOOR_CLEARED";
   const isBossDecisionModalVisible = isFocused && !isNavigating && isAwaitingBossDecision && !isExplorationResultVisible;
   const isExplorationResultModalVisible = isFocused && !isNavigating && !!isExplorationResultVisible;
   const pendingBossEncounter = session?.pendingBossEncounter ?? null;
@@ -592,6 +641,25 @@ export default function ExplorationScreen() {
       })),
     [explorationRunMembers]
   );
+  const inventoryUsageText = `${resultItems.length}/${itemCapacity}`;
+  const resultTitle =
+    session?.status === "FLOOR_CLEARED"
+      ? "階層探索完了"
+      : endReason === "ANY_MEMBER_DOWN"
+        ? "戦闘不能で帰還"
+        : endReason === "INVENTORY_FULL"
+          ? "持ち物が満杯になった"
+          : endReason === "BEFORE_BOSS"
+            ? "ボス前で帰還"
+            : endReason === "PARTY_WIPED"
+              ? "全滅で探索終了"
+              : "探索リザルト";
+  const resultSubtitle =
+    session?.status === "FLOOR_CLEARED"
+      ? `B${floor}F / クリア`
+      : endReason === "INVENTORY_FULL"
+        ? `B${currentFloor}F / ${inventoryUsageText}`
+        : `B${currentFloor}F / ${currentTick} step`;
 
   useEffect(() => {
     if (!isFocused) return;
@@ -683,9 +751,14 @@ export default function ExplorationScreen() {
               {`現在 B${currentFloor}F`}
             </Text>
             <View style={styles.heroProgressWrap}>
-              <Text style={styles.heroProgressLabel}>{`${currentTick} / ${result.totalTicks} steps`}</Text>
+              <Text style={styles.heroProgressLabel}>{t(`dungeon.ui.returnCondition.${returnCondition}` as any)}</Text>
               <View style={styles.heroProgressTrack}>
-                <View style={[styles.heroProgressFill, { width: `${Math.floor(stepProgressRatio * 100)}%` }]} />
+                <View
+                  style={[
+                    styles.heroProgressFill,
+                    { width: `${Math.floor((Math.min(resultItems.length, itemCapacity) / itemCapacity) * 100)}%` },
+                  ]}
+                />
               </View>
             </View>
             <View style={styles.floorStatusRow}>
@@ -719,12 +792,12 @@ export default function ExplorationScreen() {
         <View style={styles.footerMeta}>
           <View style={styles.footerMetaLeft}>
             <Package size={18} color="#666666" />
-            <Text style={styles.footerLeft}>Treasure</Text>
+            <Text style={styles.footerLeft}>Inventory</Text>
           </View>
           <View style={styles.footerMetaRight}>
-            <Text style={styles.footerCountCurrent}>{String(treasureCount)}</Text>
+            <Text style={styles.footerCountCurrent}>{String(resultItems.length)}</Text>
             <Text style={styles.footerCountSlash}>/</Text>
-            <Text style={styles.footerCountMax}>{String(totalTreasureCount)}</Text>
+            <Text style={styles.footerCountMax}>{String(itemCapacity)}</Text>
           </View>
         </View>
         <View style={styles.actionSection}>
@@ -789,10 +862,10 @@ export default function ExplorationScreen() {
           <View style={styles.resultModalBackdrop}>
             <View style={styles.resultModalCard}>
               <Text style={styles.resultModalTitle}>
-                {session?.status === "FLOOR_CLEARED" ? "階層探索完了" : "探索リザルト"}
+                {resultTitle}
               </Text>
               <Text style={styles.resultModalSub}>
-                {`B${floor}F / ${currentTick} step`}
+                {resultSubtitle}
               </Text>
 
               <Text style={styles.resultSectionTitle}>{t("battle.result.goldTitle")}</Text>
