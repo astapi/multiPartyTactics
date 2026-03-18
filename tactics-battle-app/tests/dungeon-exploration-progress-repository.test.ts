@@ -132,4 +132,20 @@ describe("dungeonExplorationProgressRepository", () => {
     expect(summary.stairsDiscoveredFloors).toBe(2);
     expect(summary.isBundleCleared).toBe(false);
   });
+
+  it("bundle clear is determined by boss floor stairs discovery", async () => {
+    await dungeonExplorationProgressRepository.upsertMany([
+      { dungeonId: "d3", floor: 1, explorationPercent: 100, stairsDiscovered: true },
+      { dungeonId: "d3", floor: 2, explorationPercent: 100, stairsDiscovered: true },
+      { dungeonId: "d3", floor: 3, explorationPercent: 100, stairsDiscovered: true },
+    ]);
+
+    const summary = await dungeonExplorationProgressRepository.getBundleSummary({
+      dungeonId: "d3",
+      bundleStart: 1,
+      bundleBoss: 3,
+    });
+
+    expect(summary.isBundleCleared).toBe(true);
+  });
 });

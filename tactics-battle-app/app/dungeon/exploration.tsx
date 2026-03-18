@@ -40,7 +40,6 @@ import { generateTimeSeed } from "@/utils/rng";
 
 const HERO_IMAGE = parchmentImages.dungeonEncounter;
 const EXPLORATION_SCREEN_OPTIONS = { headerShown: false, animation: "none" as const };
-const EXPLORATION_SAFETY_STEP_LIMIT = 9999;
 
 type ExplorationEndReason =
   | "ANY_MEMBER_DOWN"
@@ -55,10 +54,8 @@ const EVENT_PREFIX: Record<ExplorationEvent["type"], string> = {
   TREASURE: "✦",
   TRAP: "⚠",
   STAIRS_DISCOVERED: "⇣",
-  STAIRS_REACHED: "⇣",
   SHORTCUT: "➜",
   FLOOR_DESCEND: "↓",
-  FLOOR_COMPLETE: "✓",
   FLOOR_CLEAR: "★",
 };
 
@@ -111,17 +108,11 @@ const formatEvent = (
   if (event.type === "STAIRS_DISCOVERED") {
     return `B${stairsToFloor}Fへの下り階段を発見`;
   }
-  if (event.type === "STAIRS_REACHED") {
-    return `B${stairsToFloor}Fへの下り階段に到着`;
-  }
   if (event.type === "SHORTCUT") {
     return `発見済み階段でB${event.payload?.toFloor ?? "?"}Fへ移動 (-${event.payload?.stepCost ?? 0}step)`;
   }
   if (event.type === "FLOOR_DESCEND") {
     return `B${event.payload?.toFloor ?? "?"}Fへ降りた`;
-  }
-  if (event.type === "FLOOR_COMPLETE") {
-    return `B${event.floor ?? "?"}F の探索度が ${event.payload?.explorationPercent ?? 100}% に到達`;
   }
   if (event.type === "FLOOR_CLEAR") {
     return "階層探索を完了した";
@@ -240,7 +231,6 @@ export default function ExplorationScreen() {
           dungeon,
           floor,
           seed,
-          config: { stepsPerRun: EXPLORATION_SAFETY_STEP_LIMIT },
           persistedProgress: persistedProgress
             ? [
                 {
@@ -616,8 +606,7 @@ export default function ExplorationScreen() {
   const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
   const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
   const isAwaitingBossDecision = session?.status === "AWAITING_BOSS_DECISION";
-  const isExplorationResultVisible =
-    endReason !== null || session?.status === "RUN_COMPLETE" || session?.status === "FLOOR_CLEARED";
+  const isExplorationResultVisible = endReason !== null || session?.status === "FLOOR_CLEARED";
   const isBossDecisionModalVisible = isFocused && !isNavigating && isAwaitingBossDecision && !isExplorationResultVisible;
   const isExplorationResultModalVisible = isFocused && !isNavigating && !!isExplorationResultVisible;
   const pendingBossEncounter = session?.pendingBossEncounter ?? null;
@@ -649,7 +638,7 @@ export default function ExplorationScreen() {
   const inventoryUsageText = `${resultItems.length}/${itemCapacity}`;
   const logTitle = locale === "ja" ? "探索記録" : "Exploration Log";
   const explorationStateText =
-    session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"
+    session?.status === "FLOOR_CLEARED"
       ? locale === "ja"
         ? "探索完了"
         : "Exploration Complete"
@@ -773,7 +762,7 @@ export default function ExplorationScreen() {
               <Pressable
                 style={[styles.autoBadge, isPaused ? styles.autoBadgePaused : null]}
                 onPress={() => setIsPaused((prev) => !prev)}
-                disabled={session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"}
+                disabled={session?.status === "FLOOR_CLEARED"}
               >
                 {isPaused ? <Play size={11} color={parchment.inkSoft} /> : <Pause size={11} color={parchment.inkSoft} />}
                 <Text style={styles.autoBadgeText}>{isPaused ? "PAUSED" : "AUTO"}</Text>
@@ -883,7 +872,11 @@ export default function ExplorationScreen() {
               </Pressable>
               <Pressable
                 style={styles.decisionTextButton}
-                onPress={() => setSession((prev) => (prev ? applyBossEncounterDecision(prev, "CONTINUE") : prev))}
+                onPress={() => {
+                  setSession((prev) => (prev ? applyBossEncounterDecision(prev, "CONTINUE") : prev));
+                  setIsPaused(true);
+                  setEndReason("BEFORE_BOSS");
+                }}
               >
                 <Text style={styles.decisionTextButtonSecondary}>見送る</Text>
               </Pressable>

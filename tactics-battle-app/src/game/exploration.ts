@@ -28,10 +28,8 @@ export type ExplorationEventType =
   | "TREASURE"
   | "TRAP"
   | "STAIRS_DISCOVERED"
-  | "STAIRS_REACHED"
   | "SHORTCUT"
   | "FLOOR_DESCEND"
-  | "FLOOR_COMPLETE"
   | "FLOOR_CLEAR";
 export type ExplorationMessageId =
   | "exploration.event.log.cautious_advance"
@@ -43,10 +41,8 @@ export type ExplorationMessageId =
   | "exploration.event.treasure.found_chest"
   | "exploration.event.trap.triggered"
   | "exploration.event.stairs.discovered"
-  | "exploration.event.stairs.reached"
   | "exploration.event.shortcut.used"
   | "exploration.event.floor.descend"
-  | "exploration.event.floor.complete"
   | "exploration.event.floor.clear";
 
 export type ExplorationEvent = {

@@ -1,4 +1,3 @@
-import difficultyConfig from "@/data/difficultyConfig.json";
 import { DungeonOption } from "@/constants/dungeons";
 import { Unit } from "@/game/battle";
 import { getDungeonBossFloors } from "@/game/dungeonBundles";
@@ -20,20 +19,13 @@ export type ExplorationSessionStatus =
   | "RUNNING"
   | "AWAITING_BOSS_DECISION"
   | "AWAITING_BOSS_RESULT"
-  | "RUN_COMPLETE"
   | "FLOOR_CLEARED";
 
 export type BossEncounterDecision = "FIGHT" | "CONTINUE";
 export type BossBattleOutcome = "WIN" | "LOSE" | "DRAW";
 
 export type ExplorationSessionConfig = {
-  stepsPerRun: number;
-  stairsDiscoveryThresholdPercent: number;
-  fullExplorationPercent: number;
   explorationPercentGainPerStep: number;
-  shortcutStepCostPerDiscoveredFloor: number;
-  discoveredStairsArrivalMinSteps: number;
-  discoveredStairsArrivalMaxSteps: number;
 };
 
 export type ExplorationSessionState = {
@@ -43,32 +35,19 @@ export type ExplorationSessionState = {
   config: ExplorationSessionConfig;
   currentFloor: number;
   currentStep: number;
-  totalSteps: number;
   status: ExplorationSessionStatus;
   events: ExplorationEvent[];
   encounterTicks: number[];
   encounters: EncounterResult[];
   pendingBossEncounter: EncounterResult | null;
   floorProgressMap: Record<number, ExplorationFloorProgress>;
-  stairsReachedThisRunMap: Record<number, boolean>;
   floorStepsThisRunMap: Record<number, number>;
-  undiscoveredStairsArrivalTargetMap: Record<number, number>;
-  discoveredStairsArrivalTargetMap: Record<number, number>;
-  specialBossArrivalTargetMap: Record<number, number>;
   bossEncounterOfferedThisRunMap: Record<number, boolean>;
 };
 
 const DEFAULT_CONFIG: ExplorationSessionConfig = {
-  stepsPerRun: difficultyConfig.exploration.maxTicks,
-  stairsDiscoveryThresholdPercent: 40,
-  fullExplorationPercent: 100,
   explorationPercentGainPerStep: 0.4,
-  shortcutStepCostPerDiscoveredFloor: 2,
-  discoveredStairsArrivalMinSteps: 3,
-  discoveredStairsArrivalMaxSteps: 20,
 };
-
-const EARLY_STAIRS_DISCOVERY_START_PERCENT = 30;
 
 const mixSeed32 = (value: number): number => {
   let x = value >>> 0;
@@ -112,9 +91,8 @@ export const isStairsDiscoveredForFloor = (progress: Pick<ExplorationFloorProgre
   progress.stairsDiscovered;
 
 export const isFloorFullyExplored = (
-  progress: Pick<ExplorationFloorProgress, "explorationPercent">,
-  fullPercent = DEFAULT_CONFIG.fullExplorationPercent
-): boolean => progress.explorationPercent >= fullPercent;
+  progress: Pick<ExplorationFloorProgress, "explorationPercent">
+): boolean => progress.explorationPercent >= 100;
 
 const appendEvent = (state: ExplorationSessionState, event: ExplorationEvent): ExplorationSessionState => ({
   ...state,
@@ -131,62 +109,6 @@ const appendEncounter = (
   encounters: [...state.encounters, encounter],
 });
 
-export const getDiscoveredStairsArrivalMaxSteps = (params: {
-  explorationPercent: number;
-  config: Pick<
-    ExplorationSessionConfig,
-    "stairsDiscoveryThresholdPercent" | "discoveredStairsArrivalMinSteps" | "discoveredStairsArrivalMaxSteps"
-  >;
-}): number => {
-  const minSteps = Math.max(1, Math.floor(params.config.discoveredStairsArrivalMinSteps));
-  const defaultMaxSteps = Math.max(minSteps, Math.floor(params.config.discoveredStairsArrivalMaxSteps));
-  const threshold = Math.max(0, params.config.stairsDiscoveryThresholdPercent);
-  const explorationPercent = clampPercent(params.explorationPercent);
-  if (explorationPercent < threshold + 10) return defaultMaxSteps;
-  const reduction = Math.floor((explorationPercent - threshold) / 10) + 1;
-  return Math.max(minSteps, defaultMaxSteps - reduction);
-};
-
-const sampleDiscoveredStairsArrivalTarget = (
-  state: ExplorationSessionState,
-  floor: number
-): number => {
-  const minSteps = Math.max(1, Math.floor(state.config.discoveredStairsArrivalMinSteps));
-  const maxSteps = getDiscoveredStairsArrivalMaxSteps({
-    explorationPercent: getFloorProgress(state, floor).explorationPercent,
-    config: state.config,
-  });
-  const rng = createSeededRng((state.seed + floor * 7919 + state.currentFloor * 104729 + state.dungeon.floors * 131071) >>> 0);
-  const span = maxSteps - minSteps + 1;
-  return minSteps + Math.floor(rng() * span);
-};
-
-const sampleUndiscoveredStairsArrivalTarget = (
-  state: ExplorationSessionState,
-  floor: number
-): number => {
-  const maxSteps = getDiscoveredStairsArrivalMaxSteps({
-    explorationPercent: getFloorProgress(state, floor).explorationPercent,
-    config: state.config,
-  });
-  const rng = createSeededRng((state.seed + floor * 4001 + state.currentFloor * 4507 + state.dungeon.floors * 5003) >>> 0);
-  return 1 + Math.floor(rng() * maxSteps);
-};
-
-const resolveStatusAfterStepBudget = (state: ExplorationSessionState): ExplorationSessionState => {
-  if (
-    state.status === "FLOOR_CLEARED" ||
-    state.status === "AWAITING_BOSS_DECISION" ||
-    state.status === "AWAITING_BOSS_RESULT"
-  ) {
-    return state;
-  }
-  if (state.currentStep >= state.totalSteps) {
-    return { ...state, status: "RUN_COMPLETE" };
-  }
-  return state;
-};
-
 type CreateParams = {
   dungeon: DungeonOption;
   party: Unit[];
@@ -197,9 +119,12 @@ type CreateParams = {
 };
 
 export const createExplorationSession = (params: CreateParams): ExplorationSessionState => {
-  const config: ExplorationSessionConfig = {
+  const mergedConfig: ExplorationSessionConfig = {
     ...DEFAULT_CONFIG,
     ...(params.config ?? {}),
+  };
+  const config: ExplorationSessionConfig = {
+    explorationPercentGainPerStep: Math.max(0.01, mergedConfig.explorationPercentGainPerStep),
   };
   const floor = Math.max(1, Math.min(params.dungeon.floors, Math.floor(params.floor)));
   const persisted = (params.persistedProgress ?? []).find((row) => row.floor === floor);
@@ -211,7 +136,6 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
     config,
     currentFloor: floor,
     currentStep: 0,
-    totalSteps: Math.max(1, Math.floor(config.stepsPerRun)),
     status: "RUNNING",
     events: [],
     encounterTicks: [],
@@ -220,15 +144,11 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
     floorProgressMap: {
       [floor]: makeProgressRecord(floor, persisted),
     },
-    stairsReachedThisRunMap: {},
     floorStepsThisRunMap: {},
-    undiscoveredStairsArrivalTargetMap: {},
-    discoveredStairsArrivalTargetMap: {},
-    specialBossArrivalTargetMap: {},
     bossEncounterOfferedThisRunMap: {},
   };
 
-  return resolveStatusAfterStepBudget(state);
+  return state;
 };
 
 const pushStepEvent = (
@@ -245,9 +165,6 @@ const pushStepEvent = (
 
 export const advanceExplorationStep = (state: ExplorationSessionState): ExplorationSessionState => {
   if (state.status !== "RUNNING") return state;
-  if (state.currentStep >= state.totalSteps) {
-    return { ...state, status: "RUN_COMPLETE" };
-  }
 
   const nextTick = state.currentStep + 1;
   const floor = state.currentFloor;
@@ -279,104 +196,12 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
     rng,
   });
 
-  const hasNextFloor = floor < state.dungeon.floors;
-  const canProcessStairs = hasNextFloor && !isBossGateFloor(state, floor);
-  const stairsToFloor = hasNextFloor ? floor + 1 : undefined;
-  const hasReachedStairsThisRun = state.stairsReachedThisRunMap[floor] ?? false;
-  const isDiscoveredFloor = prevFloorProgress.stairsDiscovered;
-  let nextUndiscoveredArrivalTargetMap = nextState.undiscoveredStairsArrivalTargetMap;
-  if (
-    canProcessStairs &&
-    !isDiscoveredFloor &&
-    !hasReachedStairsThisRun &&
-    nextFloorProgress.explorationPercent > EARLY_STAIRS_DISCOVERY_START_PERCENT &&
-    nextUndiscoveredArrivalTargetMap[floor] === undefined
-  ) {
-    nextUndiscoveredArrivalTargetMap = {
-      ...nextUndiscoveredArrivalTargetMap,
-      [floor]: (nextState.floorStepsThisRunMap[floor] ?? 0) + sampleUndiscoveredStairsArrivalTarget(nextState, floor),
-    };
-    nextState = {
-      ...nextState,
-      undiscoveredStairsArrivalTargetMap: nextUndiscoveredArrivalTargetMap,
-    };
-  }
-  const undiscoveredArrivalTarget = nextUndiscoveredArrivalTargetMap[floor];
-  let nextDiscoveredArrivalTargetMap = nextState.discoveredStairsArrivalTargetMap;
-  if (
-    canProcessStairs &&
-    isDiscoveredFloor &&
-    !hasReachedStairsThisRun &&
-    nextDiscoveredArrivalTargetMap[floor] === undefined
-  ) {
-    nextDiscoveredArrivalTargetMap = {
-      ...nextDiscoveredArrivalTargetMap,
-      [floor]: sampleDiscoveredStairsArrivalTarget(state, floor),
-    };
-    nextState = {
-      ...nextState,
-      discoveredStairsArrivalTargetMap: nextDiscoveredArrivalTargetMap,
-    };
-  }
-  const discoveredArrivalTarget = nextDiscoveredArrivalTargetMap[floor];
-  const reachedStairs =
-    canProcessStairs &&
-    !hasReachedStairsThisRun &&
-    (isDiscoveredFloor
-      ? (nextState.floorStepsThisRunMap[floor] ?? 0) >=
-        (discoveredArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps)
-      : undiscoveredArrivalTarget !== undefined
-        ? (nextState.floorStepsThisRunMap[floor] ?? 0) >= undiscoveredArrivalTarget
-        : nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent);
-  let stairsEvent: ExplorationEvent | null = null;
-  if (reachedStairs) {
-    const isFirstDiscovery = !prevFloorProgress.stairsDiscovered;
-    if (isFirstDiscovery) {
-      nextFloorProgress = { ...nextFloorProgress, stairsDiscovered: true };
-      nextState = withFloorProgress(nextState, nextFloorProgress);
-      stairsEvent = {
-        tick: nextTick,
-        type: "STAIRS_DISCOVERED",
-        floor,
-        messageId: "exploration.event.stairs.discovered",
-        payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor: stairsToFloor },
-      };
-    } else {
-      stairsEvent = {
-        tick: nextTick,
-        type: "STAIRS_REACHED",
-        floor,
-        messageId: "exploration.event.stairs.reached",
-        payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor: stairsToFloor },
-      };
-    }
-  }
-
-  let nextSpecialBossArrivalTargetMap = nextState.specialBossArrivalTargetMap;
-  const canSampleSpecialBossArrivalTarget =
-    isBossGateFloor(state, floor) &&
-    nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
-    !nextFloorProgress.stairsDiscovered &&
-    !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&
-    nextSpecialBossArrivalTargetMap[floor] === undefined;
-  if (canSampleSpecialBossArrivalTarget) {
-    nextSpecialBossArrivalTargetMap = {
-      ...nextSpecialBossArrivalTargetMap,
-      [floor]: sampleDiscoveredStairsArrivalTarget(nextState, floor),
-    };
-    nextState = {
-      ...nextState,
-      specialBossArrivalTargetMap: nextSpecialBossArrivalTargetMap,
-    };
-  }
-  const specialBossArrivalTarget = nextSpecialBossArrivalTargetMap[floor];
-
   const shouldOfferSpecialBossEncounter =
     isBossGateFloor(state, floor) &&
-    nextFloorProgress.explorationPercent >= state.config.stairsDiscoveryThresholdPercent &&
+    nextFloorProgress.explorationPercent >= 100 &&
     !nextFloorProgress.stairsDiscovered &&
     !(state.bossEncounterOfferedThisRunMap[floor] ?? false) &&
-    (nextState.floorStepsThisRunMap[floor] ?? 0) >= (specialBossArrivalTarget ?? state.config.discoveredStairsArrivalMinSteps);
+    !state.pendingBossEncounter;
   if (shouldOfferSpecialBossEncounter) {
     const bossEncounter = createBossEncounter({
       dungeonId: state.dungeon.id,
@@ -399,38 +224,40 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
         [floor]: true,
       },
     };
-    return resolveStatusAfterStepBudget(nextState);
+    return nextState;
   }
 
-  if (stairsEvent) {
-    nextState = appendEvent(nextState, stairsEvent);
-    nextState = {
-      ...nextState,
-      stairsReachedThisRunMap: {
-        ...nextState.stairsReachedThisRunMap,
-        [floor]: true,
-      },
-    };
-    return resolveStatusAfterStepBudget(nextState);
-  }
-
-  const justCompletedFloor =
-    prevFloorProgress.explorationPercent < state.config.fullExplorationPercent &&
-    nextFloorProgress.explorationPercent >= state.config.fullExplorationPercent;
-  if (justCompletedFloor) {
+  const isNormalFloorClear =
+    !isBossGateFloor(state, floor) &&
+    prevFloorProgress.explorationPercent < 100 &&
+    nextFloorProgress.explorationPercent >= 100 &&
+    !prevFloorProgress.stairsDiscovered;
+  if (isNormalFloorClear) {
+    const toFloor = floor < state.dungeon.floors ? floor + 1 : undefined;
+    nextFloorProgress = { ...nextFloorProgress, stairsDiscovered: true };
+    nextState = withFloorProgress(nextState, nextFloorProgress);
     nextState = appendEvent(nextState, {
       tick: nextTick,
-      type: "FLOOR_COMPLETE",
+      type: "STAIRS_DISCOVERED",
       floor,
-      messageId: "exploration.event.floor.complete",
-      payload: { explorationPercent: nextFloorProgress.explorationPercent },
+      messageId: "exploration.event.stairs.discovered",
+      payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor },
     });
-    return resolveStatusAfterStepBudget(nextState);
+    nextState = appendEvent(nextState, {
+      tick: nextTick,
+      type: "FLOOR_CLEAR",
+      floor,
+      messageId: "exploration.event.floor.clear",
+    });
+    return {
+      ...nextState,
+      status: "FLOOR_CLEARED",
+    };
   }
 
   nextState = pushStepEvent(nextState, rolled.event, rolled.encounter);
 
-  return resolveStatusAfterStepBudget(nextState);
+  return nextState;
 };
 
 export const applyBossEncounterDecision = (
@@ -441,11 +268,11 @@ export const applyBossEncounterDecision = (
     return state;
   }
   if (decision === "CONTINUE") {
-    return resolveStatusAfterStepBudget({
+    return {
       ...state,
       status: "RUNNING",
       pendingBossEncounter: null,
-    });
+    };
   }
   return {
     ...state,
@@ -460,11 +287,11 @@ export const applyBossBattleResult = (
   if (state.status !== "AWAITING_BOSS_RESULT") return state;
 
   if (outcome !== "WIN") {
-    return resolveStatusAfterStepBudget({
+    return {
       ...state,
       status: "RUNNING",
       pendingBossEncounter: null,
-    });
+    };
   }
 
   const floor = state.currentFloor;
@@ -506,5 +333,5 @@ export const toExplorationResult = (state: ExplorationSessionState): Exploration
   events: state.events,
   encounterTicks: state.encounterTicks,
   encounters: state.encounters,
-  totalTicks: state.totalSteps,
+  totalTicks: state.currentStep,
 });

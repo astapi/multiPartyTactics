@@ -120,7 +120,7 @@ export const dungeonExplorationProgressRepository = {
         fullyExploredFloors += 1;
       }
     }
-    const bossProgress = map.get(params.bundleBoss)?.explorationPercent ?? 0;
+    const bossProgress = map.get(params.bundleBoss);
     return {
       dungeonId: params.dungeonId,
       bundleStartFloor: params.bundleStart,
@@ -128,7 +128,7 @@ export const dungeonExplorationProgressRepository = {
       currentReachableFloor,
       fullyExploredFloors,
       stairsDiscoveredFloors,
-      isBundleCleared: bossProgress >= 100,
+      isBundleCleared: bossProgress?.stairsDiscovered ?? false,
     };
   },
 };
