@@ -1,4 +1,5 @@
 import { Image, ImageSourcePropType, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { parchment, parchmentShadow } from "@/theme/parchment";
 
 export type PartyStatusStripMember = {
   id: string;
@@ -98,14 +99,16 @@ export const PartyStatusStrip = ({ members, containerStyle }: Props) => (
 
 const styles = StyleSheet.create({
   partySection: {
+    ...parchmentShadow,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "flex-start",
-    borderTopWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 10,
-    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surface,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
   },
   partyColumn: {
     flex: 1,
@@ -122,15 +125,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   partyPortraitClip: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
+    width: 28,
+    height: 28,
+    borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#f1f1f1",
+    backgroundColor: parchment.surfaceStrong,
     alignItems: "center",
     justifyContent: "flex-start",
     borderWidth: 1,
-    borderColor: "#d9d9d9",
+    borderColor: parchment.goldLine,
   },
   partyPortrait: {
     width: 54,
@@ -139,8 +142,8 @@ const styles = StyleSheet.create({
   },
   partyName: {
     maxWidth: "100%",
-    color: "#1a1a1a",
-    fontSize: 11,
+    color: parchment.ink,
+    fontSize: 10,
     fontWeight: "600",
   },
   partyStatRow: {
@@ -163,12 +166,12 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   partyHpLine: {
-    color: "#555555",
+    color: parchment.ink,
   },
   partyMpLine: {
-    color: "#777777",
+    color: parchment.inkSoft,
   },
   partyLvLine: {
-    color: "#888888",
+    color: parchment.inkMuted,
   },
 });

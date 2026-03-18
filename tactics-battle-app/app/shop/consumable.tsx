@@ -1,22 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ArrowLeft, Coins, Droplets, FlaskRound, ShieldPlus } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { shopConsumableRepository } from "@/db/repositories/shopConsumableRepository";
 import { walletRepository } from "@/db/repositories/walletRepository";
 import { getConsumableById } from "@/game/consumable/consumableMasterService";
 import { useI18n } from "@/i18n";
+import { parchment, parchmentImages, parchmentShadow } from "@/theme/parchment";
 import type { ConsumableCategory, ConsumableShopCatalogItem } from "@/types/consumable";
-
-const colors = {
-  bgPrimary: "#ffffff",
-  bgSurface: "#f5f5f5",
-  textPrimary: "#1a1a1a",
-  textSecondary: "#666666",
-  textTertiary: "#888888",
-  borderDefault: "#e0e0e0",
-} as const;
 
 type ShopTab = "healing" | "mana" | "cure";
 
@@ -129,17 +121,24 @@ export default function ConsumableShopScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Pressable style={styles.iconBtn} onPress={() => router.back()}>
-            <ArrowLeft size={18} stroke={colors.textPrimary} />
-          </Pressable>
-          <Text style={styles.headerTitle}>{t("shop.consumable.header")}</Text>
+      <ImageBackground source={parchmentImages.itemShopHeader} style={styles.hero} imageStyle={styles.heroImage}>
+        <View style={styles.heroOverlay}>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Pressable style={styles.iconBtn} onPress={() => router.back()}>
+                <ArrowLeft size={18} stroke="#f5ede0" />
+              </Pressable>
+              <View>
+                <Text style={styles.heroTitle}>{locale === "ja" ? "道具屋" : "Item Shop"}</Text>
+                <Text style={styles.heroSub}>{t("shop.consumable.header")}</Text>
+              </View>
+            </View>
+            <View style={styles.iconBtn}>
+              <FlaskRound size={16} stroke={parchment.gold} />
+            </View>
+          </View>
         </View>
-        <View style={styles.iconBtn}>
-          <FlaskRound size={16} stroke={colors.textTertiary} />
-        </View>
-      </View>
+      </ImageBackground>
 
       <View style={styles.tabs}>
         {tabs.map((tabKey) => (
@@ -154,7 +153,7 @@ export default function ConsumableShopScreen() {
 
       <View style={styles.goldBar}>
         <View style={styles.goldPill}>
-          <Coins size={14} stroke={colors.textSecondary} />
+          <Coins size={14} stroke={parchment.gold} />
           <Text style={styles.goldText}>{t("shop.consumable.gold", { amount: walletGold.toLocaleString() })}</Text>
         </View>
       </View>
@@ -193,40 +192,79 @@ export default function ConsumableShopScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgPrimary },
-  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, paddingHorizontal: 20 },
+  screen: { flex: 1, backgroundColor: parchment.background },
+  hero: { height: 140, justifyContent: "flex-end" },
+  heroImage: { resizeMode: "cover" },
+  heroOverlay: { backgroundColor: "rgba(26, 14, 5, 0.42)" },
+  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: 16, paddingHorizontal: 20 },
   headerLeft: { alignItems: "center", flexDirection: "row", gap: 12 },
-  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.bgSurface, alignItems: "center", justifyContent: "center" },
-  headerTitle: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
-  tabs: { flexDirection: "row", paddingHorizontal: 20 },
-  tabItem: { flex: 1, alignItems: "center" },
-  tabText: { color: colors.textTertiary, fontSize: 14, fontWeight: "500", paddingVertical: 10 },
-  tabTextActive: { color: colors.textPrimary, fontWeight: "700" },
-  tabBorder: { width: "100%", height: 1, backgroundColor: colors.borderDefault },
-  tabBorderActive: { height: 2, backgroundColor: colors.textPrimary },
-  goldBar: { alignItems: "flex-end", paddingHorizontal: 20, paddingTop: 8 },
-  goldPill: { alignItems: "center", flexDirection: "row", borderRadius: 100, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, gap: 6, paddingVertical: 6, paddingHorizontal: 12 },
-  goldText: { color: colors.textPrimary, fontSize: 12, fontWeight: "500" },
-  scroll: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 20, gap: 8 },
-  itemCard: { alignItems: "center", flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgSurface, gap: 12, padding: 14 },
-  itemIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: "#666666" },
-  itemTextWrap: { flex: 1, gap: 2 },
-  itemName: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
-  itemSub: { color: colors.textTertiary, fontSize: 11 },
-  priceWrap: { alignItems: "flex-end", gap: 6 },
-  price: { color: colors.textPrimary, fontSize: 12, fontWeight: "700" },
-  buyButton: {
+  iconBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
+    backgroundColor: "rgba(59, 46, 30, 0.45)",
     borderWidth: 1,
-    borderColor: colors.borderDefault,
+    borderColor: "rgba(196, 168, 112, 0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroTitle: { color: "#f5ede0", fontSize: 24, fontWeight: "700" },
+  heroSub: { color: "#e8dcc8", fontSize: 12, marginTop: 2 },
+  tabs: { flexDirection: "row", paddingHorizontal: 16, backgroundColor: parchment.background },
+  tabItem: { flex: 1, alignItems: "center" },
+  tabText: { color: parchment.inkMuted, fontSize: 13, fontWeight: "500", paddingVertical: 10 },
+  tabTextActive: { color: parchment.ink, fontWeight: "700" },
+  tabBorder: { width: "100%", height: 1, backgroundColor: parchment.goldLine },
+  tabBorderActive: { height: 2, backgroundColor: parchment.borderStrong },
+  goldBar: { alignItems: "stretch", paddingHorizontal: 16, paddingTop: 8 },
+  goldPill: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: parchment.headerBar,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  goldText: { color: parchment.gold, fontSize: 12, fontWeight: "700" },
+  scroll: { flex: 1 },
+  content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 8 },
+  itemCard: {
+    ...parchmentShadow,
+    alignItems: "center",
+    flexDirection: "row",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surfaceMuted,
+    gap: 12,
+    padding: 12,
+  },
+  itemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(59, 46, 30, 0.18)",
+  },
+  itemTextWrap: { flex: 1, gap: 2 },
+  itemName: { color: parchment.ink, fontSize: 15, fontWeight: "700" },
+  itemSub: { color: parchment.inkSoft, fontSize: 11 },
+  priceWrap: { alignItems: "flex-end", gap: 6 },
+  price: { color: parchment.ink, fontSize: 12, fontWeight: "700" },
+  buyButton: {
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: parchment.borderStrong,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: "#ffffff",
+    paddingVertical: 6,
+    backgroundColor: parchment.headerBar,
   },
   buyButtonDisabled: {
     opacity: 0.5,
   },
-  buy: { color: colors.textSecondary, fontSize: 11, fontWeight: "600" },
-  emptyText: { color: colors.textTertiary, fontSize: 12, paddingTop: 8 },
+  buy: { color: "#f5ede0", fontSize: 11, fontWeight: "700" },
+  emptyText: { color: parchment.inkSoft, fontSize: 12, paddingTop: 8 },
 });
