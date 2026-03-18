@@ -29,7 +29,7 @@ import { equipmentInventoryRepository } from "@/db/repositories/equipmentInvento
 import { settingsRepository } from "@/db/repositories/settingsRepository";
 import { tacticsRepository } from "@/db/repositories/tacticsRepository";
 import { walletRepository } from "@/db/repositories/walletRepository";
-import { PartyStatusStrip } from "@/components/common/PartyStatusStrip";
+import { DungeonPartyPanel } from "@/components/common/DungeonPartyPanel";
 import { getAttackTrailPreset } from "@/features/battle/animation/presets";
 import type {
   BattleAttackStyle,
@@ -41,7 +41,7 @@ import { formatBattleLogMessage } from "@/game/battleLog";
 import { DEFAULT_SKILLS, createBattleSessionId, createSkillMap } from "@/game/battleSetup";
 import { BattleOutcome, BattleReplayState, simulateBattle } from "@/game/battleSimulation";
 import { EncounterResult, generateEncounter } from "@/game/encounter";
-import { computeCharacterDerivedStats, toBaseResource } from "@/game/equipment/equipmentStatsService";
+import { computeCharacterDerivedStats, toBaseResource, toBattleResource } from "@/game/equipment/equipmentStatsService";
 import { rollMonsterDrops } from "@/game/loot/equipmentLootRoller";
 import { getMonsterDropGold } from "@/game/loot/monsterDropTableService";
 import { toPartyUnits } from "@/game/partyMapper";
@@ -52,6 +52,7 @@ import { BATTLE_SPEED_OPTIONS, BattleSpeedMultiplier } from "@/constants/battleS
 import { getEnemyImage, getEnemySizeScale, isBossEnemyId } from "@/constants/enemyImages";
 import { resolveBattleLogActorImage } from "@/features/battle/log/actorIcon";
 import { useBattleStore } from "@/stores/battleStore";
+import { parchment } from "@/theme/parchment";
 
 type BattlePhase = "LOADING" | "ENCOUNTER" | "SIMULATING" | "RESULT" | "ERROR";
 type LevelUpStatKey = "maxHp" | "atk" | "def" | "spd" | "maxMp" | "mpRegen";
@@ -310,6 +311,9 @@ export default function BattleScreen() {
           setPhase("ERROR");
           return;
         }
+        const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
+          selected.map((member) => member.id)
+        );
         const syncedSelected =
           pendingExplorationPartySync &&
           pendingExplorationPartySync.explorationSeed === (Number.isFinite(parsedSeed) ? parsedSeed : null) &&
@@ -317,10 +321,11 @@ export default function BattleScreen() {
             ? selected.map((member) => {
                 const synced = pendingExplorationPartySync.members.find((row) => row.id === member.id);
                 if (!synced) return member;
+                const derived = computeCharacterDerivedStats(member, equippedByCharacterId[member.id] ?? {});
                 return {
                   ...member,
-                  currentHp: Math.max(0, Math.min(member.baseMaxHp, Math.floor(synced.hp))),
-                  currentMp: Math.max(0, Math.min(member.baseMaxMp, Math.floor(synced.mp))),
+                  currentHp: toBaseResource(synced.hp, member.baseMaxHp, derived.bonus.hp),
+                  currentMp: toBaseResource(synced.mp, member.baseMaxMp, derived.bonus.mp),
                 };
               })
             : selected;
@@ -328,9 +333,6 @@ export default function BattleScreen() {
           acc[member.id] = { level: member.level };
           return acc;
         }, {});
-        const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
-          syncedSelected.map((member) => member.id)
-        );
         const units = toPartyUnits(syncedSelected, equippedByCharacterId);
         const map: Record<string, TacticsRuleRecord[]> = {};
         for (const unit of units) {
@@ -628,21 +630,32 @@ export default function BattleScreen() {
         battleSessionId: nextSessionId,
         explorationSeed: resolvedSeed,
         partyId: currentPartyId,
-        members: result.finalParty.map((member) => ({
-          ...(persistedPartyById.get(member.id)
-            ? {
-                hp: persistedPartyById.get(member.id)!.currentHp,
-                mp: persistedPartyById.get(member.id)!.currentMp,
-              }
-            : {
-                hp: Math.max(0, Math.floor(member.hp)),
-                mp: Math.max(0, Math.floor(member.mp)),
-              }),
-          id: member.id,
-          name: member.name,
-          classId: member.classId,
-          level: nextPartyUiMetaById[member.id]?.level ?? null,
-        })),
+        members: result.finalParty.map((member) => {
+          const persisted = persistedPartyById.get(member.id);
+          if (!persisted) {
+            return {
+              id: member.id,
+              name: member.name,
+              classId: member.classId,
+              hp: Math.max(0, Math.floor(member.hp)),
+              mp: Math.max(0, Math.floor(member.mp)),
+              maxHp: Math.max(1, Math.floor(member.stats.maxHp)),
+              maxMp: Math.max(0, Math.floor(member.stats.maxMp)),
+              level: nextPartyUiMetaById[member.id]?.level ?? null,
+            };
+          }
+          const derived = computeCharacterDerivedStats(persisted, equippedByCharacterId[member.id] ?? {});
+          return {
+            id: member.id,
+            name: member.name,
+            classId: member.classId,
+            hp: toBattleResource(persisted.currentHp, persisted.baseMaxHp, derived.bonus.hp),
+            mp: toBattleResource(persisted.currentMp, persisted.baseMaxMp, derived.bonus.mp),
+            maxHp: derived.battle.maxHp,
+            maxMp: derived.battle.maxMp,
+            level: nextPartyUiMetaById[member.id]?.level ?? null,
+          };
+        }),
       });
       setReplayStates(combinedReplayStates);
       setVisualEvents(result.visualEvents);
@@ -798,7 +811,7 @@ export default function BattleScreen() {
 
   if (phase === "ERROR") {
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
         <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>{error ?? "不明なエラーが発生しました。"}</Text>
@@ -866,7 +879,7 @@ export default function BattleScreen() {
   }) {
     const logRows = params.logs;
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
         <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.header}>
@@ -907,37 +920,55 @@ export default function BattleScreen() {
             </View>
           </View>
 
+          <View style={styles.sectionDivider}>
+            <View style={styles.sectionDividerLine} />
+            <View style={styles.sectionDividerDiamond} />
+            <View style={styles.sectionDividerLine} />
+          </View>
+
           <View style={styles.logSection}>
-            <View style={styles.logHeader}>
-              <Text style={styles.logTitle}>{t("battle.ui.logTitle")}</Text>
-              <Text style={styles.turnText}>{params.turnText}</Text>
-            </View>
-            <ScrollView
-              ref={logScrollRef}
-              style={styles.logBox}
-              contentContainerStyle={styles.logContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {logRows.length === 0 ? (
-                <Text style={styles.logLineMuted}>{t("battle.ui.logWaiting")}</Text>
-              ) : (
-                logRows.map((log, idx) => {
-                  const actorImage = resolveBattleLogActorImage(log, params.party, params.enemies);
-                  return (
-                    <View key={`${log.turn}-${idx}`} style={styles.logRow}>
-                      <View style={styles.logIconWrap}>
-                        {actorImage ? (
-                          <Image source={actorImage} style={styles.logIcon} resizeMode="cover" />
-                        ) : (
-                          <View style={styles.logIconPlaceholder} />
-                        )}
+            <View style={styles.logBox}>
+              <View style={styles.logBase} />
+              <View style={styles.logHeader}>
+                <Text style={styles.logTitle}>{t("battle.ui.logTitle")}</Text>
+                <Text style={styles.turnText}>{params.turnText}</Text>
+              </View>
+              <ScrollView
+                ref={logScrollRef}
+                style={styles.logScroll}
+                contentContainerStyle={styles.logContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {logRows.length === 0 ? (
+                  <View style={styles.logLineRow}>
+                    <Text style={styles.logLinePrefix}>·</Text>
+                    <Text style={styles.logLine}>{t("battle.ui.logWaiting")}</Text>
+                  </View>
+                ) : (
+                  logRows.map((log, idx) => {
+                    const actorImage = resolveBattleLogActorImage(log, params.party, params.enemies);
+                    return (
+                      <View key={`${log.turn}-${idx}`} style={styles.logLineRow}>
+                        <View style={styles.logIconWrap}>
+                          {actorImage ? (
+                            <Image source={actorImage} style={styles.logIcon} resizeMode="cover" />
+                          ) : (
+                            <View style={styles.logIconPlaceholder} />
+                          )}
+                        </View>
+                        <Text style={styles.logLine}>{formatBattleLogMessage(log, t)}</Text>
                       </View>
-                      <Text style={styles.logLine}>{formatBattleLogMessage(log, t)}</Text>
-                    </View>
-                  );
-                })
-              )}
-            </ScrollView>
+                    );
+                  })
+                )}
+              </ScrollView>
+            </View>
+          </View>
+
+          <View style={styles.sectionDividerCompact}>
+            <View style={styles.sectionDividerCompactLine} />
+            <View style={styles.sectionDividerCompactDiamond} />
+            <View style={styles.sectionDividerCompactLine} />
           </View>
 
           <ImageBackground source={BATTLE_BG} style={styles.enemyArea} imageStyle={styles.enemyAreaImage}>
@@ -963,13 +994,15 @@ export default function BattleScreen() {
             </View>
           </ImageBackground>
 
-          <PartyStatusStrip
+          <DungeonPartyPanel
             members={params.party.map((member) => ({
               id: member.id,
               name: member.name,
               classId: member.classId,
               hp: member.hp,
               mp: member.mp,
+              maxHp: member.stats.maxHp,
+              maxMp: member.stats.maxMp,
               level: partyUiMetaById[member.id]?.level,
             }))}
           />
@@ -980,7 +1013,7 @@ export default function BattleScreen() {
 
   function renderBattleSkeleton() {
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
         <Stack.Screen options={BATTLE_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.header}>
@@ -989,12 +1022,18 @@ export default function BattleScreen() {
             <View style={[styles.skeletonBlock, styles.skeletonAutoBadge]} />
           </View>
 
+          <View style={styles.sectionDivider}>
+            <View style={styles.sectionDividerLine} />
+            <View style={styles.sectionDividerDiamond} />
+            <View style={styles.sectionDividerLine} />
+          </View>
+
           <View style={styles.logSection}>
-            <View style={styles.logHeader}>
-              <View style={[styles.skeletonBlock, styles.skeletonLogLabel]} />
-              <View style={[styles.skeletonBlock, styles.skeletonTurnLabel]} />
-            </View>
             <View style={styles.logBox}>
+              <View style={styles.logHeader}>
+                <View style={[styles.skeletonBlock, styles.skeletonLogLabel]} />
+                <View style={[styles.skeletonBlock, styles.skeletonTurnLabel]} />
+              </View>
               <View style={styles.skeletonLogContent}>
                 {Array.from({ length: 8 }).map((_, idx) => (
                   <View
@@ -1010,20 +1049,24 @@ export default function BattleScreen() {
             </View>
           </View>
 
-          <View style={styles.enemyArea}>
-            <ImageBackground source={BATTLE_BG} style={styles.enemyArea} imageStyle={styles.enemyAreaImage}>
-              <View style={[styles.enemyAreaOverlay, styles.skeletonEnemyOverlay]}>
-                <View style={styles.enemyRow}>
-                  {Array.from({ length: 3 }).map((_, idx) => (
-                    <View key={`enemy-skel-${idx}`} style={styles.enemyItem}>
-                      <View style={[styles.skeletonBlock, styles.skeletonEnemySprite]} />
-                      <View style={[styles.skeletonBlock, styles.skeletonEnemyName]} />
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </ImageBackground>
+          <View style={styles.sectionDividerCompact}>
+            <View style={styles.sectionDividerCompactLine} />
+            <View style={styles.sectionDividerCompactDiamond} />
+            <View style={styles.sectionDividerCompactLine} />
           </View>
+
+          <ImageBackground source={BATTLE_BG} style={styles.enemyArea} imageStyle={styles.enemyAreaImage}>
+            <View style={[styles.enemyAreaOverlay, styles.skeletonEnemyOverlay]}>
+              <View style={styles.enemyRow}>
+                {Array.from({ length: 3 }).map((_, idx) => (
+                  <View key={`enemy-skel-${idx}`} style={styles.enemyItem}>
+                    <View style={[styles.skeletonBlock, styles.skeletonEnemySprite]} />
+                    <View style={[styles.skeletonBlock, styles.skeletonEnemyName]} />
+                  </View>
+                ))}
+              </View>
+            </View>
+          </ImageBackground>
 
           <View style={styles.skeletonPartySection}>
             {Array.from({ length: 6 }).map((_, idx) => (
@@ -1045,24 +1088,25 @@ export default function BattleScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#ffffff" },
+  screen: { flex: 1, backgroundColor: parchment.background },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: parchment.background,
   },
-  loadingText: { color: "#525252", fontSize: 14 },
-  errorText: { color: "#ef4444", textAlign: "center", paddingHorizontal: 24 },
-  container: { flex: 1, backgroundColor: "#ffffff", position: "relative" },
+  loadingText: { color: parchment.inkSoft, fontSize: 14 },
+  errorText: { color: parchment.danger, textAlign: "center", paddingHorizontal: 24 },
+  container: { flex: 1, backgroundColor: parchment.background, position: "relative" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: parchment.headerBar,
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   floorBadge: {
     borderRadius: 8,
@@ -1071,7 +1115,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   floorBadgeText: { color: "#efefef", fontWeight: "700", fontSize: 11 },
-  headerTitle: { flex: 1, color: "#1a1a1a", fontSize: 18, fontWeight: "700" },
+  headerTitle: { flex: 1, color: "#2c2114", fontSize: 20, fontWeight: "700" },
   resultBadge: {
     borderRadius: 8,
     paddingHorizontal: 8,
@@ -1102,17 +1146,17 @@ const styles = StyleSheet.create({
   speedControl: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    borderRadius: 8,
+    gap: 5,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    borderColor: "rgba(122,107,85,0.18)",
+    backgroundColor: "rgba(244,236,221,0.86)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   speedLabel: {
-    color: "#555555",
-    fontWeight: "600",
+    color: parchment.inkMuted,
+    fontWeight: "700",
     fontSize: 9,
   },
   speedButtons: {
@@ -1121,10 +1165,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   speedButton: {
-    borderRadius: 6,
-    backgroundColor: "#ececec",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: "rgba(43,29,16,0.12)",
+    paddingHorizontal: 7,
+    paddingVertical: 3,
   },
   speedButtonActive: {
     backgroundColor: "#111111",
@@ -1141,17 +1185,55 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderColor: "rgba(122,107,85,0.18)",
+    backgroundColor: "rgba(244,236,221,0.86)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   autoBadgePaused: {
-    backgroundColor: "#ececec",
+    backgroundColor: "rgba(239,227,207,0.96)",
   },
-  autoBadgeText: { color: "#555555", fontWeight: "600", fontSize: 10 },
+  autoBadgeText: { color: parchment.inkSoft, fontWeight: "700", fontSize: 10, letterSpacing: 0.4 },
+  sectionDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 32,
+    paddingBottom: 6,
+  },
+  sectionDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139,83,39,0.18)",
+  },
+  sectionDividerDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: "rgba(139,83,39,0.55)",
+    transform: [{ rotate: "45deg" }],
+  },
+  sectionDividerCompact: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingHorizontal: 40,
+  },
+  sectionDividerCompactLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139,83,39,0.12)",
+  },
+  sectionDividerCompactDiamond: {
+    width: 5,
+    height: 5,
+    backgroundColor: "rgba(139,83,39,0.4)",
+    transform: [{ rotate: "45deg" }],
+  },
   resultSummaryCard: {
     marginHorizontal: 16,
     marginTop: 4,
@@ -1181,78 +1263,91 @@ const styles = StyleSheet.create({
   },
   logSection: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    gap: 4,
+    minHeight: 180,
+    paddingTop: 0,
   },
   logHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   logTitle: {
-    color: "#666666",
+    color: "#7f6b50",
     fontSize: 10,
-    letterSpacing: 1,
+    letterSpacing: 2,
+    fontWeight: "700",
   },
   turnText: {
-    color: "#1a1a1a",
-    fontSize: 10,
-    fontWeight: "500",
+    color: parchment.inkMuted,
+    fontSize: 11,
+    fontWeight: "700",
   },
   logBox: {
     flex: 1,
-    minHeight: 60,
+    minHeight: 180,
+    borderRadius: 0,
+    overflow: "hidden",
+    backgroundColor: parchment.background,
   },
+  logBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: parchment.background,
+  },
+  logScroll: { flex: 1 },
   logContent: {
-    flexGrow: 1,
-    justifyContent: "flex-end",
-    paddingVertical: 4,
-    gap: 6,
+    paddingBottom: 16,
   },
-  logRow: {
+  logLineRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(122,107,85,0.13)",
+  },
+  logLinePrefix: {
+    width: 14,
+    color: "#8b5327",
+    fontSize: 11,
+    fontWeight: "700",
+    textAlign: "center",
   },
   logIconWrap: {
-    width: 22,
-    height: 22,
-    marginTop: 1,
-    borderRadius: 999,
+    width: 20,
+    height: 20,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   logIcon: {
-    width: 22,
-    height: 22,
+    width: 18,
+    height: 18,
   },
   logIconPlaceholder: {
-    width: 8,
-    height: 8,
+    width: 4,
+    height: 4,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.28)",
+    backgroundColor: "#8b5327",
   },
   logLine: {
-    color: "#666666",
-    fontSize: 13,
-    lineHeight: 19,
+    color: parchment.inkSoft,
+    fontSize: 11,
+    lineHeight: 17,
     flex: 1,
   },
   logLineMuted: {
-    color: "#9b9b9b",
-    fontSize: 13,
+    color: parchment.inkSoft,
+    fontSize: 12,
   },
   enemyArea: {
     height: 220,
     width: "100%",
+    marginBottom: 8,
   },
   enemyAreaImage: {
     resizeMode: "cover",
@@ -1260,16 +1355,16 @@ const styles = StyleSheet.create({
   enemyAreaOverlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.10)",
+    backgroundColor: "rgba(26, 14, 5, 0.06)",
     paddingTop: 8,
     paddingHorizontal: 20,
-    paddingBottom: 14,
+    paddingBottom: 18,
   },
   enemyRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
-    gap: 20,
+    gap: 28,
     position: "relative",
     overflow: "visible",
   },
@@ -1277,15 +1372,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   enemyLabel: {
-    marginTop: 4,
+    marginTop: 2,
     color: "#efefef",
     textShadowColor: "#000000",
     textShadowRadius: 3,
     fontSize: 10,
+    fontWeight: "500",
   },
   enemyHpBar: {
-    marginTop: 4,
-    height: 5,
+    marginTop: 3,
+    height: 6,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.28)",
     overflow: "hidden",
@@ -1295,11 +1391,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#22c55e",
   },
   enemyHpText: {
-    marginTop: 2,
+    marginTop: 3,
     color: "#f5f5f5",
     textShadowColor: "#000000",
     textShadowRadius: 3,
-    fontSize: 9,
+    fontSize: 10,
   },
   skeletonBlock: {
     backgroundColor: "#e7e7e7",
@@ -1358,28 +1454,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.35)",
   },
   skeletonPartySection: {
+    marginTop: 18,
+    backgroundColor: "rgba(244,236,221,0.28)",
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 14,
     flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "flex-start",
-    borderTopWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 10,
-    paddingVertical: 12,
+    flexWrap: "wrap",
+    gap: 14,
   },
   skeletonPartyColumn: {
-    flex: 1,
+    width: "31%",
     minWidth: 0,
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 4,
-    paddingHorizontal: 2,
+    paddingBottom: 8,
   },
   skeletonPartyHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: 5,
-    width: "100%",
   },
   skeletonPartyAvatar: {
     width: 24,
@@ -1391,7 +1485,7 @@ const styles = StyleSheet.create({
     height: 11,
   },
   skeletonPartyStat: {
-    width: 44,
+    width: "100%",
     height: 11,
   },
 });
