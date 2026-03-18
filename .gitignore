@@ -4,3 +4,5 @@ node_modules
 /images/
 tactics-battle-app/ios/
 tactics-battle-app/.expo/
+tactics-battle-app/.env
+tactics-battle-app/build/

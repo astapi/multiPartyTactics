@@ -1,6 +1,6 @@
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { Coins, Settings, Shield, Sword, TentTree, Users } from "lucide-react-native";
+import { Coins, Settings, Shield, Sword, TentTree } from "lucide-react-native";
 import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { charactersRepository, DEFAULT_PARTY_ID } from "@/db/repositories/charactersRepository";
@@ -16,7 +16,7 @@ type TownCard = {
   description: string;
   meta: string;
   icon: ReactNode;
-  href: "/shop/equipment" | "/shop/consumable" | "/guild" | "/tavern" | "/dungeon" | "/more";
+  href: "/shop/equipment" | "/shop/consumable" | "/tavern" | "/more";
 };
 
 export default function ShopHubScreen() {
@@ -71,22 +71,6 @@ export default function ShopHubScreen() {
         meta: locale === "ja" ? `${tavernCount}人が滞在中` : `${tavernCount} candidates`,
         icon: <TentTree size={20} stroke={parchment.gold} />,
         href: "/tavern",
-      },
-      {
-        key: "guild",
-        title: locale === "ja" ? "ギルド" : "Guild",
-        description: locale === "ja" ? "所属冒険者の状態を管理する" : "Manage your registered adventurers",
-        meta: locale === "ja" ? `${characterCount}人在籍` : `${characterCount} adventurers`,
-        icon: <Users size={20} stroke={parchment.gold} />,
-        href: "/guild",
-      },
-      {
-        key: "dungeon",
-        title: locale === "ja" ? "探索準備" : "Exploration",
-        description: locale === "ja" ? "パーティを編成してダンジョンへ向かう" : "Prepare parties for the dungeon",
-        meta: locale === "ja" ? `${partyCount}PT 編成済み` : `${partyCount} parties ready`,
-        icon: <Shield size={20} stroke={parchment.gold} />,
-        href: "/dungeon",
       },
       {
         key: "settings",
