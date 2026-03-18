@@ -488,44 +488,7 @@ const runSingleAdventure = (params: {
         }
       }
 
-      if (session.status === "RUN_COMPLETE") {
-        const latestFloorProgress = getLatestFloorProgress(session.floorProgressMap, params.floor);
-        if (latestFloorProgress.stairsDiscovered) {
-          return {
-            succeeded: true,
-            qualifiedForFloorAdvance: battleVictoryCount > 0,
-            failureReason: battleVictoryCount > 0 ? null : "NO_BATTLE_VICTORY",
-            floor: params.floor,
-            floorProgress: latestFloorProgress,
-            characters,
-            runParty,
-            encounterCount,
-            bossEncounterCount,
-            battleVictoryCount,
-            battleCount,
-            totalBattleTurns,
-          };
-        }
-        return {
-          succeeded: false,
-          qualifiedForFloorAdvance: false,
-          failureReason: "RUN_TIMEOUT",
-          floor: params.floor,
-          floorProgress: latestFloorProgress,
-          characters,
-          runParty,
-          encounterCount,
-          bossEncounterCount,
-          battleVictoryCount,
-          battleCount,
-          totalBattleTurns,
-        };
-      }
-
-      if (
-        session.status === "FLOOR_CLEARED" ||
-        latestEvent?.type === "STAIRS_DISCOVERED"
-      ) {
+      if (session.status === "FLOOR_CLEARED") {
         return {
           succeeded: true,
           qualifiedForFloorAdvance: battleVictoryCount > 0,

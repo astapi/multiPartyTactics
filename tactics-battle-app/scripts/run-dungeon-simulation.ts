@@ -46,18 +46,6 @@ const parseArgs = (argv: string[]): { outputPath: string; parameters: Simulation
       case "--battle-max-turns":
         parameters.battleMaxTurns = parseNumberArg(value, flag);
         break;
-      case "--steps-per-run":
-        parameters.explorationConfig = {
-          ...parameters.explorationConfig,
-          stepsPerRun: parseNumberArg(value, flag),
-        };
-        break;
-      case "--stairs-threshold":
-        parameters.explorationConfig = {
-          ...parameters.explorationConfig,
-          stairsDiscoveryThresholdPercent: parseNumberArg(value, flag),
-        };
-        break;
       case "--exploration-gain":
         parameters.explorationConfig = {
           ...parameters.explorationConfig,
