@@ -3,6 +3,7 @@ import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Coins, Package } from "lucide-react-native";
 import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { getClassById } from "@/constants/classes";
 import { getConstellationDisplayName } from "@/constants/constellations";
 import { charactersRepository, DEFAULT_PARTY_ID } from "@/db/repositories/charactersRepository";
@@ -62,6 +63,16 @@ export default function GuildScreen() {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ImageBackground source={parchmentImages.guildHeader} style={styles.hero} imageStyle={styles.heroImage}>
+          <Svg pointerEvents="none" style={styles.heroGradient} width="100%" height="100%">
+            <Defs>
+              <LinearGradient id="guildHeroOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+                <Stop offset="0%" stopColor="#000000" stopOpacity={0} />
+                <Stop offset="50%" stopColor="#1A0E05" stopOpacity={0.6} />
+                <Stop offset="100%" stopColor="#1A0E05" stopOpacity={0.87} />
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#guildHeroOverlay)" />
+          </Svg>
           <View style={styles.heroOverlay}>
             <View style={styles.heroRow}>
               <View>
@@ -118,10 +129,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: parchment.background },
   scroll: { flex: 1 },
   content: { paddingBottom: 24 },
-  hero: { height: 140, justifyContent: "flex-end" },
+  hero: { height: 140, justifyContent: "flex-end", position: "relative", overflow: "hidden" },
   heroImage: { resizeMode: "cover" },
-  heroOverlay: { backgroundColor: "rgba(26, 14, 5, 0.42)" },
-  heroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", padding: 20 },
+  heroGradient: { ...StyleSheet.absoluteFillObject },
+  heroOverlay: { paddingVertical: 16, paddingHorizontal: 20 },
+  heroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
   heroTitle: { color: "#f5ede0", fontSize: 24, fontWeight: "700" },
   heroSub: { color: "#e8dcc8", fontSize: 12, marginTop: 2 },
   inventoryButton: {
