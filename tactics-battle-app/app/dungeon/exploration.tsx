@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ImageBackground, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Package } from "lucide-react-native";
-import { PartyStatusStrip, PartyStatusStripMember } from "@/components/common/PartyStatusStrip";
+import { Compass, Package, Pause, Play } from "lucide-react-native";
+import { DungeonPartyPanel, DungeonPartyPanelMember } from "@/components/common/DungeonPartyPanel";
 import { DUNGEONS } from "@/constants/dungeons";
 import { characterEquipmentRepository } from "@/db/repositories/characterEquipmentRepository";
 import { DEFAULT_PARTY_ID, charactersRepository } from "@/db/repositories/charactersRepository";
@@ -217,18 +217,20 @@ export default function ExplorationScreen() {
           }
           return;
         }
-        const nextPartySnapshot = partyRecords.map((record) => ({
-          id: record.id,
-          name: record.name,
-          classId: record.classId,
-          hp: record.currentHp,
-          mp: record.currentMp,
-          level: record.level,
-        }));
         const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
           partyRecords.map((record) => record.id)
         );
         const party = toPartyUnits(partyRecords, equippedByCharacterId);
+        const nextPartySnapshot = party.map((member) => ({
+          id: member.id,
+          name: member.name,
+          classId: member.classId,
+          hp: member.hp,
+          mp: member.mp,
+          maxHp: member.stats.maxHp,
+          maxMp: member.stats.maxMp,
+          level: partyRecords.find((record) => record.id === member.id)?.level ?? null,
+        }));
         const dungeon = DUNGEONS.find((d) => d.id === resolvedDungeonId) ?? DUNGEONS[0];
         const seed = generateTimeSeed();
         const persistedProgressList = await dungeonExplorationProgressRepository.listByDungeon(resolvedDungeonId);
@@ -630,7 +632,7 @@ export default function ExplorationScreen() {
         explorationPercent: Math.floor(session.floorProgressMap[floorNum]?.explorationPercent ?? 0),
       }));
   }, [session]);
-  const displayedPartyMembers = useMemo<PartyStatusStripMember[]>(
+  const displayedPartyMembers = useMemo<DungeonPartyPanelMember[]>(
     () =>
       explorationRunMembers.map((member) => ({
         id: member.id,
@@ -638,11 +640,26 @@ export default function ExplorationScreen() {
         classId: member.classId,
         hp: member.hp,
         mp: member.mp,
+        maxHp: member.maxHp,
+        maxMp: member.maxMp,
         level: member.level,
       })),
     [explorationRunMembers]
   );
   const inventoryUsageText = `${resultItems.length}/${itemCapacity}`;
+  const logTitle = locale === "ja" ? "探索記録" : "Exploration Log";
+  const explorationStateText =
+    session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"
+      ? locale === "ja"
+        ? "探索完了"
+        : "Exploration Complete"
+      : isPaused
+        ? locale === "ja"
+          ? "探索停止中"
+          : "Paused"
+        : locale === "ja"
+          ? "探索中..."
+          : "Exploring...";
   const resultTitle =
     session?.status === "FLOOR_CLEARED"
       ? "階層探索完了"
@@ -707,7 +724,7 @@ export default function ExplorationScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
         <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.stateMessageWrap}>
@@ -720,7 +737,7 @@ export default function ExplorationScreen() {
 
   if (!result) {
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
         <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
         <View style={styles.container}>
           <View style={styles.stateMessageWrap}>
@@ -732,98 +749,120 @@ export default function ExplorationScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
       <Stack.Screen options={EXPLORATION_SCREEN_OPTIONS} />
       <View style={styles.container}>
         <View style={styles.headerSection}>
           <View style={styles.topRow}>
-            <Text style={styles.title}>
-              {`B${floor}F 探索`}
-            </Text>
-            <View style={styles.timeBadge}>
-              <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
+            <View style={styles.titleWrap}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorBadgeText}>{`B${floor}F`}</Text>
+              </View>
+              <Text style={styles.title}>
+                {locale === "ja" ? "探索記録" : "Dungeon Exploration"}
+              </Text>
+            </View>
+            <View style={styles.headerControls}>
+              <View style={styles.speedBadge}>
+                <Text style={styles.speedBadgeLabel}>{locale === "ja" ? "速度" : "SPD"}</Text>
+                <Text style={styles.speedBadgeValue}>{`${explorationSpeedMultiplier}x`}</Text>
+              </View>
+              <View style={styles.timeBadge}>
+                <Text style={styles.timeBadgeText}>{formatClock(currentTick)}</Text>
+              </View>
+              <Pressable
+                style={[styles.autoBadge, isPaused ? styles.autoBadgePaused : null]}
+                onPress={() => setIsPaused((prev) => !prev)}
+                disabled={session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"}
+              >
+                {isPaused ? <Play size={11} color={parchment.inkSoft} /> : <Pause size={11} color={parchment.inkSoft} />}
+                <Text style={styles.autoBadgeText}>{isPaused ? "PAUSED" : "AUTO"}</Text>
+              </Pressable>
             </View>
           </View>
+        </View>
+
+        <View style={styles.sectionDivider}>
+          <View style={styles.sectionDividerLine} />
+          <View style={styles.sectionDividerDiamond} />
+          <View style={styles.sectionDividerLine} />
+        </View>
+
+        <View style={styles.logSection}>
+          <View style={styles.logBox}>
+            <View style={styles.logBase} />
+            <View style={styles.logHeader}>
+              <Text style={styles.logTitle}>{logTitle}</Text>
+              <Text style={styles.logHeaderMeta}>{`B${currentFloor}F`}</Text>
+            </View>
+            <ScrollView
+              ref={logScrollRef}
+              style={styles.logScroll}
+              contentContainerStyle={styles.logContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {displayedEvents.length === 0 ? (
+                <View style={styles.logLineRow}>
+                  <Text style={styles.logLinePrefix}>·</Text>
+                  <Text style={styles.logLine}>{locale === "ja" ? "まだ記録はありません。" : "No records yet."}</Text>
+                </View>
+              ) : (
+                displayedEvents.map((event, index) => (
+                  <View key={`${event.tick}-${event.type}-${index}`} style={styles.logLineRow}>
+                    <Text style={styles.logLinePrefix}>{EVENT_PREFIX[event.type]}</Text>
+                    <Text style={styles.logLine}>{formatEvent(event, locale, t)}</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+
+        <View style={styles.sectionDividerCompact}>
+          <View style={styles.sectionDividerCompactLine} />
+          <View style={styles.sectionDividerCompactDiamond} />
+          <View style={styles.sectionDividerCompactLine} />
         </View>
 
         <ImageBackground source={HERO_IMAGE} style={styles.hero} imageStyle={styles.heroImage}>
           <View style={styles.heroOverlay}>
-            <Text style={styles.heroMain}>
-              {`現在 B${currentFloor}F`}
-            </Text>
-            <View style={styles.heroProgressWrap}>
-              <Text style={styles.heroProgressLabel}>{t(`dungeon.ui.returnCondition.${returnCondition}` as any)}</Text>
-              <View style={styles.heroProgressTrack}>
-                <View
-                  style={[
-                    styles.heroProgressFill,
-                    { width: `${Math.floor((Math.min(resultItems.length, itemCapacity) / itemCapacity) * 100)}%` },
-                  ]}
-                />
+            <View style={styles.heroStatusCard}>
+              <Text style={styles.heroMain}>
+                {`現在 B${currentFloor}F`}
+              </Text>
+              <Text style={styles.heroSubLabel}>{t(`dungeon.ui.returnCondition.${returnCondition}` as any)}</Text>
+              <View style={styles.heroProgressWrap}>
+                <View style={styles.heroProgressTrack}>
+                  <View
+                    style={[
+                      styles.heroProgressFill,
+                      { width: `${Math.floor((Math.min(resultItems.length, itemCapacity) / itemCapacity) * 100)}%` },
+                    ]}
+                  />
+                </View>
+              </View>
+              <View style={styles.floorStatusRow}>
+                <Text style={styles.floorStatusText}>{`探索度 ${currentFloorExplorationPercentDisplay}%`}</Text>
+                <Text style={[styles.floorStatusText, currentFloorStairsDiscovered ? styles.floorStatusFound : null]}>
+                  {currentFloorStairsDiscovered ? "階段発見済み" : "階段未発見"}
+                </Text>
+              </View>
+              <View style={styles.floorProgressTrack}>
+                <View style={[styles.floorProgressFill, { width: `${currentFloorExplorationPercent}%` }]} />
               </View>
             </View>
-            <View style={styles.floorStatusRow}>
-              <Text style={styles.floorStatusText}>{`探索度 ${currentFloorExplorationPercentDisplay}%`}</Text>
-              <Text style={[styles.floorStatusText, currentFloorStairsDiscovered ? styles.floorStatusFound : null]}>
-                {currentFloorStairsDiscovered ? "階段発見済み" : "階段未発見"}
-              </Text>
+            <View style={styles.heroInventoryBadge}>
+              <Package size={16} color="#f3ebdc" />
+              <Text style={styles.heroInventoryValue}>{inventoryUsageText}</Text>
             </View>
-            <View style={styles.floorProgressTrack}>
-              <View style={[styles.floorProgressFill, { width: `${currentFloorExplorationPercent}%` }]} />
+            <View style={styles.heroCenterBadge}>
+              <Compass size={18} color="#f3ebdc" />
+              <Text style={styles.heroCenterBadgeText}>{explorationStateText}</Text>
             </View>
           </View>
         </ImageBackground>
 
-        <View style={styles.logSection}>
-          <ScrollView
-            ref={logScrollRef}
-            style={styles.logBox}
-            contentContainerStyle={styles.logContent}
-          >
-            {displayedEvents.map((event, index) => (
-              <Text key={`${event.tick}-${event.type}-${index}`} style={styles.logLine}>
-                {`${EVENT_PREFIX[event.type]}  ${formatEvent(event, locale, t)}`}
-              </Text>
-            ))}
-          </ScrollView>
-        </View>
-
-        <PartyStatusStrip members={displayedPartyMembers} containerStyle={styles.partyStrip} />
-
-        <View style={styles.footerMeta}>
-          <View style={styles.footerMetaLeft}>
-            <Package size={18} color="#666666" />
-            <Text style={styles.footerLeft}>Inventory</Text>
-          </View>
-          <View style={styles.footerMetaRight}>
-            <Text style={styles.footerCountCurrent}>{String(resultItems.length)}</Text>
-            <Text style={styles.footerCountSlash}>/</Text>
-            <Text style={styles.footerCountMax}>{String(itemCapacity)}</Text>
-          </View>
-        </View>
-        <View style={styles.actionSection}>
-          <View style={styles.actionRow}>
-            <Pressable
-              style={[styles.actionButton, styles.retreatButton]}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.retreatText}>Retreat</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.actionButton, styles.pauseButton]}
-              onPress={() => setIsPaused((prev) => !prev)}
-              disabled={session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"}
-            >
-              <Text style={styles.pauseText}>
-                {session?.status === "FLOOR_CLEARED" || session?.status === "RUN_COMPLETE"
-                  ? "Complete"
-                  : isPaused
-                    ? "Resume"
-                    : "Pause"}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <DungeonPartyPanel members={displayedPartyMembers} />
 
         <Modal
           visible={isBossDecisionModalVisible}
@@ -939,65 +978,147 @@ const styles = StyleSheet.create({
   loadingText: { color: parchment.inkSoft, fontSize: 14 },
   errorText: { color: parchment.danger, textAlign: "center", paddingHorizontal: 24, fontSize: 14 },
   container: { flex: 1, backgroundColor: parchment.background },
-  headerSection: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 8 },
+  headerSection: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 4 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  title: { fontSize: 22, fontWeight: "700", color: parchment.ink },
-  timeBadge: {
+  titleWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
+  floorBadge: {
     borderRadius: 8,
+    backgroundColor: "#8b5327",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  floorBadgeText: { color: "#f7efdf", fontSize: 11, fontWeight: "800" },
+  title: { fontSize: 20, fontWeight: "700", color: parchment.ink },
+  headerControls: { flexDirection: "row", alignItems: "center", gap: 6 },
+  speedBadge: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(122,107,85,0.2)",
+    backgroundColor: "rgba(244,236,221,0.78)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  speedBadgeLabel: { fontSize: 9, color: parchment.inkMuted, fontWeight: "700", letterSpacing: 0.5 },
+  speedBadgeValue: { fontSize: 11, color: parchment.ink, fontWeight: "700" },
+  timeBadge: {
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: parchment.goldLine,
-    backgroundColor: parchment.surface,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: "rgba(244,236,221,0.92)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
   },
-  timeBadgeText: { fontSize: 12, color: parchment.ink, fontWeight: "700" },
+  timeBadgeText: { fontSize: 12, color: parchment.ink, fontWeight: "800" },
+  autoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(122,107,85,0.16)",
+    backgroundColor: "rgba(244,236,221,0.78)",
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  autoBadgePaused: {
+    backgroundColor: "rgba(239,227,207,0.96)",
+  },
+  autoBadgeText: {
+    fontSize: 10,
+    color: parchment.inkSoft,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+  },
+  sectionDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 32,
+    paddingBottom: 6,
+  },
+  sectionDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139,83,39,0.18)",
+  },
+  sectionDividerDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: "rgba(139,83,39,0.55)",
+    transform: [{ rotate: "45deg" }],
+  },
+  sectionDividerCompact: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingHorizontal: 40,
+  },
+  sectionDividerCompactLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139,83,39,0.12)",
+  },
+  sectionDividerCompactDiamond: {
+    width: 5,
+    height: 5,
+    backgroundColor: "rgba(139,83,39,0.4)",
+    transform: [{ rotate: "45deg" }],
+  },
   hero: {
-    ...parchmentShadow,
     height: 220,
-    marginHorizontal: 12,
+    width: "100%",
     marginBottom: 8,
-    borderRadius: 10,
+    borderRadius: 0,
     overflow: "hidden",
     justifyContent: "flex-end",
   },
   heroImage: { resizeMode: "cover" },
   heroOverlay: {
-    backgroundColor: "rgba(26, 14, 5, 0.42)",
+    flex: 1,
+    justifyContent: "space-between",
+    backgroundColor: "rgba(26, 14, 5, 0.16)",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
-  heroMain: { color: "#f5ede0", fontSize: 14, lineHeight: 18, fontWeight: "700" },
-  heroProgressWrap: {
-    marginTop: 6,
-    gap: 4,
+  heroStatusCard: {
+    alignSelf: "stretch",
+    marginTop: "auto",
+    borderRadius: 0,
+    backgroundColor: "transparent",
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
-  heroProgressLabel: {
-    color: "#e8dcc8",
-    fontSize: 10,
-    fontWeight: "600",
-  },
+  heroMain: { color: "#f7efdf", fontSize: 20, lineHeight: 24, fontWeight: "800" },
+  heroSubLabel: { marginTop: 4, color: "#eadfcb", fontSize: 11, fontWeight: "600" },
+  heroProgressWrap: { marginTop: 8, gap: 4 },
   heroProgressTrack: {
     width: "100%",
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "rgba(245,237,224,0.22)",
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(245,237,224,0.18)",
     overflow: "hidden",
   },
   heroProgressFill: {
     height: "100%",
     backgroundColor: parchment.gold,
   },
-  heroSub: { color: "#d4d4d8", marginTop: 4, fontSize: 10 },
   floorStatusRow: {
-    marginTop: 6,
+    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  floorStatusText: { color: "#f5ede0", fontSize: 10, fontWeight: "600" },
+  floorStatusText: { color: "#f5ede0", fontSize: 11, fontWeight: "600" },
   floorStatusFound: { color: "#d4efc2" },
   floorProgressTrack: {
-    marginTop: 4,
+    marginTop: 6,
     width: "100%",
     height: 6,
     borderRadius: 999,
@@ -1008,99 +1129,119 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: parchment.success,
   },
+  heroCenterBadge: {
+    alignSelf: "center",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 12,
+  },
+  heroCenterBadgeText: {
+    color: "#f3ebdc",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  heroInventoryBadge: {
+    position: "absolute",
+    right: 14,
+    bottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 12,
+    backgroundColor: "rgba(43, 29, 16, 0.56)",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  heroInventoryValue: {
+    color: "#f7efdf",
+    fontSize: 14,
+    fontWeight: "800",
+  },
   logSection: {
     flex: 1,
-    paddingHorizontal: 12,
+    minHeight: 180,
     paddingTop: 0,
   },
   logBox: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: parchment.goldLine,
-    borderRadius: 10,
-    backgroundColor: parchment.surface,
+    minHeight: 180,
+    borderRadius: 0,
+    overflow: "hidden",
+    backgroundColor: parchment.background,
   },
-  logContent: { paddingVertical: 10, paddingHorizontal: 10 },
-  logLine: { marginBottom: 10, color: parchment.ink, fontSize: 13, lineHeight: 16 },
-  partyStrip: {
-    marginHorizontal: 12,
-    marginTop: 8,
+  logBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: parchment.background,
   },
-  footerMeta: {
-    ...parchmentShadow,
-    marginTop: 8,
-    marginBottom: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: parchment.goldLine,
-    borderRadius: 10,
-    backgroundColor: parchment.surface,
+  logHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
-  footerMetaLeft: {
+  logTitle: {
+    color: "#7f6b50",
+    fontSize: 10,
+    letterSpacing: 2,
+    fontWeight: "700",
+  },
+  logHeaderMeta: {
+    color: parchment.inkSoft,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  logScroll: { flex: 1 },
+  logContent: { paddingBottom: 12 },
+  logLineRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(122,107,85,0.13)",
   },
-  footerLeft: { fontSize: 13, color: parchment.inkSoft, fontWeight: "500" },
-  footerMetaRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+  logLinePrefix: {
+    width: 14,
+    color: "#8b5327",
+    fontSize: 11,
+    fontWeight: "700",
+    textAlign: "center",
   },
-  footerCountCurrent: { fontSize: 15, color: parchment.ink, fontWeight: "700" },
-  footerCountSlash: { fontSize: 13, color: parchment.inkMuted, fontWeight: "400" },
-  footerCountMax: { fontSize: 15, color: parchment.inkSoft, fontWeight: "700" },
-  actionSection: { paddingHorizontal: 12, paddingBottom: 6 },
-  actionRow: { flexDirection: "row", gap: 10 },
-  actionButton: {
+  logLine: {
     flex: 1,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-  },
-  retreatButton: {
-    borderWidth: 1,
-    borderColor: parchment.borderStrong,
-    backgroundColor: parchment.surfaceStrong,
-  },
-  pauseButton: { backgroundColor: parchment.headerBar },
-  descendButton: { backgroundColor: "#1d4ed8" },
-  continueButton: {
-    borderWidth: 1,
-    borderColor: parchment.borderStrong,
-    backgroundColor: parchment.surfaceStrong,
+    color: parchment.inkSoft,
+    fontSize: 12,
+    lineHeight: 18,
   },
   decisionModalBackdrop: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.25)",
+    backgroundColor: "rgba(26, 14, 5, 0.42)",
   },
   decisionModalSheet: {
-    backgroundColor: "#ffffff",
+    backgroundColor: parchment.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: parchment.goldLine,
   },
   decisionModalTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
+    color: parchment.ink,
     textAlign: "center",
   },
   decisionModalSub: {
     marginTop: 6,
     fontSize: 12,
-    color: "#6b7280",
+    color: parchment.inkSoft,
     textAlign: "center",
   },
   decisionTextButton: {
@@ -1111,16 +1252,16 @@ const styles = StyleSheet.create({
   decisionTextButtonPrimary: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1d4ed8",
+    color: "#8b5327",
   },
   decisionTextButtonSecondary: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#374151",
+    color: parchment.ink,
   },
   resultModalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(26,14,5,0.45)",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
@@ -1129,24 +1270,24 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 420,
     maxHeight: "85%",
-    backgroundColor: "#ffffff",
+    backgroundColor: parchment.surface,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: parchment.goldLine,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   resultModalTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#111827",
+    color: parchment.ink,
     textAlign: "center",
   },
   resultModalSub: {
     marginTop: 4,
     marginBottom: 10,
     fontSize: 12,
-    color: "#6b7280",
+    color: parchment.inkSoft,
     textAlign: "center",
   },
   resultSectionTitle: {
@@ -1154,13 +1295,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 13,
     fontWeight: "700",
-    color: "#374151",
+    color: parchment.ink,
   },
   resultGoldCard: {
     borderWidth: 1,
-    borderColor: "#f3e8b3",
+    borderColor: parchment.goldLine,
     borderRadius: 10,
-    backgroundColor: "#fff9db",
+    backgroundColor: "rgba(196,168,112,0.14)",
     paddingVertical: 12,
     paddingHorizontal: 14,
     alignItems: "center",
@@ -1174,9 +1315,9 @@ const styles = StyleSheet.create({
   resultListBox: {
     maxHeight: 140,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: parchment.goldLine,
     borderRadius: 10,
-    backgroundColor: "#fafafa",
+    backgroundColor: "rgba(244,236,221,0.75)",
   },
   resultListContent: {
     paddingVertical: 8,
@@ -1191,12 +1332,12 @@ const styles = StyleSheet.create({
   },
   resultListRowLabel: {
     flex: 1,
-    color: "#111827",
+    color: parchment.ink,
     fontSize: 13,
     fontWeight: "500",
   },
   resultListRowValue: {
-    color: "#1f2937",
+    color: parchment.ink,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -1207,7 +1348,7 @@ const styles = StyleSheet.create({
   resultItemSourceTreasure: { color: "#b45309" },
   resultItemSourceBattle: { color: "#1d4ed8" },
   resultEmptyText: {
-    color: "#6b7280",
+    color: parchment.inkSoft,
     fontSize: 12,
     textAlign: "center",
     paddingVertical: 8,
@@ -1215,7 +1356,7 @@ const styles = StyleSheet.create({
   resultCloseButton: {
     marginTop: 14,
     borderRadius: 10,
-    backgroundColor: "#111827",
+    backgroundColor: parchment.headerBar,
     paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",

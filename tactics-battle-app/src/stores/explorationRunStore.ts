@@ -6,6 +6,8 @@ export type ExplorationRunPartyMember = {
   classId?: string;
   hp: number;
   mp: number;
+  maxHp: number;
+  maxMp: number;
   level?: number | null;
 };
 
