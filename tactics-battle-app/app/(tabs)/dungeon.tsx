@@ -528,7 +528,7 @@ export default function DungeonScreen() {
                           ) : (
                             <View style={styles.memberAvatarClip}>
                               <Image
-                                source={getClassById(member.classId).frontImage}
+                                source={getClassById(member.classId).image}
                                 style={styles.memberAvatarImage}
                                 resizeMode="contain"
                               />
@@ -652,7 +652,7 @@ export default function DungeonScreen() {
                       <View style={[styles.modalMemberAvatar, !member ? styles.modalMemberAvatarEmpty : null]}>
                         {member ? (
                           <View style={styles.modalMemberAvatarClip}>
-                            <Image source={getClassById(member.classId).frontImage} style={styles.modalMemberAvatarImage} resizeMode="contain" />
+                            <Image source={getClassById(member.classId).image} style={styles.modalMemberAvatarImage} resizeMode="contain" />
                           </View>
                         ) : (
                           <Text style={styles.memberAddText}>+</Text>
