@@ -1,15 +1,9 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Settings, ShoppingBag, Swords, Users } from "lucide-react-native";
+import { House, Settings, Swords, Users } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useI18n } from "@/i18n";
-
-const colors = {
-  bgSurface: "#f5f5f5",
-  textPrimary: "#1a1a1a",
-  textMuted: "#aaaaaa",
-  borderDefault: "#e0e0e0",
-} as const;
+import { parchment, parchmentShadow } from "@/theme/parchment";
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -43,7 +37,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               : route.name === "dungeon"
                 ? t("tab.dungeon")
                 : route.name === "shop"
-                  ? t("tab.shop")
+                  ? t("tab.home")
                   : t("tab.more");
 
           return (
@@ -56,10 +50,10 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               onLongPress={onLongPress}
               style={styles.item}
             >
-              {route.name === "guild" ? <Users size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
-              {route.name === "dungeon" ? <Swords size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
-              {route.name === "shop" ? <ShoppingBag size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
-              {route.name === "more" ? <Settings size={18} stroke={isFocused ? colors.textPrimary : colors.textMuted} /> : null}
+              {route.name === "guild" ? <Users size={18} stroke={isFocused ? parchment.ink : parchment.inkMuted} /> : null}
+              {route.name === "dungeon" ? <Swords size={18} stroke={isFocused ? parchment.ink : parchment.inkMuted} /> : null}
+              {route.name === "shop" ? <House size={18} stroke={isFocused ? parchment.ink : parchment.inkMuted} /> : null}
+              {route.name === "more" ? <Settings size={18} stroke={isFocused ? parchment.ink : parchment.inkMuted} /> : null}
               <Text style={isFocused ? styles.labelActive : styles.label}>{label}</Text>
             </Pressable>
           );
@@ -73,17 +67,18 @@ const styles = StyleSheet.create({
   wrap: {
     paddingTop: 12,
     paddingHorizontal: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: parchment.background,
   },
   bar: {
+    ...parchmentShadow,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-around",
     height: 64,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: parchment.borderStrong,
+    backgroundColor: parchment.surface,
     padding: 4,
   },
   item: {
@@ -95,12 +90,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   labelActive: {
-    color: colors.textPrimary,
+    color: parchment.ink,
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   label: {
-    color: colors.textMuted,
+    color: parchment.inkMuted,
     fontSize: 10,
     fontWeight: "500",
   },

@@ -17,19 +17,8 @@ import {
 } from "@/game/tactics/labels";
 import { useTactics } from "@/hooks/useTactics";
 import { TranslationKey, useI18n } from "@/i18n";
+import { parchment, parchmentShadow } from "@/theme/parchment";
 import { CharacterRecord, ClassId } from "@/types/models";
-
-const colors = {
-  bgPrimary: "#ffffff",
-  bgSurface: "#f5f5f5",
-  textPrimary: "#1a1a1a",
-  textStrong: "#555555",
-  textSecondary: "#666666",
-  textTertiary: "#888888",
-  textMuted: "#999999",
-  borderDefault: "#e0e0e0",
-  iconDark: "#111111",
-} as const;
 
 const CLASS_NAME_KEYS: Record<ClassId, TranslationKey> = {
   GUARDIAN: "class.name.guardian",
@@ -194,7 +183,7 @@ export default function CharacterDetailScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Pressable style={styles.iconBtn} onPress={() => router.back()}>
-            <ArrowLeft size={18} stroke={colors.textPrimary} />
+            <ArrowLeft size={18} stroke={parchment.ink} />
           </Pressable>
           <Text style={styles.headerTitle} numberOfLines={1}>
             {character.name}
@@ -304,7 +293,7 @@ export default function CharacterDetailScreen() {
                         {ruleSummary}
                       </Text>
                     </View>
-                    <GripVertical size={14} stroke={colors.textMuted} />
+                    <GripVertical size={14} stroke={parchment.inkMuted} />
                   </View>
                 );
               })}
@@ -319,7 +308,7 @@ export default function CharacterDetailScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.bgPrimary,
+    backgroundColor: parchment.background,
   },
   centerWrap: {
     flex: 1,
@@ -333,9 +322,9 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.bgPrimary,
+    backgroundColor: parchment.background,
   },
   headerLeft: {
     flexDirection: "row",
@@ -345,24 +334,31 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 12,
-    backgroundColor: colors.bgSurface,
+    borderRadius: 8,
+    backgroundColor: parchment.surface,
+    borderWidth: 1,
+    borderColor: parchment.goldLine,
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: {
     flexShrink: 1,
-    color: colors.textPrimary,
+    color: parchment.ink,
     fontSize: 20,
     fontWeight: "700",
   },
   profileCard: {
+    ...parchmentShadow,
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 14,
+    marginHorizontal: 16,
+    marginTop: 8,
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surfaceMuted,
   },
   avatarWrap: {
     width: 80,
@@ -379,54 +375,55 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   profileName: {
-    color: colors.textPrimary,
+    color: parchment.ink,
     fontSize: 20,
     fontWeight: "700",
   },
   profileSub: {
-    color: colors.textSecondary,
+    color: parchment.inkSoft,
     fontSize: 12,
     fontWeight: "500",
   },
   profileMeta: {
-    color: colors.textTertiary,
+    color: parchment.inkMuted,
     fontSize: 11,
   },
   statRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   statCard: {
     width: "48%",
     alignItems: "flex-start",
     gap: 4,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surfaceMuted,
     paddingVertical: 10,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
   },
   statLabel: {
-    color: colors.textTertiary,
+    color: parchment.inkMuted,
     fontSize: 10,
-    fontWeight: "500",
+    fontWeight: "700",
     letterSpacing: 0.4,
   },
   statValue: {
-    color: colors.textStrong,
+    color: parchment.ink,
     fontSize: 18,
     fontWeight: "700",
   },
   statSub: {
-    color: colors.textTertiary,
+    color: parchment.inkSoft,
     fontSize: 10,
   },
   section: {
     paddingTop: 14,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     gap: 10,
   },
   sectionHeader: {
@@ -435,16 +432,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   sectionLabel: {
-    color: colors.textSecondary,
+    color: parchment.inkSoft,
     fontSize: 11,
-    fontWeight: "500",
-    letterSpacing: 1.1,
+    fontWeight: "700",
+    letterSpacing: 1.8,
   },
   sectionIconButton: {
     width: 32,
     height: 32,
-    borderRadius: 12,
-    backgroundColor: colors.iconDark,
+    borderRadius: 8,
+    backgroundColor: parchment.headerBar,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -452,13 +449,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   equipmentRowCard: {
+    ...parchmentShadow,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surfaceMuted,
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
@@ -466,7 +464,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: "#111111",
+    backgroundColor: "rgba(59, 46, 30, 0.18)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -475,37 +473,38 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   rowSlotLabel: {
-    color: colors.textTertiary,
+    color: parchment.inkMuted,
     fontSize: 10,
   },
   rowItemName: {
-    color: colors.textPrimary,
+    color: parchment.ink,
     fontSize: 14,
     fontWeight: "600",
   },
   rowHintText: {
-    color: colors.textTertiary,
+    color: parchment.inkSoft,
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 0.6,
   },
   infoText: {
-    color: colors.textTertiary,
+    color: parchment.inkSoft,
     fontSize: 11,
     lineHeight: 16,
   },
   emptyText: {
-    color: colors.textTertiary,
+    color: parchment.inkSoft,
     fontSize: 12,
   },
   ruleCard: {
+    ...parchmentShadow,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.borderDefault,
-    backgroundColor: colors.bgSurface,
+    borderColor: parchment.goldLine,
+    backgroundColor: parchment.surfaceMuted,
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
@@ -526,12 +525,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ruleTitle: {
-    color: colors.textPrimary,
+    color: parchment.ink,
     fontSize: 13,
     fontWeight: "600",
   },
   ruleSub: {
-    color: colors.textTertiary,
+    color: parchment.inkSoft,
     fontSize: 10,
   },
 });

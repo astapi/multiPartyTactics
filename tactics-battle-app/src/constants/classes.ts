@@ -6,6 +6,7 @@ export type ClassInfo = {
   name: string;
   description: string;
   image: ImageSourcePropType;
+  frontImage: ImageSourcePropType;
   baseStats: {
     maxHp: number;
     atk: number;
@@ -24,6 +25,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Gurdian",
     description: "High defense frontline tank",
     image: require("@/assets/images/class/gurdian.png"),
+    frontImage: require("@/assets/images/class/gurdian_front.png"),
     baseStats: { maxHp: 120, atk: 8, def: 10, spi: 5, spd: 8, maxMp: 20, mpRegen: 2 },
     hiringCost: 5000,
   },
@@ -32,6 +34,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Swordman",
     description: "Balanced melee fighter",
     image: require("@/assets/images/class/swordman.png"),
+    frontImage: require("@/assets/images/class/swordman_front.png"),
     baseStats: { maxHp: 100, atk: 11, def: 8, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 },
     hiringCost: 5500,
   },
@@ -40,6 +43,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Berserker",
     description: "High-risk, high-damage bruiser",
     image: require("@/assets/images/class/berserker.png"),
+    frontImage: require("@/assets/images/class/berserker_front.png"),
     baseStats: { maxHp: 110, atk: 14, def: 6, spi: 4, spd: 9, maxMp: 18, mpRegen: 2 },
     hiringCost: 6000,
   },
@@ -48,6 +52,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Cleric (Preist)",
     description: "Support and healing specialist",
     image: require("@/assets/images/class/cleric.png"),
+    frontImage: require("@/assets/images/class/priest_front.png"),
     baseStats: { maxHp: 80, atk: 5, def: 6, spi: 13, spd: 10, maxMp: 35, mpRegen: 2 },
     hiringCost: 7000,
   },
@@ -56,6 +61,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Witch",
     description: "Powerful magic damage dealer",
     image: require("@/assets/images/class/witch.png"),
+    frontImage: require("@/assets/images/class/witch_front.png"),
     baseStats: { maxHp: 75, atk: 6, def: 5, spi: 15, spd: 11, maxMp: 30, mpRegen: 2 },
     hiringCost: 6500,
   },
@@ -64,6 +70,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Thief",
     description: "Fast and agile attacker",
     image: require("@/assets/images/class/thief.png"),
+    frontImage: require("@/assets/images/class/thief_front.png"),
     baseStats: { maxHp: 90, atk: 12, def: 5, spi: 6, spd: 12, maxMp: 25, mpRegen: 2 },
     hiringCost: 5500,
   },
@@ -72,6 +79,7 @@ export const CLASS_MASTER: ClassInfo[] = [
     name: "Porter",
     description: "Carries loot and supports the expedition",
     image: require("@/assets/images/class/thief.png"),
+    frontImage: require("@/assets/images/class/berserker_front.png"),
     baseStats: { maxHp: 95, atk: 7, def: 7, spi: 7, spd: 9, maxMp: 18, mpRegen: 2 },
     hiringCost: 4500,
   },
