@@ -1,5 +1,5 @@
 {
-  "version": "2.8",
+  "version": "2.9",
   "children": [
     {
       "type": "frame",
@@ -1982,6 +1982,8 @@
                 {
                   "type": "frame",
                   "id": "2kKMs",
+                  "x": 0,
+                  "y": 0,
                   "name": "headerAction",
                   "enabled": false,
                   "width": 36,
@@ -5062,6 +5064,8 @@
                 {
                   "type": "frame",
                   "id": "3Ikc0",
+                  "x": 0,
+                  "y": 0,
                   "name": "headerAction",
                   "enabled": false,
                   "width": 36,
@@ -40145,6 +40149,884 @@
                           "fontWeight": "500"
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "R0hNF",
+      "x": 7412,
+      "y": 6938,
+      "name": "PT Settings - Member Select",
+      "clip": true,
+      "width": 402,
+      "height": 874,
+      "fill": "#00000080",
+      "stroke": {
+        "align": "inside",
+        "thickness": 3,
+        "fill": [
+          "#C4B8A0",
+          "#A89878"
+        ]
+      },
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "A9KRO",
+          "x": 20,
+          "y": 160,
+          "name": "Modal Content",
+          "width": 362,
+          "height": 600,
+          "fill": [
+            {
+              "type": "gradient",
+              "gradientType": "radial",
+              "enabled": true,
+              "rotation": 0,
+              "size": {
+                "width": 1.6,
+                "height": 1.6
+              },
+              "colors": [
+                {
+                  "color": "#F5EDE0",
+                  "position": 0
+                },
+                {
+                  "color": "#E8DCC8",
+                  "position": 0.6
+                },
+                {
+                  "color": "#DED0B8",
+                  "position": 1
+                }
+              ],
+              "center": {
+                "y": 0.3
+              }
+            },
+            {
+              "type": "gradient",
+              "gradientType": "radial",
+              "enabled": true,
+              "opacity": 0.15,
+              "rotation": 0,
+              "size": {
+                "width": 0.4,
+                "height": 0.4
+              },
+              "colors": [
+                {
+                  "color": "#C4A87000",
+                  "position": 0
+                },
+                {
+                  "color": "#C4A87060",
+                  "position": 0.5
+                },
+                {
+                  "color": "#C4A87000",
+                  "position": 1
+                }
+              ],
+              "center": {
+                "x": 0.2,
+                "y": 0.1
+              }
+            }
+          ],
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#C4B8A060"
+          },
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "SER92",
+              "name": "Modal Header",
+              "width": "fill_container",
+              "gap": 8,
+              "padding": [
+                14,
+                16
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GvQqV",
+                  "name": "backRow",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "LMHCk",
+                      "name": "backIcon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "#7A6B55"
+                    },
+                    {
+                      "type": "text",
+                      "id": "s5cz4",
+                      "name": "backTitle",
+                      "fill": "#3B2E1E",
+                      "content": "メンバー選択",
+                      "fontFamily": "Source Serif 4",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dnE1Q",
+                  "name": "slotBadge",
+                  "fill": "#3B2E1E10",
+                  "cornerRadius": 12,
+                  "gap": 4,
+                  "padding": [
+                    4,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "yG7Jg",
+                      "name": "slotIcn",
+                      "width": 12,
+                      "height": 12,
+                      "iconFontName": "user",
+                      "iconFontFamily": "lucide",
+                      "fill": "#7A6B55"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eVlMg",
+                      "name": "slotTxt2",
+                      "fill": "#7A6B55",
+                      "content": "スロット 1",
+                      "fontFamily": "Barlow Semi Condensed",
+                      "fontSize": 10,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0jxHC",
+              "name": "divH",
+              "width": "fill_container",
+              "height": 1,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 0,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#C4A87000",
+                    "position": 0
+                  },
+                  {
+                    "color": "#C4A87080",
+                    "position": 0.5
+                  },
+                  {
+                    "color": "#C4A87000",
+                    "position": 1
+                  }
+                ]
+              }
+            },
+            {
+              "type": "frame",
+              "id": "wFZ6L",
+              "name": "Member List",
+              "clip": true,
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Mrs3J",
+                  "name": "Row Gareth Selected",
+                  "width": "fill_container",
+                  "fill": "#3B2E1E08",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": {
+                      "bottom": 2,
+                      "left": 3
+                    },
+                    "fill": "#8B6B4050"
+                  },
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KiXaP",
+                      "name": "face1",
+                      "clip": true,
+                      "width": 44,
+                      "height": 44,
+                      "cornerRadius": 8,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 2,
+                        "fill": "#8B6B40"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "2RZGR",
+                          "x": -20,
+                          "y": -6,
+                          "name": "img1",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "images/gurdian_front.png",
+                            "mode": "fill"
+                          },
+                          "width": 80,
+                          "height": 120
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WQY8X",
+                      "name": "info1",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hmNug",
+                          "name": "name1",
+                          "fill": "#3B2E1E",
+                          "content": "Gareth",
+                          "fontFamily": "Source Serif 4",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Bh8Ra",
+                          "name": "sub1",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "4X7yI",
+                              "name": "job1",
+                              "fill": "#7A6B55",
+                              "content": "Guardian",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "CqCV6",
+                              "name": "lv1",
+                              "fill": "#8B6B40",
+                              "content": "Lv.8",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Dn2aT",
+                      "name": "selBadge",
+                      "fill": "#3B2E1E",
+                      "cornerRadius": 4,
+                      "gap": 4,
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "aZOFo",
+                          "name": "selIcn",
+                          "width": 12,
+                          "height": 12,
+                          "iconFontName": "check",
+                          "iconFontFamily": "lucide",
+                          "fill": "#F5EDE0"
+                        },
+                        {
+                          "type": "text",
+                          "id": "76xkJ",
+                          "name": "selTx",
+                          "fill": "#F5EDE0",
+                          "content": "選択中",
+                          "fontFamily": "Barlow Semi Condensed",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8COIl",
+                  "name": "Row Kael",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": {
+                      "bottom": 1
+                    },
+                    "fill": "#C4A87030"
+                  },
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SjiqI",
+                      "name": "face-kael",
+                      "clip": true,
+                      "width": 44,
+                      "height": 44,
+                      "cornerRadius": 8,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "s5hDI",
+                          "x": -20,
+                          "y": -6,
+                          "name": "img1",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "images/thief_front.png",
+                            "mode": "fill"
+                          },
+                          "width": 80,
+                          "height": 120
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QzrxQ",
+                      "name": "info-kael",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "2N7Gg",
+                          "name": "name1",
+                          "fill": "#3B2E1E",
+                          "content": "Kael",
+                          "fontFamily": "Source Serif 4",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zTF8b",
+                          "name": "sub1",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QPXqM",
+                              "name": "job1",
+                              "fill": "#7A6B55",
+                              "content": "Blade Dancer",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "508Iu",
+                              "name": "lv1",
+                              "fill": "#8B6B40",
+                              "content": "Lv.3",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PaSZG",
+                      "name": "btn1",
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#8B7A5C"
+                      },
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "6a4mw",
+                          "name": "btnTx1",
+                          "fill": "#5C4A34",
+                          "content": "選択",
+                          "fontFamily": "Barlow Semi Condensed",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bHH18",
+                  "name": "Row Mira",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": {
+                      "bottom": 1
+                    },
+                    "fill": "#C4A87030"
+                  },
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TwNux",
+                      "name": "face-mira",
+                      "clip": true,
+                      "width": 44,
+                      "height": 44,
+                      "cornerRadius": 8,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "eYQPF",
+                          "x": -20,
+                          "y": -6,
+                          "name": "img2",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "images/priest_front.png",
+                            "mode": "fill"
+                          },
+                          "width": 80,
+                          "height": 120
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HJDRD",
+                      "name": "info-mira",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YMXqs",
+                          "name": "name2",
+                          "fill": "#3B2E1E",
+                          "content": "Mira",
+                          "fontFamily": "Source Serif 4",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rMs3r",
+                          "name": "sub2",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MPv92",
+                              "name": "job2",
+                              "fill": "#7A6B55",
+                              "content": "Cleric",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "zpp0U",
+                              "name": "lv2",
+                              "fill": "#8B6B40",
+                              "content": "Lv.6",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NRwAF",
+                      "name": "btn2",
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#8B7A5C"
+                      },
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KMlDA",
+                          "name": "btnTx2",
+                          "fill": "#5C4A34",
+                          "content": "選択",
+                          "fontFamily": "Barlow Semi Condensed",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "zXcC0",
+                  "name": "Row Bjorn",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": {
+                      "bottom": 1
+                    },
+                    "fill": "#C4A87030"
+                  },
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UoUEu",
+                      "name": "face-bjorn",
+                      "clip": true,
+                      "width": 44,
+                      "height": 44,
+                      "cornerRadius": 8,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "aOZTw",
+                          "x": -20,
+                          "y": -6,
+                          "name": "img3",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "images/berserker_front.png",
+                            "mode": "fill"
+                          },
+                          "width": 80,
+                          "height": 120
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "0NWbE",
+                      "name": "info-bjorn",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "2tQ9t",
+                          "name": "name3",
+                          "fill": "#3B2E1E",
+                          "content": "Bjorn",
+                          "fontFamily": "Source Serif 4",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uO3Ps",
+                          "name": "sub3",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CBNAR",
+                              "name": "job3",
+                              "fill": "#7A6B55",
+                              "content": "Berserker",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "8K3hn",
+                              "name": "lv3",
+                              "fill": "#8B6B40",
+                              "content": "Lv.10",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yqn9C",
+                      "name": "btn3",
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#8B7A5C"
+                      },
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "6qotI",
+                          "name": "btnTx3",
+                          "fill": "#5C4A34",
+                          "content": "選択",
+                          "fontFamily": "Barlow Semi Condensed",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lT1UA",
+                  "name": "Row Elara InParty",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": {
+                      "bottom": 1
+                    },
+                    "fill": "#C4A87030"
+                  },
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LAMIy",
+                      "name": "face-elara",
+                      "clip": true,
+                      "width": 44,
+                      "height": 44,
+                      "cornerRadius": 8,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "wyCdb",
+                          "x": -20,
+                          "y": -6,
+                          "name": "img4",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "images/witch_front.png",
+                            "mode": "fill"
+                          },
+                          "width": 80,
+                          "height": 120
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "5fa9n",
+                      "name": "info-elara",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HuEpF",
+                          "name": "name4",
+                          "fill": "#3B2E1E",
+                          "content": "Elara",
+                          "fontFamily": "Source Serif 4",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oGh8T",
+                          "name": "sub4",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "s2wbn",
+                              "name": "job4",
+                              "fill": "#7A6B55",
+                              "content": "Arcane Mage",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "PAG4g",
+                              "name": "lv4",
+                              "fill": "#8B6B40",
+                              "content": "Lv.5",
+                              "fontFamily": "Barlow Semi Condensed",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vIhEh",
+                      "name": "badge4",
+                      "fill": "#C4A87020",
+                      "cornerRadius": 4,
+                      "padding": [
+                        6,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RIfdV",
+                          "name": "badgeTx4",
+                          "fill": "#A0937F",
+                          "content": "スロット 2",
+                          "fontFamily": "Barlow Semi Condensed",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "pmC9X",
+                  "name": "footer",
+                  "width": "fill_container",
+                  "padding": [
+                    8,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sYWWL",
+                      "name": "footerTx",
+                      "fill": "#A0937F",
+                      "content": "編成済みのメンバーは他のPTから外れます",
+                      "fontFamily": "Barlow Semi Condensed",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
                     }
                   ]
                 }

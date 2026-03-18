@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { Compass, Flag, Layers3, Minus, Plus, Repeat, Square, Users } from "lucide-react-native";
-import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Compass, Layers3, Repeat, Square } from "lucide-react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getClassById } from "@/constants/classes";
@@ -12,7 +12,6 @@ import { partiesRepository } from "@/db/repositories/partiesRepository";
 import { buildDungeonPartyCardState, DungeonPartyCardAction } from "@/features/dungeon/partyCardState";
 import {
   DEFAULT_DUNGEON_RETURN_CONDITION,
-  DUNGEON_RETURN_CONDITIONS,
   normalizeDungeonReturnCondition,
 } from "@/game/explorationReturn";
 import { useI18n } from "@/i18n";
@@ -98,11 +97,6 @@ export default function DungeonScreen() {
   const [uiStateMap, setUiStateMap] = useState<Record<string, DungeonPartyUiStateRecord>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pickerPartyId, setPickerPartyId] = useState<string | null>(null);
-  const [draftSelectedFloor, setDraftSelectedFloor] = useState<number | null>(null);
-  const [draftReturnCondition, setDraftReturnCondition] = useState<DungeonReturnCondition>(
-    DEFAULT_DUNGEON_RETURN_CONDITION
-  );
 
   useFocusEffect(
     useCallback(() => {
@@ -157,28 +151,6 @@ export default function DungeonScreen() {
     () => new Map(floorProgressList.map((row) => [row.floor, row] as const)),
     [floorProgressList]
   );
-  const partyById = useMemo(
-    () => new Map(parties.map((entry) => [entry.party.id, entry] as const)),
-    [parties]
-  );
-  const partyIndexById = useMemo(
-    () =>
-      new Map(
-        parties.map((entry, index) => [entry.party.id, index + 1] as const)
-      ),
-    [parties]
-  );
-  const pickerParty = pickerPartyId ? partyById.get(pickerPartyId) ?? null : null;
-  const pickerUiState = pickerPartyId ? uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID) : null;
-  const pickerSelectedFloor = useMemo(
-    () =>
-      sanitizeSelectedFloor({
-        floor: pickerUiState?.selectedFloor ?? null,
-        maxUnlockedFloor,
-        maxFloor,
-      }),
-    [maxFloor, maxUnlockedFloor, pickerUiState?.selectedFloor]
-  );
   const upsertUiState = useCallback(
     async (next: Omit<DungeonPartyUiStateRecord, "updatedAt">) => {
       await dungeonPartyUiRepository.upsert(next);
@@ -193,65 +165,15 @@ export default function DungeonScreen() {
     []
   );
 
-  const openFloorPicker = useCallback((partyId: string) => {
-    const current = uiStateMap[partyId] ?? defaultUiState(partyId, DEFAULT_DUNGEON_ID);
-    setPickerPartyId(partyId);
-    setDraftSelectedFloor(
-      sanitizeSelectedFloor({
-        floor: current.selectedFloor,
-        maxUnlockedFloor,
-        maxFloor,
-      })
-    );
-    setDraftReturnCondition(normalizeDungeonReturnCondition(current.returnCondition));
-  }, [maxFloor, maxUnlockedFloor, uiStateMap]);
-
-  const closeFloorPicker = useCallback(() => {
-    setPickerPartyId(null);
-    setDraftSelectedFloor(null);
-    setDraftReturnCondition(DEFAULT_DUNGEON_RETURN_CONDITION);
-  }, []);
-
-  const handleSelectFloor = useCallback(
-    (floor: number) => {
-      const clampedFloor = clampFloor(floor, maxFloor);
-      if (clampedFloor > maxUnlockedFloor) {
-        return;
-      }
-      setDraftSelectedFloor(clampedFloor);
+  const openPartySettings = useCallback(
+    (partyId: string) => {
+      router.push({
+        pathname: "/dungeon/settings",
+        params: { partyId },
+      });
     },
-    [maxFloor, maxUnlockedFloor]
+    [router]
   );
-
-  const handleSelectReturnCondition = useCallback((returnCondition: DungeonReturnCondition) => {
-    setDraftReturnCondition(normalizeDungeonReturnCondition(returnCondition));
-  }, []);
-
-  const stepDraftFloor = useCallback(
-    (delta: number) => {
-      const baseFloor = draftSelectedFloor ?? maxUnlockedFloor;
-      const nextFloor = clampFloor(baseFloor + delta, maxFloor);
-      if (nextFloor > maxUnlockedFloor) {
-        return;
-      }
-      setDraftSelectedFloor(nextFloor);
-    },
-    [draftSelectedFloor, maxFloor, maxUnlockedFloor]
-  );
-
-  const handleSavePicker = useCallback(async () => {
-    if (!pickerPartyId) return;
-    const current = uiStateMap[pickerPartyId] ?? defaultUiState(pickerPartyId, DEFAULT_DUNGEON_ID);
-    await upsertUiState({
-      ...current,
-      partyId: pickerPartyId,
-      dungeonId: DEFAULT_DUNGEON_ID,
-      selectedFloor: draftSelectedFloor,
-      returnCondition: normalizeDungeonReturnCondition(draftReturnCondition),
-      mode: "IDLE",
-    });
-    closeFloorPicker();
-  }, [closeFloorPicker, draftReturnCondition, draftSelectedFloor, pickerPartyId, uiStateMap, upsertUiState]);
 
   const handlePartyAction = useCallback(
     async (partyId: string, action: DungeonPartyCardAction) => {
@@ -263,11 +185,11 @@ export default function DungeonScreen() {
       });
 
       if (action === "selectFloor") {
-        openFloorPicker(partyId);
+        openPartySettings(partyId);
         return;
       }
       if (!selectedFloor) {
-        openFloorPicker(partyId);
+        openPartySettings(partyId);
         return;
       }
 
@@ -315,7 +237,7 @@ export default function DungeonScreen() {
         });
       }
     },
-    [maxFloor, maxUnlockedFloor, openFloorPicker, router, uiStateMap, upsertUiState]
+    [maxFloor, maxUnlockedFloor, openPartySettings, router, uiStateMap, upsertUiState]
   );
 
   const renderActionButton = useCallback(
@@ -509,79 +431,81 @@ export default function DungeonScreen() {
             <View
               style={[styles.partyCard, isIdleCard ? styles.partyCardIdle : styles.partyCardActiveLike]}
             >
-              <View style={styles.partyCardTop}>
-                <View style={styles.partyTopRow}>
-                  <Text style={styles.partyName} numberOfLines={1}>{`PT ${index + 1}`}</Text>
-                  <Pressable style={styles.floorTopWrap} onPress={() => openFloorPicker(entry.party.id)}>
-                    <Layers3 size={18} stroke={"#a68350"} />
-                    <Text style={styles.floorTopText}>{cardState.floor ? `B${cardState.floor}` : "--"}</Text>
-                  </Pressable>
-                </View>
-                <View style={styles.membersRow}>
-                  {memberSlots.map((member, slotIndex) => {
-                    const empty = member === null;
-                    return (
-                      <View key={`party-member-${entry.party.id}-${slotIndex}`} style={styles.memberItem}>
-                        <View style={[styles.memberAvatar, empty ? styles.memberAvatarEmpty : null]}>
-                          {empty ? (
-                            <Text style={styles.cardMemberAddText}>+</Text>
-                          ) : (
-                            <View style={styles.memberAvatarClip}>
-                              <Image
-                                source={getClassById(member.classId).image}
-                                style={styles.memberAvatarImage}
-                                resizeMode="contain"
-                              />
-                            </View>
-                          )}
+              <View style={styles.partyCardContent}>
+                <Pressable style={styles.partyCardTop} onPress={() => openPartySettings(entry.party.id)}>
+                  <View style={styles.partyTopRow}>
+                    <Text style={styles.partyName} numberOfLines={1}>{`PT ${index + 1}`}</Text>
+                    <View style={styles.floorTopWrap}>
+                      <Layers3 size={18} stroke={"#a68350"} />
+                      <Text style={styles.floorTopText}>{cardState.floor ? `B${cardState.floor}` : "--"}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.membersRow}>
+                    {memberSlots.map((member, slotIndex) => {
+                      const empty = member === null;
+                      return (
+                        <View key={`party-member-${entry.party.id}-${slotIndex}`} style={styles.memberItem}>
+                          <View style={[styles.memberAvatar, empty ? styles.memberAvatarEmpty : null]}>
+                            {empty ? (
+                              <Text style={styles.cardMemberAddText}>+</Text>
+                            ) : (
+                              <View style={styles.memberAvatarClip}>
+                                <Image
+                                  source={getClassById(member.classId).image}
+                                  style={styles.memberAvatarImage}
+                                  resizeMode="contain"
+                                />
+                              </View>
+                            )}
+                          </View>
                         </View>
-                      </View>
-                    );
-                  })}
-                </View>
-                <View style={styles.statusRow}>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      badge.tone === "warning"
-                        ? styles.statusBadgeWarning
-                        : badge.tone === "success"
-                          ? styles.statusBadgeSuccess
-                          : styles.statusBadgeMuted,
-                    ]}
-                  >
-                    <Text
+                      );
+                    })}
+                  </View>
+                  <View style={styles.statusRow}>
+                    <View
                       style={[
-                        styles.statusBadgeText,
+                        styles.statusBadge,
                         badge.tone === "warning"
-                          ? styles.statusBadgeTextWarning
+                          ? styles.statusBadgeWarning
                           : badge.tone === "success"
-                            ? styles.statusBadgeTextSuccess
-                            : styles.statusBadgeTextMuted,
+                            ? styles.statusBadgeSuccess
+                            : styles.statusBadgeMuted,
                       ]}
                     >
-                      {badge.label}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.statusBadgeText,
+                          badge.tone === "warning"
+                            ? styles.statusBadgeTextWarning
+                            : badge.tone === "success"
+                              ? styles.statusBadgeTextSuccess
+                              : styles.statusBadgeTextMuted,
+                        ]}
+                      >
+                        {badge.label}
+                      </Text>
+                    </View>
+                    {statusNote ? <Text style={styles.statusNote}>{statusNote}</Text> : <View style={styles.statusNoteSpacer} />}
                   </View>
-                  {statusNote ? <Text style={styles.statusNote}>{statusNote}</Text> : <View style={styles.statusNoteSpacer} />}
-                </View>
 
-                {cardState.showAutoStats ? (
-                  <View style={styles.autoStatsRow}>
-                    <View style={styles.autoStatItem}>
-                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statRuns")}</Text>
-                      <Text style={styles.autoStatValue}>{uiState.autoRunCount}</Text>
+                  {cardState.showAutoStats ? (
+                    <View style={styles.autoStatsRow}>
+                      <View style={styles.autoStatItem}>
+                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statRuns")}</Text>
+                        <Text style={styles.autoStatValue}>{uiState.autoRunCount}</Text>
+                      </View>
+                      <View style={styles.autoStatItem}>
+                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statLoot")}</Text>
+                        <Text style={styles.autoStatValue}>{uiState.autoLootCount}</Text>
+                      </View>
+                      <View style={styles.autoStatItem}>
+                        <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statElapsed")}</Text>
+                        <Text style={styles.autoStatValue}>{formatElapsedShort(uiState.autoElapsedSeconds)}</Text>
+                      </View>
                     </View>
-                    <View style={styles.autoStatItem}>
-                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statLoot")}</Text>
-                      <Text style={styles.autoStatValue}>{uiState.autoLootCount}</Text>
-                    </View>
-                    <View style={styles.autoStatItem}>
-                      <Text style={styles.autoStatLabel}>{t("dungeon.ui.auto.statElapsed")}</Text>
-                      <Text style={styles.autoStatValue}>{formatElapsedShort(uiState.autoElapsedSeconds)}</Text>
-                    </View>
-                  </View>
-                ) : null}
+                  ) : null}
+                </Pressable>
 
                 <View style={styles.actionRow}>
                   {renderActionButton({
@@ -615,117 +539,6 @@ export default function DungeonScreen() {
           );
         }}
       />
-
-      <Modal transparent visible={pickerPartyId !== null} animationType="fade" onRequestClose={closeFloorPicker}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {pickerPartyId ? `PT ${partyIndexById.get(pickerPartyId) ?? 1} 設定` : t("dungeon.ui.floorPicker.title")}
-              </Text>
-              <Pressable onPress={closeFloorPicker}>
-                <Text style={styles.modalCloseText}>×</Text>
-              </Pressable>
-            </View>
-            <View style={styles.modalDivider} />
-
-            <View style={styles.modalSection}>
-              <View style={styles.modalLabelRow}>
-                <Users size={14} stroke={"#5C4A34"} />
-                <Text style={styles.modalLabelText}>{locale === "ja" ? "メンバー編成" : "Members"}</Text>
-              </View>
-              <View style={styles.modalMemberRow}>
-                {Array.from({ length: 6 }).map((_, slotIndex) => {
-                  const member = pickerParty?.members.find((row) => row.slotIndex === slotIndex) ?? null;
-                  return (
-                    <Pressable
-                      key={`modal-member-${slotIndex}`}
-                      style={styles.memberCell}
-                      onPress={() =>
-                        pickerParty &&
-                        router.push({
-                          pathname: "/dungeon/party",
-                          params: { partyId: pickerParty.party.id },
-                        })
-                      }
-                    >
-                      <View style={[styles.modalMemberAvatar, !member ? styles.modalMemberAvatarEmpty : null]}>
-                        {member ? (
-                          <View style={styles.modalMemberAvatarClip}>
-                            <Image source={getClassById(member.classId).image} style={styles.modalMemberAvatarImage} resizeMode="contain" />
-                          </View>
-                        ) : (
-                          <Text style={styles.memberAddText}>+</Text>
-                        )}
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <Text style={styles.modalHintText}>{locale === "ja" ? "タップでメンバーを変更" : "Tap to edit members"}</Text>
-            </View>
-
-            <View style={styles.modalDivider} />
-
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>{locale === "ja" ? "探索階層の設定" : "Floor"}</Text>
-              <View style={styles.floorStepper}>
-                <Pressable style={styles.floorStepperButton} onPress={() => stepDraftFloor(-1)}>
-                  <Minus size={16} stroke={colors.textPrimary} />
-                </Pressable>
-                <View style={styles.floorStepperValueWrap}>
-                  <Text style={styles.floorStepperValue}>{`B${draftSelectedFloor ?? maxUnlockedFloor}`}</Text>
-                </View>
-                <Pressable style={styles.floorStepperButton} onPress={() => stepDraftFloor(1)}>
-                  <Plus size={16} stroke={colors.textPrimary} />
-                </Pressable>
-              </View>
-              <Text style={styles.modalHintText}>
-                {locale === "ja" ? `最深到達: B${maxUnlockedFloor} まで設定可能` : `Up to B${maxUnlockedFloor}`}
-              </Text>
-            </View>
-
-            <View style={styles.modalDivider} />
-
-            <View style={styles.modalSection}>
-              <View style={styles.modalLabelRow}>
-                <Flag size={14} stroke={"#5C4A34"} />
-                <Text style={styles.modalLabelText}>{locale === "ja" ? "帰還条件" : t("dungeon.ui.returnConditionPicker.title")}</Text>
-              </View>
-              <View style={styles.returnConditionList}>
-                {DUNGEON_RETURN_CONDITIONS.map((returnCondition) => {
-                  const active = returnCondition === draftReturnCondition;
-                  return (
-                    <Pressable
-                      key={`picker-return-condition-${returnCondition}`}
-                      style={[styles.returnConditionRow, active ? styles.returnConditionRowActive : null]}
-                      onPress={() => handleSelectReturnCondition(returnCondition)}
-                    >
-                      <View style={[styles.radioOuter, active ? styles.radioOuterActive : null]}>
-                        {active ? <View style={styles.radioInner} /> : null}
-                      </View>
-                      <Text style={[styles.returnConditionText, active ? styles.returnConditionTextActive : null]}>
-                        {t(`dungeon.ui.returnCondition.${returnCondition}` as any)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-
-            <View style={styles.modalDivider} />
-
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.modalCancelButton} onPress={closeFloorPicker}>
-                <Text style={styles.modalCancelButtonText}>{t("common.cancel")}</Text>
-              </Pressable>
-              <Pressable style={styles.modalSaveButton} onPress={() => void handleSavePicker()}>
-                <Text style={styles.modalSaveButtonText}>{locale === "ja" ? "保存する" : "Save"}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -777,7 +590,8 @@ const styles = StyleSheet.create({
   },
   partyCardActiveLike: { backgroundColor: "rgba(245, 237, 224, 0.12)" },
   partyCardIdle: { backgroundColor: "rgba(245, 237, 224, 0.12)" },
-  partyCardTop: { gap: 10, paddingHorizontal: 12, paddingVertical: 12 },
+  partyCardContent: { gap: 10, paddingHorizontal: 12, paddingVertical: 12 },
+  partyCardTop: { gap: 10 },
   partyTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   partyName: { color: "#3B2E1E", fontFamily: "Source Serif 4", fontSize: 14, fontWeight: "700" },
   floorTopWrap: {
@@ -837,8 +651,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 8,
-    width: "100%",
-    alignSelf: "flex-end",
   },
   actionButton: {
     minHeight: 38,

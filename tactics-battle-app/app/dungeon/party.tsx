@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Check, Package, Pencil, Plus, Shield, Trash2 } from "lucide-react-native";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -38,7 +38,7 @@ const CLASS_NAME_KEYS: Record<CharacterRecord["classId"], TranslationKey> = {
 
 export default function DungeonPartyScreen() {
   const router = useRouter();
-  const { partyId: routePartyId } = useLocalSearchParams<{ partyId?: string }>();
+  const { partyId: routePartyId, slotIndex: routeSlotIndex } = useLocalSearchParams<{ partyId?: string; slotIndex?: string }>();
   const { t, locale } = useI18n();
 
   const selectedPartyId = useSelectedPartyStore((state) => state.selectedPartyId);
@@ -74,6 +74,20 @@ export default function DungeonPartyScreen() {
       void loadData();
     }, [loadData])
   );
+
+  useEffect(() => {
+    if (typeof routeSlotIndex !== "string") return;
+    if (routePartyId && routePartyId !== selectedPartyId) return;
+
+    const parsedSlot = Number(routeSlotIndex);
+    if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 5) {
+      router.setParams({ slotIndex: undefined });
+      return;
+    }
+
+    setSelectedSlot(parsedSlot);
+    router.setParams({ slotIndex: undefined });
+  }, [routePartyId, routeSlotIndex, router, selectedPartyId]);
 
   const selectedParty = useMemo(
     () => partiesWithMembers.find((entry) => entry.party.id === selectedPartyId) ?? null,
