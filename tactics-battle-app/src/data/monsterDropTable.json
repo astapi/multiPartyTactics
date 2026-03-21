@@ -1,9 +1,29 @@
 {
   "drops": [
     {
+      "enemyId": "abyss_dragon",
+      "gold": 64,
+      "baseItemIds": ["dragon_scale_sword", "dragon_scale_shield"]
+    },
+    {
       "enemyId": "acid_slime",
       "gold": 13,
       "baseItemIds": ["crystal_throwing_knife"]
+    },
+    {
+      "enemyId": "adult_dragon",
+      "gold": 58,
+      "baseItemIds": ["dragon_fang_sword", "dragon_scale_shield"]
+    },
+    {
+      "enemyId": "ancient_giant",
+      "gold": 58,
+      "baseItemIds": ["giant_bone_sword"]
+    },
+    {
+      "enemyId": "archlich",
+      "gold": 56,
+      "baseItemIds": ["soul_core_staff"]
     },
     {
       "enemyId": "banshee",
@@ -26,6 +46,11 @@
       "baseItemIds": ["crystal_edge_axe"]
     },
     {
+      "enemyId": "construct_core",
+      "gold": 58,
+      "baseItemIds": ["crystal_shortblade", "crystal_staff"]
+    },
+    {
       "enemyId": "construct_proto",
       "gold": 48,
       "baseItemIds": ["crystal_shortblade"]
@@ -46,6 +71,26 @@
       "baseItemIds": ["dragon_bone_maul"]
     },
     {
+      "enemyId": "demon_knight",
+      "gold": 56,
+      "baseItemIds": ["dreadbeast_blade", "dragon_bone_axe"]
+    },
+    {
+      "enemyId": "demon_mage",
+      "gold": 52,
+      "baseItemIds": ["soul_core_staff"]
+    },
+    {
+      "enemyId": "demon_soldier",
+      "gold": 54,
+      "baseItemIds": ["dragon_bone_axe"]
+    },
+    {
+      "enemyId": "demon_warlord",
+      "gold": 62,
+      "baseItemIds": ["dreadbeast_axe", "dragon_scale_sword"]
+    },
+    {
       "enemyId": "dragon_whelp",
       "gold": 38,
       "baseItemIds": ["dragon_fang_sword"]
@@ -54,6 +99,11 @@
       "enemyId": "elder_cyclops",
       "gold": 52,
       "baseItemIds": ["twinstring_bone_bow"]
+    },
+    {
+      "enemyId": "elder_dragon",
+      "gold": 62,
+      "baseItemIds": ["dragon_scale_sword", "dragon_scale_shield"]
     },
     {
       "enemyId": "feral_rat",
@@ -104,6 +154,11 @@
       "enemyId": "golem",
       "gold": 48,
       "baseItemIds": ["crystal_edge_axe"]
+    },
+    {
+      "enemyId": "greater_demon",
+      "gold": 58,
+      "baseItemIds": ["dreadbeast_blade", "soul_core_staff"]
     },
     {
       "enemyId": "hill_giant",
@@ -179,6 +234,21 @@
       "enemyId": "lizardman_warrior",
       "gold": 26,
       "baseItemIds": ["dragon_claw_dagger"]
+    },
+    {
+      "enemyId": "lesser_demon",
+      "gold": 50,
+      "baseItemIds": ["crystal_staff"]
+    },
+    {
+      "enemyId": "lich_lord",
+      "gold": 60,
+      "baseItemIds": ["soul_core_staff", "skeleton_staff"]
+    },
+    {
+      "enemyId": "lich_mage",
+      "gold": 54,
+      "baseItemIds": ["skeleton_staff"]
     },
     {
       "enemyId": "minotaur",
@@ -261,6 +331,11 @@
       "baseItemIds": ["bone_dagger"]
     },
     {
+      "enemyId": "poison_toad",
+      "gold": 18,
+      "baseItemIds": ["carapace_shield"]
+    },
+    {
       "enemyId": "rock_lizard",
       "gold": 22,
       "baseItemIds": ["stone_hide_sword"]
@@ -339,6 +414,11 @@
       "enemyId": "war_troll",
       "gold": 44,
       "baseItemIds": ["dragon_bone_axe"]
+    },
+    {
+      "enemyId": "war_giant",
+      "gold": 54,
+      "baseItemIds": ["giant_bone_sword", "stone_hide_shield"]
     },
     {
       "enemyId": "wolf",
