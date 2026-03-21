@@ -4,7 +4,7 @@
       "id": "abyss_dragon",
       "name": "Abyss Dragon",
       "stats": {
-        "maxHp": 673,
+        "maxHp": 2019,
         "atk": 159,
         "def": 52,
         "spd": 24,
@@ -16,7 +16,7 @@
       "id": "acid_slime",
       "name": "Acid Slime",
       "stats": {
-        "maxHp": 9,
+        "maxHp": 27,
         "atk": 15,
         "def": 6,
         "spd": 8,
@@ -28,7 +28,7 @@
       "id": "adult_dragon",
       "name": "Adult Dragon",
       "stats": {
-        "maxHp": 528,
+        "maxHp": 1584,
         "atk": 121,
         "def": 42,
         "spd": 17,
@@ -40,7 +40,7 @@
       "id": "ancient_giant",
       "name": "Ancient Giant",
       "stats": {
-        "maxHp": 404,
+        "maxHp": 1212,
         "atk": 102,
         "def": 35,
         "spd": 12,
@@ -52,7 +52,7 @@
       "id": "archlich",
       "name": "Archlich",
       "stats": {
-        "maxHp": 215,
+        "maxHp": 645,
         "atk": 41,
         "def": 22,
         "spd": 13,
@@ -64,7 +64,7 @@
       "id": "cave_troll",
       "name": "Cave Troll",
       "stats": {
-        "maxHp": 98,
+        "maxHp": 294,
         "atk": 39,
         "def": 17,
         "spd": 10,
@@ -76,7 +76,7 @@
       "id": "construct_artillery",
       "name": "Artillery Magitech",
       "stats": {
-        "maxHp": 171,
+        "maxHp": 513,
         "atk": 57,
         "def": 24,
         "spd": 9,
@@ -88,7 +88,7 @@
       "id": "construct_core",
       "name": "Core Magitech",
       "stats": {
-        "maxHp": 257,
+        "maxHp": 771,
         "atk": 71,
         "def": 33,
         "spd": 12,
@@ -100,7 +100,7 @@
       "id": "construct_proto",
       "name": "Prototype Magitech",
       "stats": {
-        "maxHp": 162,
+        "maxHp": 486,
         "atk": 47,
         "def": 24,
         "spd": 9,
@@ -112,7 +112,7 @@
       "id": "construct_shield",
       "name": "Shield Magitech",
       "stats": {
-        "maxHp": 216,
+        "maxHp": 648,
         "atk": 49,
         "def": 32,
         "spd": 8,
@@ -124,7 +124,7 @@
       "id": "construct_warp",
       "name": "Warp Magitech",
       "stats": {
-        "maxHp": 228,
+        "maxHp": 684,
         "atk": 63,
         "def": 30,
         "spd": 11,
@@ -136,7 +136,7 @@
       "id": "demon_knight",
       "name": "Demon Knight",
       "stats": {
-        "maxHp": 316,
+        "maxHp": 948,
         "atk": 84,
         "def": 32,
         "spd": 17,
@@ -148,7 +148,7 @@
       "id": "demon_mage",
       "name": "Demon Mage",
       "stats": {
-        "maxHp": 187,
+        "maxHp": 561,
         "atk": 46,
         "def": 22,
         "spd": 15,
@@ -160,7 +160,7 @@
       "id": "demon_soldier",
       "name": "Demon Soldier",
       "stats": {
-        "maxHp": 242,
+        "maxHp": 726,
         "atk": 70,
         "def": 28,
         "spd": 14,
@@ -172,7 +172,7 @@
       "id": "demon_warlord",
       "name": "Demon Warlord",
       "stats": {
-        "maxHp": 446,
+        "maxHp": 1338,
         "atk": 114,
         "def": 38,
         "spd": 24,
@@ -184,7 +184,7 @@
       "id": "dragon_whelp",
       "name": "Dragon Whelp",
       "stats": {
-        "maxHp": 306,
+        "maxHp": 918,
         "atk": 76,
         "def": 33,
         "spd": 13,
@@ -196,7 +196,7 @@
       "id": "elder_dragon",
       "name": "Elder Dragon",
       "stats": {
-        "maxHp": 597,
+        "maxHp": 1791,
         "atk": 137,
         "def": 46,
         "spd": 19,
@@ -208,7 +208,7 @@
       "id": "feral_rat",
       "name": "Feral Rat",
       "stats": {
-        "maxHp": 12,
+        "maxHp": 36,
         "atk": 18,
         "def": 4,
         "spd": 15,
@@ -220,7 +220,7 @@
       "id": "giant_rat",
       "name": "Giant Rat",
       "stats": {
-        "maxHp": 10,
+        "maxHp": 30,
         "atk": 14,
         "def": 5,
         "spd": 14,
@@ -232,7 +232,7 @@
       "id": "goblin",
       "name": "Goblin",
       "stats": {
-        "maxHp": 7,
+        "maxHp": 21,
         "atk": 18,
         "def": 6,
         "spd": 14,
@@ -244,7 +244,7 @@
       "id": "goblin_archer",
       "name": "Goblin Archer",
       "stats": {
-        "maxHp": 15,
+        "maxHp": 45,
         "atk": 19,
         "def": 6,
         "spd": 16,
@@ -256,7 +256,7 @@
       "id": "goblin_mage",
       "name": "Goblin Mage",
       "stats": {
-        "maxHp": 14,
+        "maxHp": 42,
         "atk": 14,
         "def": 5,
         "spd": 14,
@@ -268,7 +268,7 @@
       "id": "goblin_scout",
       "name": "Goblin Scout",
       "stats": {
-        "maxHp": 14,
+        "maxHp": 42,
         "atk": 16,
         "def": 5,
         "spd": 18,
@@ -280,7 +280,7 @@
       "id": "goblin_shaman",
       "name": "Goblin Shaman",
       "stats": {
-        "maxHp": 17,
+        "maxHp": 51,
         "atk": 18,
         "def": 7,
         "spd": 15,
@@ -292,7 +292,7 @@
       "id": "goblin_warrior",
       "name": "Goblin Warrior",
       "stats": {
-        "maxHp": 18,
+        "maxHp": 54,
         "atk": 21,
         "def": 7,
         "spd": 13,
@@ -304,7 +304,7 @@
       "id": "greater_demon",
       "name": "Greater Demon",
       "stats": {
-        "maxHp": 386,
+        "maxHp": 1158,
         "atk": 99,
         "def": 34,
         "spd": 20,
@@ -316,7 +316,7 @@
       "id": "hill_giant",
       "name": "Hill Giant",
       "stats": {
-        "maxHp": 230,
+        "maxHp": 690,
         "atk": 63,
         "def": 28,
         "spd": 9,
@@ -328,7 +328,7 @@
       "id": "hobgoblin",
       "name": "Hobgoblin",
       "stats": {
-        "maxHp": 20,
+        "maxHp": 60,
         "atk": 24,
         "def": 8,
         "spd": 15,
@@ -340,7 +340,7 @@
       "id": "iron_gargoyle",
       "name": "Iron Gargoyle",
       "stats": {
-        "maxHp": 124,
+        "maxHp": 372,
         "atk": 44,
         "def": 25,
         "spd": 11,
@@ -352,7 +352,7 @@
       "id": "kobold_captain",
       "name": "Kobold Captain",
       "stats": {
-        "maxHp": 21,
+        "maxHp": 63,
         "atk": 22,
         "def": 8,
         "spd": 15,
@@ -364,7 +364,7 @@
       "id": "kobold_mage",
       "name": "Kobold Mage",
       "stats": {
-        "maxHp": 13,
+        "maxHp": 39,
         "atk": 13,
         "def": 5,
         "spd": 15,
@@ -376,7 +376,7 @@
       "id": "kobold_scout",
       "name": "Kobold Scout",
       "stats": {
-        "maxHp": 14,
+        "maxHp": 42,
         "atk": 15,
         "def": 5,
         "spd": 19,
@@ -388,7 +388,7 @@
       "id": "kobold_spearman",
       "name": "Kobold Spearman",
       "stats": {
-        "maxHp": 17,
+        "maxHp": 51,
         "atk": 20,
         "def": 6,
         "spd": 14,
@@ -400,7 +400,7 @@
       "id": "kobold_trapper",
       "name": "Kobold Trapper",
       "stats": {
-        "maxHp": 14,
+        "maxHp": 42,
         "atk": 14,
         "def": 5,
         "spd": 15,
@@ -412,7 +412,7 @@
       "id": "lesser_demon",
       "name": "Lesser Demon",
       "stats": {
-        "maxHp": 198,
+        "maxHp": 594,
         "atk": 55,
         "def": 25,
         "spd": 14,
@@ -424,7 +424,7 @@
       "id": "lesser_lich",
       "name": "Lesser Lich",
       "stats": {
-        "maxHp": 130,
+        "maxHp": 390,
         "atk": 23,
         "def": 14,
         "spd": 11,
@@ -436,7 +436,7 @@
       "id": "lich_lord",
       "name": "Lich Lord",
       "stats": {
-        "maxHp": 243,
+        "maxHp": 729,
         "atk": 46,
         "def": 25,
         "spd": 15,
@@ -448,7 +448,7 @@
       "id": "lich_mage",
       "name": "Lich Mage",
       "stats": {
-        "maxHp": 145,
+        "maxHp": 435,
         "atk": 26,
         "def": 16,
         "spd": 12,
@@ -460,7 +460,7 @@
       "id": "lizardman_champion",
       "name": "Lizardman Champion",
       "stats": {
-        "maxHp": 95,
+        "maxHp": 285,
         "atk": 50,
         "def": 19,
         "spd": 18,
@@ -472,7 +472,7 @@
       "id": "lizardman_guard",
       "name": "Lizardman Royal Guard",
       "stats": {
-        "maxHp": 75,
+        "maxHp": 225,
         "atk": 39,
         "def": 18,
         "spd": 13,
@@ -484,7 +484,7 @@
       "id": "lizardman_hunter",
       "name": "Lizardman Hunter",
       "stats": {
-        "maxHp": 51,
+        "maxHp": 153,
         "atk": 33,
         "def": 12,
         "spd": 15,
@@ -496,7 +496,7 @@
       "id": "lizardman_shaman",
       "name": "Lizardman Shaman",
       "stats": {
-        "maxHp": 59,
+        "maxHp": 177,
         "atk": 30,
         "def": 14,
         "spd": 14,
@@ -508,7 +508,7 @@
       "id": "lizardman_spearman",
       "name": "Lizardman Spearman",
       "stats": {
-        "maxHp": 68,
+        "maxHp": 204,
         "atk": 41,
         "def": 16,
         "spd": 14,
@@ -520,7 +520,7 @@
       "id": "lizardman_warrior",
       "name": "Lizardman Warrior",
       "stats": {
-        "maxHp": 59,
+        "maxHp": 177,
         "atk": 36,
         "def": 14,
         "spd": 12,
@@ -532,7 +532,7 @@
       "id": "minotaur_axeman",
       "name": "Minotaur Axeman",
       "stats": {
-        "maxHp": 175,
+        "maxHp": 525,
         "atk": 62,
         "def": 25,
         "spd": 13,
@@ -544,7 +544,7 @@
       "id": "minotaur_berserker",
       "name": "Minotaur Berserker",
       "stats": {
-        "maxHp": 183,
+        "maxHp": 549,
         "atk": 70,
         "def": 21,
         "spd": 14,
@@ -556,7 +556,7 @@
       "id": "minotaur_champion",
       "name": "Minotaur Champion",
       "stats": {
-        "maxHp": 242,
+        "maxHp": 726,
         "atk": 76,
         "def": 30,
         "spd": 16,
@@ -568,7 +568,7 @@
       "id": "minotaur_guard",
       "name": "Minotaur Guard",
       "stats": {
-        "maxHp": 166,
+        "maxHp": 498,
         "atk": 52,
         "def": 25,
         "spd": 10,
@@ -580,7 +580,7 @@
       "id": "minotaur_priest",
       "name": "Minotaur Priest",
       "stats": {
-        "maxHp": 151,
+        "maxHp": 453,
         "atk": 46,
         "def": 22,
         "spd": 13,
@@ -592,7 +592,7 @@
       "id": "minotaur_raider",
       "name": "Minotaur Raider",
       "stats": {
-        "maxHp": 152,
+        "maxHp": 456,
         "atk": 54,
         "def": 22,
         "spd": 11,
@@ -604,7 +604,7 @@
       "id": "obsidian_gargoyle",
       "name": "Obsidian Gargoyle",
       "stats": {
-        "maxHp": 140,
+        "maxHp": 420,
         "atk": 50,
         "def": 28,
         "spd": 12,
@@ -616,7 +616,7 @@
       "id": "orc_berserker",
       "name": "Orc Berserker",
       "stats": {
-        "maxHp": 58,
+        "maxHp": 174,
         "atk": 42,
         "def": 12,
         "spd": 14,
@@ -628,7 +628,7 @@
       "id": "orc_blackguard",
       "name": "Orc Blackguard",
       "stats": {
-        "maxHp": 69,
+        "maxHp": 207,
         "atk": 40,
         "def": 18,
         "spd": 13,
@@ -640,7 +640,7 @@
       "id": "orc_hunter",
       "name": "Orc Hunter",
       "stats": {
-        "maxHp": 42,
+        "maxHp": 126,
         "atk": 29,
         "def": 10,
         "spd": 14,
@@ -652,7 +652,7 @@
       "id": "orc_mage",
       "name": "Orc Mage",
       "stats": {
-        "maxHp": 37,
+        "maxHp": 111,
         "atk": 21,
         "def": 10,
         "spd": 12,
@@ -664,7 +664,7 @@
       "id": "orc_shaman",
       "name": "Orc Shaman",
       "stats": {
-        "maxHp": 48,
+        "maxHp": 144,
         "atk": 27,
         "def": 12,
         "spd": 13,
@@ -676,7 +676,7 @@
       "id": "orc_veteran",
       "name": "Orc Veteran",
       "stats": {
-        "maxHp": 61,
+        "maxHp": 183,
         "atk": 35,
         "def": 16,
         "spd": 12,
@@ -688,7 +688,7 @@
       "id": "orc_warrior",
       "name": "Orc Warrior",
       "stats": {
-        "maxHp": 48,
+        "maxHp": 144,
         "atk": 32,
         "def": 13,
         "spd": 11,
@@ -700,7 +700,7 @@
       "id": "plague_rat",
       "name": "Plague Rat",
       "stats": {
-        "maxHp": 10,
+        "maxHp": 30,
         "atk": 12,
         "def": 4,
         "spd": 13,
@@ -712,7 +712,7 @@
       "id": "poison_toad",
       "name": "Poison Toad",
       "stats": {
-        "maxHp": 118,
+        "maxHp": 354,
         "atk": 21,
         "def": 9,
         "spd": 11,
@@ -724,7 +724,7 @@
       "id": "rock_troll",
       "name": "Rock Troll",
       "stats": {
-        "maxHp": 135,
+        "maxHp": 405,
         "atk": 49,
         "def": 22,
         "spd": 10,
@@ -736,7 +736,7 @@
       "id": "shadow_rat",
       "name": "Shadow Rat",
       "stats": {
-        "maxHp": 10,
+        "maxHp": 30,
         "atk": 14,
         "def": 5,
         "spd": 20,
@@ -748,7 +748,7 @@
       "id": "skeleton_archer",
       "name": "Skeleton Archer",
       "stats": {
-        "maxHp": 21,
+        "maxHp": 63,
         "atk": 21,
         "def": 8,
         "spd": 10,
@@ -760,7 +760,7 @@
       "id": "skeleton_knight",
       "name": "Skeleton Knight",
       "stats": {
-        "maxHp": 30,
+        "maxHp": 90,
         "atk": 25,
         "def": 12,
         "spd": 9,
@@ -772,7 +772,7 @@
       "id": "skeleton_mage",
       "name": "Skeleton Mage",
       "stats": {
-        "maxHp": 22,
+        "maxHp": 66,
         "atk": 17,
         "def": 8,
         "spd": 10,
@@ -784,7 +784,7 @@
       "id": "skeleton_soldier",
       "name": "Skeleton Soldier",
       "stats": {
-        "maxHp": 24,
+        "maxHp": 72,
         "atk": 23,
         "def": 9,
         "spd": 9,
@@ -796,7 +796,7 @@
       "id": "slime",
       "name": "Slime",
       "stats": {
-        "maxHp": 5,
+        "maxHp": 15,
         "atk": 12,
         "def": 4,
         "spd": 7,
@@ -808,7 +808,7 @@
       "id": "stone_gargoyle",
       "name": "Stone Gargoyle",
       "stats": {
-        "maxHp": 108,
+        "maxHp": 324,
         "atk": 39,
         "def": 22,
         "spd": 9,
@@ -820,7 +820,7 @@
       "id": "stone_giant",
       "name": "Stone Giant",
       "stats": {
-        "maxHp": 317,
+        "maxHp": 951,
         "atk": 80,
         "def": 33,
         "spd": 9,
@@ -832,7 +832,7 @@
       "id": "toxic_slime",
       "name": "Toxic Mire Slime",
       "stats": {
-        "maxHp": 9,
+        "maxHp": 27,
         "atk": 12,
         "def": 5,
         "spd": 8,
@@ -844,7 +844,7 @@
       "id": "war_giant",
       "name": "War Giant",
       "stats": {
-        "maxHp": 291,
+        "maxHp": 873,
         "atk": 83,
         "def": 30,
         "spd": 10,
@@ -856,7 +856,7 @@
       "id": "war_troll",
       "name": "War Troll",
       "stats": {
-        "maxHp": 124,
+        "maxHp": 372,
         "atk": 52,
         "def": 20,
         "spd": 11,
@@ -868,7 +868,7 @@
       "id": "young_dragon",
       "name": "Young Dragon",
       "stats": {
-        "maxHp": 340,
+        "maxHp": 1020,
         "atk": 84,
         "def": 36,
         "spd": 14,
@@ -880,7 +880,7 @@
       "id": "wolf",
       "name": "Wolf",
       "stats": {
-        "maxHp": 13,
+        "maxHp": 39,
         "atk": 16,
         "def": 5,
         "spd": 18,
@@ -892,7 +892,7 @@
       "id": "giant_bat",
       "name": "Giant Bat",
       "stats": {
-        "maxHp": 36,
+        "maxHp": 108,
         "atk": 24,
         "def": 9,
         "spd": 18,
@@ -904,7 +904,7 @@
       "id": "wraith",
       "name": "Wraith",
       "stats": {
-        "maxHp": 42,
+        "maxHp": 126,
         "atk": 24,
         "def": 11,
         "spd": 14,
@@ -916,7 +916,7 @@
       "id": "rock_lizard",
       "name": "Rock Lizard",
       "stats": {
-        "maxHp": 55,
+        "maxHp": 165,
         "atk": 34,
         "def": 16,
         "spd": 11,
@@ -928,7 +928,7 @@
       "id": "lizardman",
       "name": "Lizardman",
       "stats": {
-        "maxHp": 60,
+        "maxHp": 180,
         "atk": 37,
         "def": 15,
         "spd": 13,
@@ -940,7 +940,7 @@
       "id": "ghoul",
       "name": "Ghoul",
       "stats": {
-        "maxHp": 34,
+        "maxHp": 102,
         "atk": 28,
         "def": 11,
         "spd": 11,
@@ -952,7 +952,7 @@
       "id": "scorpion",
       "name": "Scorpion",
       "stats": {
-        "maxHp": 32,
+        "maxHp": 96,
         "atk": 27,
         "def": 10,
         "spd": 13,
@@ -964,7 +964,7 @@
       "id": "banshee",
       "name": "Banshee",
       "stats": {
-        "maxHp": 28,
+        "maxHp": 84,
         "atk": 20,
         "def": 9,
         "spd": 15,
@@ -976,7 +976,7 @@
       "id": "minotaur",
       "name": "Minotaur",
       "stats": {
-        "maxHp": 158,
+        "maxHp": 474,
         "atk": 53,
         "def": 23,
         "spd": 11,
@@ -988,7 +988,7 @@
       "id": "storm_harpy",
       "name": "Storm Harpy",
       "stats": {
-        "maxHp": 92,
+        "maxHp": 276,
         "atk": 42,
         "def": 18,
         "spd": 19,
@@ -1000,7 +1000,7 @@
       "id": "champion_minotaur",
       "name": "Champion Minotaur",
       "stats": {
-        "maxHp": 242,
+        "maxHp": 726,
         "atk": 76,
         "def": 30,
         "spd": 16,
@@ -1012,7 +1012,7 @@
       "id": "death_knight",
       "name": "Death Knight",
       "stats": {
-        "maxHp": 112,
+        "maxHp": 336,
         "atk": 45,
         "def": 24,
         "spd": 12,
@@ -1024,7 +1024,7 @@
       "id": "cyclops",
       "name": "Cyclops",
       "stats": {
-        "maxHp": 230,
+        "maxHp": 690,
         "atk": 63,
         "def": 28,
         "spd": 9,
@@ -1036,7 +1036,7 @@
       "id": "elder_cyclops",
       "name": "Elder Cyclops",
       "stats": {
-        "maxHp": 317,
+        "maxHp": 951,
         "atk": 80,
         "def": 33,
         "spd": 9,
@@ -1048,7 +1048,7 @@
       "id": "golem",
       "name": "Golem",
       "stats": {
-        "maxHp": 180,
+        "maxHp": 540,
         "atk": 50,
         "def": 30,
         "spd": 7,
@@ -1060,7 +1060,7 @@
       "id": "vampire",
       "name": "Vampire",
       "stats": {
-        "maxHp": 165,
+        "maxHp": 495,
         "atk": 52,
         "def": 24,
         "spd": 18,
@@ -1072,7 +1072,7 @@
       "id": "shield_golem",
       "name": "Shield Golem",
       "stats": {
-        "maxHp": 216,
+        "maxHp": 648,
         "atk": 49,
         "def": 32,
         "spd": 8,
