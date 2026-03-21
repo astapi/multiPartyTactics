@@ -26,35 +26,35 @@
               "enemyId": "slime",
               "weight": 28,
               "level": 1,
-              "statScale": 1,
+              "statScale": 2.333,
               "hpScale": 2
             },
             {
               "enemyId": "giant_rat",
               "weight": 24,
               "level": 1,
-              "statScale": 1,
+              "statScale": 2,
               "hpScale": 2
             },
             {
               "enemyId": "goblin_scout",
               "weight": 20,
               "level": 1,
-              "statScale": 1,
+              "statScale": 1.75,
               "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 16,
               "level": 1,
-              "statScale": 1,
+              "statScale": 1.867,
               "hpScale": 2
             },
             {
               "enemyId": "wolf",
               "weight": 12,
               "level": 1,
-              "statScale": 1,
+              "statScale": 1.75,
               "hpScale": 2
             }
           ]
@@ -68,35 +68,35 @@
               "enemyId": "slime",
               "weight": 28,
               "level": 2,
-              "statScale": 1.314,
+              "statScale": 2.333,
               "hpScale": 1
             },
             {
               "enemyId": "giant_rat",
               "weight": 24,
               "level": 2,
-              "statScale": 1.314,
+              "statScale": 2,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_scout",
               "weight": 20,
               "level": 2,
-              "statScale": 1.15,
+              "statScale": 1.75,
               "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 16,
               "level": 2,
-              "statScale": 1.15,
+              "statScale": 1.867,
               "hpScale": 2
             },
             {
               "enemyId": "wolf",
               "weight": 12,
               "level": 2,
-              "statScale": 1,
+              "statScale": 1.75,
               "hpScale": 2
             }
           ]
@@ -110,35 +110,35 @@
               "enemyId": "slime",
               "weight": 28,
               "level": 3,
-              "statScale": 1.314,
+              "statScale": 2.583,
               "hpScale": 1
             },
             {
               "enemyId": "giant_rat",
               "weight": 24,
               "level": 3,
-              "statScale": 1.314,
+              "statScale": 2.214,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_scout",
               "weight": 20,
               "level": 3,
-              "statScale": 1.15,
+              "statScale": 1.938,
               "hpScale": 2
             },
             {
               "enemyId": "kobold_scout",
               "weight": 16,
               "level": 3,
-              "statScale": 1.15,
+              "statScale": 2.067,
               "hpScale": 2
             },
             {
               "enemyId": "wolf",
               "weight": 12,
               "level": 3,
-              "statScale": 1,
+              "statScale": 1.938,
               "hpScale": 2
             }
           ]
@@ -152,21 +152,21 @@
               "enemyId": "goblin_warrior",
               "weight": 40,
               "level": 4,
-              "statScale": 1.492,
+              "statScale": 1.476,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_spearman",
               "weight": 34,
               "level": 4,
-              "statScale": 1.263,
+              "statScale": 1.55,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 26,
               "level": 4,
-              "statScale": 1.324,
+              "statScale": 1.348,
               "hpScale": 1
             }
           ]
@@ -180,35 +180,35 @@
               "enemyId": "slime",
               "weight": 28,
               "level": 5,
-              "statScale": 1.314,
+              "statScale": 2.833,
               "hpScale": 1
             },
             {
               "enemyId": "giant_rat",
               "weight": 24,
               "level": 5,
-              "statScale": 1.314,
+              "statScale": 2.429,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_warrior",
               "weight": 20,
               "level": 5,
-              "statScale": 1.492,
+              "statScale": 1.619,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_spearman",
               "weight": 16,
               "level": 5,
-              "statScale": 1.263,
+              "statScale": 1.7,
               "hpScale": 1
             },
             {
               "enemyId": "wolf",
               "weight": 12,
               "level": 5,
-              "statScale": 1,
+              "statScale": 2.125,
               "hpScale": 2
             }
           ]
@@ -222,35 +222,35 @@
               "enemyId": "skeleton_soldier",
               "weight": 28,
               "level": 6,
-              "statScale": 1.915,
+              "statScale": 1.478,
               "hpScale": 1
             },
             {
               "enemyId": "slime",
               "weight": 24,
               "level": 6,
-              "statScale": 1.314,
+              "statScale": 2.833,
               "hpScale": 1
             },
             {
               "enemyId": "giant_rat",
               "weight": 20,
               "level": 6,
-              "statScale": 1.314,
+              "statScale": 2.429,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_archer",
               "weight": 16,
               "level": 6,
-              "statScale": 1.217,
+              "statScale": 1.789,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_warrior",
               "weight": 12,
               "level": 6,
-              "statScale": 1.492,
+              "statScale": 1.619,
               "hpScale": 1
             }
           ]
@@ -264,42 +264,42 @@
               "enemyId": "kobold_spearman",
               "weight": 24,
               "level": 7,
-              "statScale": 1.263,
+              "statScale": 1.85,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_trapper",
               "weight": 21,
               "level": 7,
-              "statScale": 1.05,
+              "statScale": 2.643,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 18,
               "level": 7,
-              "statScale": 1,
+              "statScale": 2.056,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 15,
               "level": 7,
-              "statScale": 1.08,
+              "statScale": 3.083,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_archer",
               "weight": 12,
               "level": 7,
-              "statScale": 1.217,
+              "statScale": 1.947,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 10,
               "level": 7,
-              "statScale": 1.915,
+              "statScale": 1.609,
               "hpScale": 1
             }
           ]
@@ -313,42 +313,42 @@
               "enemyId": "goblin_warrior",
               "weight": 24,
               "level": 8,
-              "statScale": 1.492,
+              "statScale": 1.762,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_spearman",
               "weight": 21,
               "level": 8,
-              "statScale": 1.263,
+              "statScale": 1.85,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_trapper",
               "weight": 18,
               "level": 8,
-              "statScale": 1.05,
+              "statScale": 2.643,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 15,
               "level": 8,
-              "statScale": 1,
+              "statScale": 2.056,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 12,
               "level": 8,
-              "statScale": 1.08,
+              "statScale": 3.083,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_archer",
               "weight": 10,
               "level": 8,
-              "statScale": 1.217,
+              "statScale": 1.947,
               "hpScale": 1
             }
           ]
@@ -362,35 +362,35 @@
               "enemyId": "goblin_warrior",
               "weight": 28,
               "level": 9,
-              "statScale": 1.492,
+              "statScale": 1.905,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_spearman",
               "weight": 24,
               "level": 9,
-              "statScale": 1.263,
+              "statScale": 2,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_trapper",
               "weight": 20,
               "level": 9,
-              "statScale": 1.05,
+              "statScale": 2.857,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 16,
               "level": 9,
-              "statScale": 1,
+              "statScale": 2.222,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 12,
               "level": 9,
-              "statScale": 1.08,
+              "statScale": 3.333,
               "hpScale": 1
             }
           ]
@@ -432,42 +432,42 @@
               "enemyId": "skeleton_archer",
               "weight": 24,
               "level": 11,
-              "statScale": 2.71,
+              "statScale": 2.048,
               "hpScale": 1
             },
             {
               "enemyId": "acid_slime",
               "weight": 21,
               "level": 11,
-              "statScale": 1.211,
+              "statScale": 2.867,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 18,
               "level": 11,
-              "statScale": 1,
+              "statScale": 2.389,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_archer",
               "weight": 15,
               "level": 11,
-              "statScale": 1.217,
+              "statScale": 2.263,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 12,
               "level": 11,
-              "statScale": 1.08,
+              "statScale": 3.583,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 10,
               "level": 11,
-              "statScale": 1.915,
+              "statScale": 1.87,
               "hpScale": 1
             }
           ]
@@ -481,42 +481,42 @@
               "enemyId": "goblin_warrior",
               "weight": 24,
               "level": 12,
-              "statScale": 1.492,
+              "statScale": 2.048,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 21,
               "level": 12,
-              "statScale": 1.309,
+              "statScale": 1.792,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 18,
               "level": 12,
-              "statScale": 2.71,
+              "statScale": 2.048,
               "hpScale": 1
             },
             {
               "enemyId": "acid_slime",
               "weight": 15,
               "level": 12,
-              "statScale": 1.211,
+              "statScale": 2.867,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 12,
               "level": 12,
-              "statScale": 1,
+              "statScale": 2.389,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 10,
               "level": 12,
-              "statScale": 1.08,
+              "statScale": 3.583,
               "hpScale": 1
             }
           ]
@@ -530,42 +530,42 @@
               "enemyId": "goblin_archer",
               "weight": 24,
               "level": 13,
-              "statScale": 1.217,
+              "statScale": 2.421,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 21,
               "level": 13,
-              "statScale": 1.915,
+              "statScale": 2,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_warrior",
               "weight": 18,
               "level": 13,
-              "statScale": 1.492,
+              "statScale": 2.19,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_mage",
               "weight": 15,
               "level": 13,
-              "statScale": 1.283,
+              "statScale": 3.286,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 12,
               "level": 13,
-              "statScale": 1.309,
+              "statScale": 1.917,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 10,
               "level": 13,
-              "statScale": 2.71,
+              "statScale": 2.19,
               "hpScale": 1
             }
           ]
@@ -579,42 +579,42 @@
               "enemyId": "kobold_captain",
               "weight": 24,
               "level": 14,
-              "statScale": 1.511,
+              "statScale": 2.091,
               "hpScale": 1
             },
             {
               "enemyId": "acid_slime",
               "weight": 21,
               "level": 14,
-              "statScale": 1.211,
+              "statScale": 3.067,
               "hpScale": 1
             },
             {
               "enemyId": "poison_toad",
               "weight": 18,
               "level": 14,
-              "statScale": 1,
+              "statScale": 2.19,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_mage",
               "weight": 15,
               "level": 14,
-              "statScale": 1.283,
+              "statScale": 3.286,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 12,
               "level": 14,
-              "statScale": 1,
+              "statScale": 2.556,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 10,
               "level": 14,
-              "statScale": 1.309,
+              "statScale": 1.917,
               "hpScale": 1
             }
           ]
@@ -628,42 +628,42 @@
               "enemyId": "skeleton_archer",
               "weight": 24,
               "level": 15,
-              "statScale": 2.71,
+              "statScale": 3.714,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_captain",
               "weight": 21,
               "level": 15,
-              "statScale": 1.511,
+              "statScale": 3.545,
               "hpScale": 1
             },
             {
               "enemyId": "acid_slime",
               "weight": 18,
               "level": 15,
-              "statScale": 1.211,
+              "statScale": 5.2,
               "hpScale": 1
             },
             {
               "enemyId": "poison_toad",
               "weight": 15,
               "level": 15,
-              "statScale": 1,
+              "statScale": 3.714,
               "hpScale": 1
             },
             {
               "enemyId": "feral_rat",
               "weight": 12,
               "level": 15,
-              "statScale": 1,
+              "statScale": 4.333,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_mage",
               "weight": 10,
               "level": 15,
-              "statScale": 1.283,
+              "statScale": 5.571,
               "hpScale": 1
             }
           ]
@@ -677,35 +677,35 @@
               "enemyId": "hobgoblin",
               "weight": 28,
               "level": 16,
-              "statScale": 1.309,
+              "statScale": 3.25,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 24,
               "level": 16,
-              "statScale": 2.71,
+              "statScale": 3.714,
               "hpScale": 1
             },
             {
               "enemyId": "kobold_captain",
               "weight": 20,
               "level": 16,
-              "statScale": 1.511,
+              "statScale": 3.545,
               "hpScale": 1
             },
             {
               "enemyId": "acid_slime",
               "weight": 16,
               "level": 16,
-              "statScale": 1.211,
+              "statScale": 5.2,
               "hpScale": 1
             },
             {
               "enemyId": "poison_toad",
               "weight": 12,
               "level": 16,
-              "statScale": 1,
+              "statScale": 3.714,
               "hpScale": 1
             }
           ]
@@ -719,28 +719,28 @@
               "enemyId": "goblin_mage",
               "weight": 32,
               "level": 17,
-              "statScale": 1.283,
+              "statScale": 5.786,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 26,
               "level": 17,
-              "statScale": 1.08,
+              "statScale": 6.75,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 22,
               "level": 17,
-              "statScale": 1.309,
+              "statScale": 3.375,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 18,
               "level": 17,
-              "statScale": 2.71,
+              "statScale": 3.857,
               "hpScale": 1
             }
           ]
@@ -754,28 +754,28 @@
               "enemyId": "poison_toad",
               "weight": 32,
               "level": 18,
-              "statScale": 1,
+              "statScale": 3.857,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_mage",
               "weight": 26,
               "level": 18,
-              "statScale": 1.283,
+              "statScale": 5.786,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 22,
               "level": 18,
-              "statScale": 1.08,
+              "statScale": 6.75,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 18,
               "level": 18,
-              "statScale": 1.309,
+              "statScale": 3.375,
               "hpScale": 1
             }
           ]
@@ -789,28 +789,28 @@
               "enemyId": "skeleton_archer",
               "weight": 32,
               "level": 19,
-              "statScale": 2.71,
+              "statScale": 4,
               "hpScale": 1
             },
             {
               "enemyId": "poison_toad",
               "weight": 26,
               "level": 19,
-              "statScale": 1,
+              "statScale": 4,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_mage",
               "weight": 22,
               "level": 19,
-              "statScale": 1.283,
+              "statScale": 6,
               "hpScale": 1
             },
             {
               "enemyId": "plague_rat",
               "weight": 18,
               "level": 19,
-              "statScale": 1.08,
+              "statScale": 7,
               "hpScale": 1
             }
           ]
@@ -859,42 +859,42 @@
               "enemyId": "orc_warrior",
               "weight": 24,
               "level": 21,
-              "statScale": 1.293,
+              "statScale": 2.719,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 21,
               "level": 21,
-              "statScale": 1.915,
+              "statScale": 3.783,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 18,
               "level": 21,
-              "statScale": 1,
+              "statScale": 3.107,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 15,
               "level": 21,
-              "statScale": 1,
+              "statScale": 3.222,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 12,
               "level": 21,
-              "statScale": 1.309,
+              "statScale": 3.625,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 10,
               "level": 21,
-              "statScale": 2.71,
+              "statScale": 4.143,
               "hpScale": 1
             }
           ]
@@ -908,42 +908,42 @@
               "enemyId": "orc_warrior",
               "weight": 24,
               "level": 22,
-              "statScale": 1.293,
+              "statScale": 2.719,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 21,
               "level": 22,
-              "statScale": 1.915,
+              "statScale": 3.783,
               "hpScale": 1
             },
             {
               "enemyId": "poison_toad",
               "weight": 18,
               "level": 22,
-              "statScale": 1,
+              "statScale": 4.143,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 15,
               "level": 22,
-              "statScale": 1,
+              "statScale": 3.107,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 12,
               "level": 22,
-              "statScale": 1,
+              "statScale": 3.222,
               "hpScale": 1
             },
             {
               "enemyId": "hobgoblin",
               "weight": 10,
               "level": 22,
-              "statScale": 1.309,
+              "statScale": 3.625,
               "hpScale": 1
             }
           ]
@@ -957,42 +957,42 @@
               "enemyId": "skeleton_archer",
               "weight": 24,
               "level": 23,
-              "statScale": 2.71,
+              "statScale": 4.286,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 21,
               "level": 23,
-              "statScale": 1.08,
+              "statScale": 3.103,
               "hpScale": 1
             },
             {
               "enemyId": "orc_warrior",
               "weight": 18,
               "level": 23,
-              "statScale": 1.293,
+              "statScale": 2.813,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_soldier",
               "weight": 15,
               "level": 23,
-              "statScale": 1.915,
+              "statScale": 3.913,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 12,
               "level": 23,
-              "statScale": 1,
+              "statScale": 3.214,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 10,
               "level": 23,
-              "statScale": 1,
+              "statScale": 3.333,
               "hpScale": 1
             }
           ]
@@ -1006,21 +1006,21 @@
               "enemyId": "skeleton_knight",
               "weight": 40,
               "level": 24,
-              "statScale": 1.528,
+              "statScale": 3.6,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 34,
               "level": 24,
-              "statScale": 1.08,
+              "statScale": 3.103,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 26,
               "level": 24,
-              "statScale": 2.71,
+              "statScale": 4.286,
               "hpScale": 1
             }
           ]
@@ -1034,42 +1034,42 @@
               "enemyId": "orc_warrior",
               "weight": 24,
               "level": 25,
-              "statScale": 1.293,
+              "statScale": 2.906,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 21,
               "level": 25,
-              "statScale": 1,
+              "statScale": 3.321,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 18,
               "level": 25,
-              "statScale": 1,
+              "statScale": 3.444,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 15,
               "level": 25,
-              "statScale": 1.528,
+              "statScale": 3.72,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 12,
               "level": 25,
-              "statScale": 1.08,
+              "statScale": 3.207,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 10,
               "level": 25,
-              "statScale": 2.71,
+              "statScale": 4.429,
               "hpScale": 1
             }
           ]
@@ -1083,28 +1083,28 @@
               "enemyId": "orc_warrior",
               "weight": 32,
               "level": 26,
-              "statScale": 1.293,
+              "statScale": 2.906,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 26,
               "level": 26,
-              "statScale": 1,
+              "statScale": 3.321,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 22,
               "level": 26,
-              "statScale": 1,
+              "statScale": 3.444,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 18,
               "level": 26,
-              "statScale": 1.528,
+              "statScale": 3.72,
               "hpScale": 1
             }
           ]
@@ -1118,42 +1118,42 @@
               "enemyId": "orc_hunter",
               "weight": 24,
               "level": 27,
-              "statScale": 1.08,
+              "statScale": 3.31,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 21,
               "level": 27,
-              "statScale": 1.529,
+              "statScale": 2.667,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 18,
               "level": 27,
-              "statScale": 1.08,
+              "statScale": 5.333,
               "hpScale": 1
             },
             {
               "enemyId": "orc_warrior",
               "weight": 15,
               "level": 27,
-              "statScale": 1.293,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 12,
               "level": 27,
-              "statScale": 1,
+              "statScale": 3.429,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 10,
               "level": 27,
-              "statScale": 1,
+              "statScale": 3.556,
               "hpScale": 1
             }
           ]
@@ -1167,28 +1167,28 @@
               "enemyId": "skeleton_knight",
               "weight": 32,
               "level": 28,
-              "statScale": 1.528,
+              "statScale": 3.84,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 26,
               "level": 28,
-              "statScale": 1.08,
+              "statScale": 3.31,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 22,
               "level": 28,
-              "statScale": 1.529,
+              "statScale": 2.667,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 18,
               "level": 28,
-              "statScale": 1.08,
+              "statScale": 5.333,
               "hpScale": 1
             }
           ]
@@ -1202,42 +1202,42 @@
               "enemyId": "orc_warrior",
               "weight": 24,
               "level": 29,
-              "statScale": 1.293,
+              "statScale": 3.094,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 21,
               "level": 29,
-              "statScale": 1,
+              "statScale": 3.536,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 18,
               "level": 29,
-              "statScale": 1.528,
+              "statScale": 3.96,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 15,
               "level": 29,
-              "statScale": 1.08,
+              "statScale": 3.414,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 12,
               "level": 29,
-              "statScale": 1.529,
+              "statScale": 2.75,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 10,
               "level": 29,
-              "statScale": 1.08,
+              "statScale": 5.5,
               "hpScale": 1
             }
           ]
@@ -1279,35 +1279,35 @@
               "enemyId": "orc_shaman",
               "weight": 28,
               "level": 31,
-              "statScale": 1.537,
+              "statScale": 3.815,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 24,
               "level": 31,
-              "statScale": 1.529,
+              "statScale": 2.861,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_spearman",
               "weight": 20,
               "level": 31,
-              "statScale": 1.277,
+              "statScale": 2.512,
               "hpScale": 1
             },
             {
               "enemyId": "orc_warrior",
               "weight": 16,
               "level": 31,
-              "statScale": 1.293,
+              "statScale": 3.219,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 12,
               "level": 31,
-              "statScale": 1,
+              "statScale": 3.679,
               "hpScale": 1
             }
           ]
@@ -1321,35 +1321,35 @@
               "enemyId": "skeleton_knight",
               "weight": 28,
               "level": 32,
-              "statScale": 1.528,
+              "statScale": 4.12,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 24,
               "level": 32,
-              "statScale": 1.537,
+              "statScale": 3.815,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 20,
               "level": 32,
-              "statScale": 1.529,
+              "statScale": 2.861,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 16,
               "level": 32,
-              "statScale": 1.08,
+              "statScale": 3.552,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_spearman",
               "weight": 12,
               "level": 32,
-              "statScale": 1.277,
+              "statScale": 2.512,
               "hpScale": 1
             }
           ]
@@ -1363,42 +1363,42 @@
               "enemyId": "orc_warrior",
               "weight": 24,
               "level": 33,
-              "statScale": 1.293,
+              "statScale": 3.313,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 21,
               "level": 33,
-              "statScale": 1,
+              "statScale": 3.786,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 18,
               "level": 33,
-              "statScale": 1.528,
+              "statScale": 4.24,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 15,
               "level": 33,
-              "statScale": 1.08,
+              "statScale": 3.655,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 12,
               "level": 33,
-              "statScale": 1.537,
+              "statScale": 3.926,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 10,
               "level": 33,
-              "statScale": 1.529,
+              "statScale": 2.944,
               "hpScale": 1
             }
           ]
@@ -1412,35 +1412,35 @@
               "enemyId": "lizardman_spearman",
               "weight": 28,
               "level": 34,
-              "statScale": 1.277,
+              "statScale": 2.585,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 24,
               "level": 34,
-              "statScale": 1,
+              "statScale": 4.417,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 20,
               "level": 34,
-              "statScale": 1,
+              "statScale": 3.786,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 16,
               "level": 34,
-              "statScale": 1.08,
+              "statScale": 3.655,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 12,
               "level": 34,
-              "statScale": 1.528,
+              "statScale": 4.24,
               "hpScale": 1
             }
           ]
@@ -1454,35 +1454,35 @@
               "enemyId": "orc_shaman",
               "weight": 28,
               "level": 35,
-              "statScale": 1.537,
+              "statScale": 4.037,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 24,
               "level": 35,
-              "statScale": 1.529,
+              "statScale": 3.028,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_spearman",
               "weight": 20,
               "level": 35,
-              "statScale": 1.277,
+              "statScale": 2.659,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 16,
               "level": 35,
-              "statScale": 1,
+              "statScale": 4.542,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 12,
               "level": 35,
-              "statScale": 1,
+              "statScale": 3.893,
               "hpScale": 1
             }
           ]
@@ -1496,42 +1496,42 @@
               "enemyId": "orc_hunter",
               "weight": 24,
               "level": 36,
-              "statScale": 1.08,
+              "statScale": 3.759,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 21,
               "level": 36,
-              "statScale": 1.528,
+              "statScale": 4.36,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 18,
               "level": 36,
-              "statScale": 1.537,
+              "statScale": 4.037,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 15,
               "level": 36,
-              "statScale": 1.529,
+              "statScale": 3.028,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_spearman",
               "weight": 12,
               "level": 36,
-              "statScale": 1.277,
+              "statScale": 2.659,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 10,
               "level": 36,
-              "statScale": 1,
+              "statScale": 4.542,
               "hpScale": 1
             }
           ]
@@ -1545,28 +1545,28 @@
               "enemyId": "lizardman_hunter",
               "weight": 32,
               "level": 37,
-              "statScale": 1.06,
+              "statScale": 3.394,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 26,
               "level": 37,
-              "statScale": 1.08,
+              "statScale": 3.862,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 22,
               "level": 37,
-              "statScale": 1.528,
+              "statScale": 4.48,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 18,
               "level": 37,
-              "statScale": 1.529,
+              "statScale": 3.111,
               "hpScale": 1
             }
           ]
@@ -1580,35 +1580,35 @@
               "enemyId": "lizardman_spearman",
               "weight": 28,
               "level": 38,
-              "statScale": 1.277,
+              "statScale": 2.732,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 24,
               "level": 38,
-              "statScale": 1,
+              "statScale": 4.667,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_hunter",
               "weight": 20,
               "level": 38,
-              "statScale": 1.06,
+              "statScale": 3.394,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 16,
               "level": 38,
-              "statScale": 1.08,
+              "statScale": 3.862,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 12,
               "level": 38,
-              "statScale": 1.528,
+              "statScale": 4.48,
               "hpScale": 1
             }
           ]
@@ -1622,28 +1622,28 @@
               "enemyId": "lizardman_warrior",
               "weight": 32,
               "level": 39,
-              "statScale": 1.529,
+              "statScale": 3.167,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_spearman",
               "weight": 26,
               "level": 39,
-              "statScale": 1.277,
+              "statScale": 2.78,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 22,
               "level": 39,
-              "statScale": 1,
+              "statScale": 4.75,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_hunter",
               "weight": 18,
               "level": 39,
-              "statScale": 1.06,
+              "statScale": 3.455,
               "hpScale": 1
             }
           ]
@@ -1692,35 +1692,35 @@
               "enemyId": "orc_warrior",
               "weight": 28,
               "level": 41,
-              "statScale": 1.293,
+              "statScale": 3.688,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 24,
               "level": 41,
-              "statScale": 1.08,
+              "statScale": 6.556,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 20,
               "level": 41,
-              "statScale": 1.08,
+              "statScale": 4.069,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 16,
               "level": 41,
-              "statScale": 1.528,
+              "statScale": 4.72,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 12,
               "level": 41,
-              "statScale": 1.529,
+              "statScale": 3.278,
               "hpScale": 1
             }
           ]
@@ -1734,35 +1734,35 @@
               "enemyId": "orc_warrior",
               "weight": 28,
               "level": 42,
-              "statScale": 1.293,
+              "statScale": 3.688,
               "hpScale": 1
             },
             {
               "enemyId": "orc_berserker",
               "weight": 24,
               "level": 42,
-              "statScale": 1.06,
+              "statScale": 2.81,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 20,
               "level": 42,
-              "statScale": 1,
+              "statScale": 4.917,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 16,
               "level": 42,
-              "statScale": 1.08,
+              "statScale": 6.556,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 12,
               "level": 42,
-              "statScale": 1.08,
+              "statScale": 4.069,
               "hpScale": 1
             }
           ]
@@ -1776,35 +1776,35 @@
               "enemyId": "lizardman_warrior",
               "weight": 28,
               "level": 43,
-              "statScale": 1.529,
+              "statScale": 3.333,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 24,
               "level": 43,
-              "statScale": 1.528,
+              "statScale": 4.8,
               "hpScale": 1
             },
             {
               "enemyId": "orc_berserker",
               "weight": 20,
               "level": 43,
-              "statScale": 1.06,
+              "statScale": 2.857,
               "hpScale": 1
             },
             {
               "enemyId": "orc_warrior",
               "weight": 16,
               "level": 43,
-              "statScale": 1.293,
+              "statScale": 3.75,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 12,
               "level": 43,
-              "statScale": 1.08,
+              "statScale": 6.667,
               "hpScale": 1
             }
           ]
@@ -1818,42 +1818,42 @@
               "enemyId": "orc_hunter",
               "weight": 24,
               "level": 44,
-              "statScale": 1.08,
+              "statScale": 4.138,
               "hpScale": 1
             },
             {
               "enemyId": "giant_bat",
               "weight": 21,
               "level": 44,
-              "statScale": 1,
+              "statScale": 5,
               "hpScale": 1
             },
             {
               "enemyId": "rock_lizard",
               "weight": 18,
               "level": 44,
-              "statScale": 1,
+              "statScale": 3.529,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 15,
               "level": 44,
-              "statScale": 1.529,
+              "statScale": 3.333,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 12,
               "level": 44,
-              "statScale": 1.528,
+              "statScale": 4.8,
               "hpScale": 1
             },
             {
               "enemyId": "orc_berserker",
               "weight": 10,
               "level": 44,
-              "statScale": 1.06,
+              "statScale": 2.857,
               "hpScale": 1
             }
           ]
@@ -1867,42 +1867,42 @@
               "enemyId": "orc_hunter",
               "weight": 24,
               "level": 45,
-              "statScale": 1.08,
+              "statScale": 4.241,
               "hpScale": 1
             },
             {
               "enemyId": "orc_veteran",
               "weight": 21,
               "level": 45,
-              "statScale": 1.295,
+              "statScale": 3.514,
               "hpScale": 1
             },
             {
               "enemyId": "goblin_shaman",
               "weight": 18,
               "level": 45,
-              "statScale": 1.08,
+              "statScale": 6.833,
               "hpScale": 1
             },
             {
               "enemyId": "giant_bat",
               "weight": 15,
               "level": 45,
-              "statScale": 1,
+              "statScale": 5.125,
               "hpScale": 1
             },
             {
               "enemyId": "rock_lizard",
               "weight": 12,
               "level": 45,
-              "statScale": 1,
+              "statScale": 3.618,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 10,
               "level": 45,
-              "statScale": 1.529,
+              "statScale": 3.417,
               "hpScale": 1
             }
           ]
@@ -1916,42 +1916,42 @@
               "enemyId": "orc_berserker",
               "weight": 24,
               "level": 46,
-              "statScale": 1.06,
+              "statScale": 2.929,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_knight",
               "weight": 21,
               "level": 46,
-              "statScale": 1.528,
+              "statScale": 4.92,
               "hpScale": 1
             },
             {
               "enemyId": "orc_veteran",
               "weight": 18,
               "level": 46,
-              "statScale": 1.295,
+              "statScale": 3.514,
               "hpScale": 1
             },
             {
               "enemyId": "orc_hunter",
               "weight": 15,
               "level": 46,
-              "statScale": 1.08,
+              "statScale": 4.241,
               "hpScale": 1
             },
             {
               "enemyId": "giant_bat",
               "weight": 12,
               "level": 46,
-              "statScale": 1,
+              "statScale": 5.125,
               "hpScale": 1
             },
             {
               "enemyId": "rock_lizard",
               "weight": 10,
               "level": 46,
-              "statScale": 1,
+              "statScale": 3.618,
               "hpScale": 1
             }
           ]
@@ -1965,42 +1965,42 @@
               "enemyId": "lizardman_warrior",
               "weight": 24,
               "level": 47,
-              "statScale": 1.529,
+              "statScale": 3.5,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 21,
               "level": 47,
-              "statScale": 2.71,
+              "statScale": 6,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 18,
               "level": 47,
-              "statScale": 1,
+              "statScale": 4.5,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 15,
               "level": 47,
-              "statScale": 1,
+              "statScale": 4.667,
               "hpScale": 1
             },
             {
               "enemyId": "orc_berserker",
               "weight": 12,
               "level": 47,
-              "statScale": 1.06,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "orc_veteran",
               "weight": 10,
               "level": 47,
-              "statScale": 1.295,
+              "statScale": 3.6,
               "hpScale": 1
             }
           ]
@@ -2014,42 +2014,42 @@
               "enemyId": "lizardman_warrior",
               "weight": 24,
               "level": 48,
-              "statScale": 1.529,
+              "statScale": 3.5,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 21,
               "level": 48,
-              "statScale": 2.71,
+              "statScale": 6,
               "hpScale": 1
             },
             {
               "enemyId": "rock_lizard",
               "weight": 18,
               "level": 48,
-              "statScale": 1,
+              "statScale": 3.706,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 15,
               "level": 48,
-              "statScale": 1,
+              "statScale": 4.5,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 12,
               "level": 48,
-              "statScale": 1,
+              "statScale": 4.667,
               "hpScale": 1
             },
             {
               "enemyId": "orc_berserker",
               "weight": 10,
               "level": 48,
-              "statScale": 1.06,
+              "statScale": 3,
               "hpScale": 1
             }
           ]
@@ -2063,35 +2063,35 @@
               "enemyId": "orc_veteran",
               "weight": 28,
               "level": 49,
-              "statScale": 1.295,
+              "statScale": 3.686,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_warrior",
               "weight": 24,
               "level": 49,
-              "statScale": 1.529,
+              "statScale": 3.583,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 20,
               "level": 49,
-              "statScale": 2.71,
+              "statScale": 6.143,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 16,
               "level": 49,
-              "statScale": 1,
+              "statScale": 4.607,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 12,
               "level": 49,
-              "statScale": 1,
+              "statScale": 4.778,
               "hpScale": 1
             }
           ]
@@ -2126,42 +2126,42 @@
               "enemyId": "cave_troll",
               "weight": 24,
               "level": 51,
-              "statScale": 1.548,
+              "statScale": 3.385,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 21,
               "level": 51,
-              "statScale": 2.71,
+              "statScale": 6.286,
               "hpScale": 1
             },
             {
               "enemyId": "toxic_slime",
               "weight": 18,
               "level": 51,
-              "statScale": 1.06,
+              "statScale": 11,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 15,
               "level": 51,
-              "statScale": 1,
+              "statScale": 5.5,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 12,
               "level": 51,
-              "statScale": 1.06,
+              "statScale": 9.429,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 10,
               "level": 51,
-              "statScale": 1,
+              "statScale": 4.714,
               "hpScale": 1
             }
           ]
@@ -2175,42 +2175,42 @@
               "enemyId": "orc_veteran",
               "weight": 24,
               "level": 52,
-              "statScale": 1.295,
+              "statScale": 3.771,
               "hpScale": 1
             },
             {
               "enemyId": "cave_troll",
               "weight": 21,
               "level": 52,
-              "statScale": 1.548,
+              "statScale": 3.385,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 18,
               "level": 52,
-              "statScale": 2.71,
+              "statScale": 6.286,
               "hpScale": 1
             },
             {
               "enemyId": "toxic_slime",
               "weight": 15,
               "level": 52,
-              "statScale": 1.06,
+              "statScale": 11,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 12,
               "level": 52,
-              "statScale": 1,
+              "statScale": 5.5,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 10,
               "level": 52,
-              "statScale": 1.06,
+              "statScale": 9.429,
               "hpScale": 1
             }
           ]
@@ -2224,42 +2224,42 @@
               "enemyId": "orc_veteran",
               "weight": 24,
               "level": 53,
-              "statScale": 1.295,
+              "statScale": 3.857,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 21,
               "level": 53,
-              "statScale": 1.537,
+              "statScale": 5,
               "hpScale": 1
             },
             {
               "enemyId": "cave_troll",
               "weight": 18,
               "level": 53,
-              "statScale": 1.548,
+              "statScale": 3.462,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_archer",
               "weight": 15,
               "level": 53,
-              "statScale": 2.71,
+              "statScale": 6.429,
               "hpScale": 1
             },
             {
               "enemyId": "toxic_slime",
               "weight": 12,
               "level": 53,
-              "statScale": 1.06,
+              "statScale": 11.25,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 10,
               "level": 53,
-              "statScale": 1,
+              "statScale": 5.625,
               "hpScale": 1
             }
           ]
@@ -2273,28 +2273,28 @@
               "enemyId": "ghoul",
               "weight": 32,
               "level": 54,
-              "statScale": 1,
+              "statScale": 4.821,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 26,
               "level": 54,
-              "statScale": 1,
+              "statScale": 5,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 22,
               "level": 54,
-              "statScale": 1.06,
+              "statScale": 9.643,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 18,
               "level": 54,
-              "statScale": 1.537,
+              "statScale": 5,
               "hpScale": 1
             }
           ]
@@ -2308,42 +2308,42 @@
               "enemyId": "cave_troll",
               "weight": 24,
               "level": 55,
-              "statScale": 1.548,
+              "statScale": 3.538,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 21,
               "level": 55,
-              "statScale": 1,
+              "statScale": 5.75,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 18,
               "level": 55,
-              "statScale": 1,
+              "statScale": 4.929,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 15,
               "level": 55,
-              "statScale": 1.776,
+              "statScale": 2.816,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 12,
               "level": 55,
-              "statScale": 1,
+              "statScale": 5.111,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 10,
               "level": 55,
-              "statScale": 1.06,
+              "statScale": 9.857,
               "hpScale": 1
             }
           ]
@@ -2357,42 +2357,42 @@
               "enemyId": "orc_shaman",
               "weight": 24,
               "level": 56,
-              "statScale": 1.537,
+              "statScale": 5.111,
               "hpScale": 1
             },
             {
               "enemyId": "cave_troll",
               "weight": 21,
               "level": 56,
-              "statScale": 1.548,
+              "statScale": 3.538,
               "hpScale": 1
             },
             {
               "enemyId": "wraith",
               "weight": 18,
               "level": 56,
-              "statScale": 1,
+              "statScale": 5.75,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 15,
               "level": 56,
-              "statScale": 1.776,
+              "statScale": 2.816,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 12,
               "level": 56,
-              "statScale": 1,
+              "statScale": 4.929,
               "hpScale": 1
             },
             {
               "enemyId": "scorpion",
               "weight": 10,
               "level": 56,
-              "statScale": 1,
+              "statScale": 5.111,
               "hpScale": 1
             }
           ]
@@ -2406,42 +2406,42 @@
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 57,
-              "statScale": 1.537,
+              "statScale": 3.615,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 21,
               "level": 57,
-              "statScale": 1.291,
+              "statScale": 8.294,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 18,
               "level": 57,
-              "statScale": 1,
+              "statScale": 7.05,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 15,
               "level": 57,
-              "statScale": 1.06,
+              "statScale": 10.071,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 12,
               "level": 57,
-              "statScale": 1.776,
+              "statScale": 2.878,
               "hpScale": 1
             },
             {
               "enemyId": "cave_troll",
               "weight": 10,
               "level": 57,
-              "statScale": 1.548,
+              "statScale": 3.615,
               "hpScale": 1
             }
           ]
@@ -2455,35 +2455,35 @@
               "enemyId": "ghoul",
               "weight": 28,
               "level": 58,
-              "statScale": 1,
+              "statScale": 5.036,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 58,
-              "statScale": 1.537,
+              "statScale": 3.615,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 20,
               "level": 58,
-              "statScale": 1.291,
+              "statScale": 8.294,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 16,
               "level": 58,
-              "statScale": 1,
+              "statScale": 7.05,
               "hpScale": 1
             },
             {
               "enemyId": "shadow_rat",
               "weight": 12,
               "level": 58,
-              "statScale": 1.06,
+              "statScale": 10.071,
               "hpScale": 1
             }
           ]
@@ -2497,42 +2497,42 @@
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 59,
-              "statScale": 1.776,
+              "statScale": 2.939,
               "hpScale": 1
             },
             {
               "enemyId": "cave_troll",
               "weight": 21,
               "level": 59,
-              "statScale": 1.548,
+              "statScale": 3.692,
               "hpScale": 1
             },
             {
               "enemyId": "ghoul",
               "weight": 18,
               "level": 59,
-              "statScale": 1,
+              "statScale": 5.143,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 15,
               "level": 59,
-              "statScale": 1.537,
+              "statScale": 3.692,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 12,
               "level": 59,
-              "statScale": 1.291,
+              "statScale": 8.471,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 10,
               "level": 59,
-              "statScale": 1,
+              "statScale": 7.2,
               "hpScale": 1
             }
           ]
@@ -2567,42 +2567,42 @@
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 61,
-              "statScale": 1.537,
+              "statScale": 3.769,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 21,
               "level": 61,
-              "statScale": 1.498,
+              "statScale": 3.675,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 18,
               "level": 61,
-              "statScale": 1.291,
+              "statScale": 8.647,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 15,
               "level": 61,
-              "statScale": 1,
+              "statScale": 7.35,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 61,
-              "statScale": 1,
+              "statScale": 3.267,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 10,
               "level": 61,
-              "statScale": 1.776,
+              "statScale": 3,
               "hpScale": 1
             }
           ]
@@ -2616,35 +2616,35 @@
               "enemyId": "stone_gargoyle",
               "weight": 28,
               "level": 62,
-              "statScale": 1.537,
+              "statScale": 3.769,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 24,
               "level": 62,
-              "statScale": 1.498,
+              "statScale": 3.675,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 20,
               "level": 62,
-              "statScale": 1.291,
+              "statScale": 8.647,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 16,
               "level": 62,
-              "statScale": 1,
+              "statScale": 7.35,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 62,
-              "statScale": 1,
+              "statScale": 3.267,
               "hpScale": 1
             }
           ]
@@ -2658,42 +2658,42 @@
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 63,
-              "statScale": 1.776,
+              "statScale": 3.061,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 21,
               "level": 63,
-              "statScale": 1.537,
+              "statScale": 3.846,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 18,
               "level": 63,
-              "statScale": 1.498,
+              "statScale": 3.75,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 15,
               "level": 63,
-              "statScale": 1.291,
+              "statScale": 8.824,
               "hpScale": 1
             },
             {
               "enemyId": "banshee",
               "weight": 12,
               "level": 63,
-              "statScale": 1,
+              "statScale": 7.5,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 10,
               "level": 63,
-              "statScale": 1,
+              "statScale": 3.333,
               "hpScale": 1
             }
           ]
@@ -2707,14 +2707,14 @@
               "enemyId": "lizardman_champion",
               "weight": 24,
               "level": 64,
-              "statScale": 1.08,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 21,
               "level": 64,
-              "statScale": 1.537,
+              "statScale": 3.846,
               "hpScale": 1
             }
           ]
@@ -2728,42 +2728,42 @@
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 65,
-              "statScale": 1.537,
+              "statScale": 3.923,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 21,
               "level": 65,
-              "statScale": 1.498,
+              "statScale": 3.825,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 18,
               "level": 65,
-              "statScale": 1.291,
+              "statScale": 9,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 15,
               "level": 65,
-              "statScale": 1,
+              "statScale": 3.4,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 12,
               "level": 65,
-              "statScale": 1.08,
+              "statScale": 3.06,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 10,
               "level": 65,
-              "statScale": 1.537,
+              "statScale": 3.923,
               "hpScale": 1
             }
           ]
@@ -2777,42 +2777,42 @@
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 66,
-              "statScale": 1.537,
+              "statScale": 3.923,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 21,
               "level": 66,
-              "statScale": 1.498,
+              "statScale": 3.825,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 18,
               "level": 66,
-              "statScale": 1.258,
+              "statScale": 3.477,
               "hpScale": 1
             },
             {
               "enemyId": "skeleton_mage",
               "weight": 15,
               "level": 66,
-              "statScale": 1.291,
+              "statScale": 9,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 66,
-              "statScale": 1,
+              "statScale": 3.4,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 10,
               "level": 66,
-              "statScale": 1.08,
+              "statScale": 3.06,
               "hpScale": 1
             }
           ]
@@ -2826,42 +2826,42 @@
               "enemyId": "war_troll",
               "weight": 24,
               "level": 67,
-              "statScale": 1.522,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 21,
               "level": 67,
-              "statScale": 1,
+              "statScale": 2.943,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 18,
               "level": 67,
-              "statScale": 1.258,
+              "statScale": 3.545,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 15,
               "level": 67,
-              "statScale": 1.537,
+              "statScale": 4,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 12,
               "level": 67,
-              "statScale": 1.537,
+              "statScale": 4,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 10,
               "level": 67,
-              "statScale": 1.498,
+              "statScale": 3.9,
               "hpScale": 1
             }
           ]
@@ -2875,35 +2875,35 @@
               "enemyId": "lizardman_champion",
               "weight": 28,
               "level": 68,
-              "statScale": 1.08,
+              "statScale": 3.12,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 24,
               "level": 68,
-              "statScale": 1.522,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 20,
               "level": 68,
-              "statScale": 1,
+              "statScale": 2.943,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 16,
               "level": 68,
-              "statScale": 1.537,
+              "statScale": 4,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 12,
               "level": 68,
-              "statScale": 1.258,
+              "statScale": 3.545,
               "hpScale": 1
             }
           ]
@@ -2917,35 +2917,35 @@
               "enemyId": "stone_gargoyle",
               "weight": 28,
               "level": 69,
-              "statScale": 1.537,
+              "statScale": 4.077,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 24,
               "level": 69,
-              "statScale": 1.498,
+              "statScale": 3.975,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 20,
               "level": 69,
-              "statScale": 1.08,
+              "statScale": 3.18,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 16,
               "level": 69,
-              "statScale": 1.522,
+              "statScale": 3.058,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 12,
               "level": 69,
-              "statScale": 1,
+              "statScale": 3,
               "hpScale": 1
             }
           ]
@@ -2987,42 +2987,42 @@
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 71,
-              "statScale": 1.776,
+              "statScale": 3.306,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 21,
               "level": 71,
-              "statScale": 1.522,
+              "statScale": 3.115,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 18,
               "level": 71,
-              "statScale": 1,
+              "statScale": 3.057,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 15,
               "level": 71,
-              "statScale": 1.08,
+              "statScale": 3.24,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 12,
               "level": 71,
-              "statScale": 1.537,
+              "statScale": 4.154,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 10,
               "level": 71,
-              "statScale": 1.498,
+              "statScale": 4.05,
               "hpScale": 1
             }
           ]
@@ -3036,28 +3036,28 @@
               "enemyId": "rock_troll",
               "weight": 32,
               "level": 72,
-              "statScale": 1.776,
+              "statScale": 3.306,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 26,
               "level": 72,
-              "statScale": 1.522,
+              "statScale": 3.115,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 22,
               "level": 72,
-              "statScale": 1,
+              "statScale": 3.057,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 18,
               "level": 72,
-              "statScale": 1.08,
+              "statScale": 3.24,
               "hpScale": 1
             }
           ]
@@ -3071,42 +3071,42 @@
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 73,
-              "statScale": 1.537,
+              "statScale": 4.231,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 21,
               "level": 73,
-              "statScale": 1.498,
+              "statScale": 4.125,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 18,
               "level": 73,
-              "statScale": 1.258,
+              "statScale": 3.75,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 15,
               "level": 73,
-              "statScale": 1.776,
+              "statScale": 3.367,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 12,
               "level": 73,
-              "statScale": 1.522,
+              "statScale": 3.173,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 10,
               "level": 73,
-              "statScale": 1,
+              "statScale": 3.113,
               "hpScale": 1
             }
           ]
@@ -3120,35 +3120,35 @@
               "enemyId": "orc_shaman",
               "weight": 28,
               "level": 74,
-              "statScale": 1.537,
+              "statScale": 6.111,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 24,
               "level": 74,
-              "statScale": 1.537,
+              "statScale": 4.231,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 20,
               "level": 74,
-              "statScale": 1.258,
+              "statScale": 3.75,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 16,
               "level": 74,
-              "statScale": 1.08,
+              "statScale": 3.3,
               "hpScale": 1
             },
             {
               "enemyId": "orc_blackguard",
               "weight": 12,
               "level": 74,
-              "statScale": 1.498,
+              "statScale": 4.125,
               "hpScale": 1
             }
           ]
@@ -3162,42 +3162,42 @@
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 75,
-              "statScale": 1.776,
+              "statScale": 3.429,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 21,
               "level": 75,
-              "statScale": 1,
+              "statScale": 3.17,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 18,
               "level": 75,
-              "statScale": 1.522,
+              "statScale": 3.231,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 15,
               "level": 75,
-              "statScale": 1.537,
+              "statScale": 6.222,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 12,
               "level": 75,
-              "statScale": 1.537,
+              "statScale": 4.308,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_champion",
               "weight": 10,
               "level": 75,
-              "statScale": 1.08,
+              "statScale": 3.36,
               "hpScale": 1
             }
           ]
@@ -3211,42 +3211,42 @@
               "enemyId": "iron_gargoyle",
               "weight": 24,
               "level": 76,
-              "statScale": 1.258,
+              "statScale": 3.818,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 21,
               "level": 76,
-              "statScale": 1.776,
+              "statScale": 3.429,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 18,
               "level": 76,
-              "statScale": 1,
+              "statScale": 3.17,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 15,
               "level": 76,
-              "statScale": 1.522,
+              "statScale": 3.231,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 12,
               "level": 76,
-              "statScale": 1.537,
+              "statScale": 6.222,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 10,
               "level": 76,
-              "statScale": 1.537,
+              "statScale": 4.308,
               "hpScale": 1
             }
           ]
@@ -3260,35 +3260,35 @@
               "enemyId": "death_knight",
               "weight": 28,
               "level": 77,
-              "statScale": 1,
+              "statScale": 3.8,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 24,
               "level": 77,
-              "statScale": 1.258,
+              "statScale": 3.886,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur",
               "weight": 20,
               "level": 77,
-              "statScale": 1,
+              "statScale": 3.226,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 16,
               "level": 77,
-              "statScale": 1.522,
+              "statScale": 3.288,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 12,
               "level": 77,
-              "statScale": 1.776,
+              "statScale": 3.49,
               "hpScale": 1
             }
           ]
@@ -3302,28 +3302,28 @@
               "enemyId": "orc_shaman",
               "weight": 32,
               "level": 78,
-              "statScale": 1.537,
+              "statScale": 6.333,
               "hpScale": 1
             },
             {
               "enemyId": "lizardman_guard",
               "weight": 26,
               "level": 78,
-              "statScale": 1.537,
+              "statScale": 4.385,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 22,
               "level": 78,
-              "statScale": 1,
+              "statScale": 3.8,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 18,
               "level": 78,
-              "statScale": 1.258,
+              "statScale": 3.886,
               "hpScale": 1
             }
           ]
@@ -3337,35 +3337,35 @@
               "enemyId": "minotaur",
               "weight": 28,
               "level": 79,
-              "statScale": 1,
+              "statScale": 3.264,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 24,
               "level": 79,
-              "statScale": 1.522,
+              "statScale": 3.327,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 20,
               "level": 79,
-              "statScale": 1.776,
+              "statScale": 3.531,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 16,
               "level": 79,
-              "statScale": 1.537,
+              "statScale": 6.407,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 79,
-              "statScale": 1,
+              "statScale": 3.844,
               "hpScale": 1
             }
           ]
@@ -3414,35 +3414,35 @@
               "enemyId": "stone_gargoyle",
               "weight": 28,
               "level": 81,
-              "statScale": 1.537,
+              "statScale": 4.564,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_raider",
               "weight": 24,
               "level": 81,
-              "statScale": 1.258,
+              "statScale": 3.296,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 20,
               "level": 81,
-              "statScale": 1.537,
+              "statScale": 6.593,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 16,
               "level": 81,
-              "statScale": 1.258,
+              "statScale": 4.045,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 81,
-              "statScale": 1,
+              "statScale": 3.956,
               "hpScale": 1
             }
           ]
@@ -3456,35 +3456,35 @@
               "enemyId": "rock_troll",
               "weight": 28,
               "level": 82,
-              "statScale": 1.776,
+              "statScale": 3.633,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 24,
               "level": 82,
-              "statScale": 1.537,
+              "statScale": 4.564,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_raider",
               "weight": 20,
               "level": 82,
-              "statScale": 1.258,
+              "statScale": 3.296,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 16,
               "level": 82,
-              "statScale": 1.537,
+              "statScale": 6.593,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 12,
               "level": 82,
-              "statScale": 1.258,
+              "statScale": 4.045,
               "hpScale": 1
             }
           ]
@@ -3498,35 +3498,35 @@
               "enemyId": "rock_troll",
               "weight": 28,
               "level": 83,
-              "statScale": 1.776,
+              "statScale": 3.673,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_guard",
               "weight": 24,
               "level": 83,
-              "statScale": 1.257,
+              "statScale": 3.462,
               "hpScale": 1
             },
             {
               "enemyId": "stone_gargoyle",
               "weight": 20,
               "level": 83,
-              "statScale": 1.537,
+              "statScale": 4.615,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_raider",
               "weight": 16,
               "level": 83,
-              "statScale": 1.258,
+              "statScale": 3.333,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 12,
               "level": 83,
-              "statScale": 1.537,
+              "statScale": 6.667,
               "hpScale": 1
             }
           ]
@@ -3540,28 +3540,28 @@
               "enemyId": "iron_gargoyle",
               "weight": 32,
               "level": 84,
-              "statScale": 1.258,
+              "statScale": 4.091,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 26,
               "level": 84,
-              "statScale": 1.522,
+              "statScale": 3.462,
               "hpScale": 1
             },
             {
               "enemyId": "storm_harpy",
               "weight": 22,
               "level": 84,
-              "statScale": 1,
+              "statScale": 4.286,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_guard",
               "weight": 18,
               "level": 84,
-              "statScale": 1.257,
+              "statScale": 3.462,
               "hpScale": 1
             }
           ]
@@ -3575,35 +3575,35 @@
               "enemyId": "minotaur_raider",
               "weight": 28,
               "level": 85,
-              "statScale": 1.258,
+              "statScale": 3.389,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 24,
               "level": 85,
-              "statScale": 1.258,
+              "statScale": 4.159,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 20,
               "level": 85,
-              "statScale": 1.522,
+              "statScale": 3.519,
               "hpScale": 1
             },
             {
               "enemyId": "orc_shaman",
               "weight": 16,
               "level": 85,
-              "statScale": 1.537,
+              "statScale": 6.778,
               "hpScale": 1
             },
             {
               "enemyId": "storm_harpy",
               "weight": 12,
               "level": 85,
-              "statScale": 1,
+              "statScale": 4.357,
               "hpScale": 1
             }
           ]
@@ -3617,35 +3617,35 @@
               "enemyId": "minotaur_guard",
               "weight": 28,
               "level": 86,
-              "statScale": 1.257,
+              "statScale": 3.519,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_raider",
               "weight": 24,
               "level": 86,
-              "statScale": 1.258,
+              "statScale": 3.389,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_champion",
               "weight": 20,
               "level": 86,
-              "statScale": 1.516,
+              "statScale": 2.408,
               "hpScale": 1
             },
             {
               "enemyId": "iron_gargoyle",
               "weight": 16,
               "level": 86,
-              "statScale": 1.258,
+              "statScale": 4.159,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 12,
               "level": 86,
-              "statScale": 1.522,
+              "statScale": 3.519,
               "hpScale": 1
             }
           ]
@@ -3659,35 +3659,35 @@
               "enemyId": "obsidian_gargoyle",
               "weight": 28,
               "level": 87,
-              "statScale": 2.477,
+              "statScale": 3.72,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 87,
-              "statScale": 1.776,
+              "statScale": 3.796,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 20,
               "level": 87,
-              "statScale": 1,
+              "statScale": 4.133,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_guard",
               "weight": 16,
               "level": 87,
-              "statScale": 1.257,
+              "statScale": 3.577,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_champion",
               "weight": 12,
               "level": 87,
-              "statScale": 1.516,
+              "statScale": 2.447,
               "hpScale": 1
             }
           ]
@@ -3701,35 +3701,35 @@
               "enemyId": "obsidian_gargoyle",
               "weight": 28,
               "level": 88,
-              "statScale": 2.477,
+              "statScale": 3.72,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 24,
               "level": 88,
-              "statScale": 1.776,
+              "statScale": 3.796,
               "hpScale": 1
             },
             {
               "enemyId": "storm_harpy",
               "weight": 20,
               "level": 88,
-              "statScale": 1,
+              "statScale": 4.429,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 16,
               "level": 88,
-              "statScale": 1,
+              "statScale": 4.133,
               "hpScale": 1
             },
             {
               "enemyId": "minotaur_guard",
               "weight": 12,
               "level": 88,
-              "statScale": 1.257,
+              "statScale": 3.577,
               "hpScale": 1
             }
           ]
@@ -3743,28 +3743,28 @@
               "enemyId": "minotaur_champion",
               "weight": 32,
               "level": 89,
-              "statScale": 1.516,
+              "statScale": 2.487,
               "hpScale": 1
             },
             {
               "enemyId": "obsidian_gargoyle",
               "weight": 26,
               "level": 89,
-              "statScale": 2.477,
+              "statScale": 3.78,
               "hpScale": 1
             },
             {
               "enemyId": "rock_troll",
               "weight": 22,
               "level": 89,
-              "statScale": 1.776,
+              "statScale": 3.857,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 18,
               "level": 89,
-              "statScale": 1,
+              "statScale": 4.2,
               "hpScale": 1
             }
           ]
@@ -3799,35 +3799,35 @@
               "enemyId": "obsidian_gargoyle",
               "weight": 28,
               "level": 91,
-              "statScale": 2.477,
+              "statScale": 3.84,
               "hpScale": 1
             },
             {
               "enemyId": "cyclops",
               "weight": 24,
               "level": 91,
-              "statScale": 1.185,
+              "statScale": 3.048,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 20,
               "level": 91,
-              "statScale": 1.522,
+              "statScale": 3.692,
               "hpScale": 1
             },
             {
               "enemyId": "shield_golem",
               "weight": 16,
               "level": 91,
-              "statScale": 1.15,
+              "statScale": 3.918,
               "hpScale": 1
             },
             {
               "enemyId": "death_knight",
               "weight": 12,
               "level": 91,
-              "statScale": 1,
+              "statScale": 4.267,
               "hpScale": 1
             }
           ]
@@ -3841,35 +3841,35 @@
               "enemyId": "minotaur_champion",
               "weight": 28,
               "level": 92,
-              "statScale": 1.516,
+              "statScale": 2.526,
               "hpScale": 1
             },
             {
               "enemyId": "obsidian_gargoyle",
               "weight": 24,
               "level": 92,
-              "statScale": 2.477,
+              "statScale": 3.84,
               "hpScale": 1
             },
             {
               "enemyId": "cyclops",
               "weight": 20,
               "level": 92,
-              "statScale": 1.185,
+              "statScale": 3.048,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 16,
               "level": 92,
-              "statScale": 1.522,
+              "statScale": 3.692,
               "hpScale": 1
             },
             {
               "enemyId": "shield_golem",
               "weight": 12,
               "level": 92,
-              "statScale": 1.15,
+              "statScale": 3.918,
               "hpScale": 1
             }
           ]
@@ -3883,35 +3883,35 @@
               "enemyId": "minotaur_champion",
               "weight": 28,
               "level": 93,
-              "statScale": 1.516,
+              "statScale": 2.566,
               "hpScale": 1
             },
             {
               "enemyId": "elder_cyclops",
               "weight": 24,
               "level": 93,
-              "statScale": 1.22,
+              "statScale": 2.438,
               "hpScale": 1
             },
             {
               "enemyId": "obsidian_gargoyle",
               "weight": 20,
               "level": 93,
-              "statScale": 2.477,
+              "statScale": 3.9,
               "hpScale": 1
             },
             {
               "enemyId": "cyclops",
               "weight": 16,
               "level": 93,
-              "statScale": 1.185,
+              "statScale": 3.095,
               "hpScale": 1
             },
             {
               "enemyId": "war_troll",
               "weight": 12,
               "level": 93,
-              "statScale": 1.522,
+              "statScale": 3.75,
               "hpScale": 1
             }
           ]
@@ -3925,28 +3925,28 @@
               "enemyId": "shield_golem",
               "weight": 32,
               "level": 94,
-              "statScale": 1.15,
+              "statScale": 3.98,
               "hpScale": 1
             },
             {
               "enemyId": "construct_artillery",
               "weight": 26,
               "level": 94,
-              "statScale": 1.279,
+              "statScale": 3.421,
               "hpScale": 1
             },
             {
               "enemyId": "vampire",
               "weight": 22,
               "level": 94,
-              "statScale": 1.185,
+              "statScale": 3.75,
               "hpScale": 1
             },
             {
               "enemyId": "elder_cyclops",
               "weight": 18,
               "level": 94,
-              "statScale": 1.22,
+              "statScale": 2.438,
               "hpScale": 1
             }
           ]
@@ -3960,35 +3960,35 @@
               "enemyId": "cyclops",
               "weight": 28,
               "level": 95,
-              "statScale": 1.185,
+              "statScale": 3.143,
               "hpScale": 1
             },
             {
               "enemyId": "shield_golem",
               "weight": 24,
               "level": 95,
-              "statScale": 1.15,
+              "statScale": 4.041,
               "hpScale": 1
             },
             {
               "enemyId": "construct_artillery",
               "weight": 20,
               "level": 95,
-              "statScale": 1.279,
+              "statScale": 3.474,
               "hpScale": 1
             },
             {
               "enemyId": "vampire",
               "weight": 16,
               "level": 95,
-              "statScale": 1.185,
+              "statScale": 3.808,
               "hpScale": 1
             },
             {
               "enemyId": "elder_cyclops",
               "weight": 12,
               "level": 95,
-              "statScale": 1.22,
+              "statScale": 2.475,
               "hpScale": 1
             }
           ]
@@ -4002,35 +4002,35 @@
               "enemyId": "cyclops",
               "weight": 28,
               "level": 96,
-              "statScale": 1.185,
+              "statScale": 3.143,
               "hpScale": 1
             },
             {
               "enemyId": "hill_giant",
               "weight": 24,
               "level": 96,
-              "statScale": 1.28,
+              "statScale": 3.143,
               "hpScale": 1
             },
             {
               "enemyId": "shield_golem",
               "weight": 20,
               "level": 96,
-              "statScale": 1.15,
+              "statScale": 4.041,
               "hpScale": 1
             },
             {
               "enemyId": "construct_artillery",
               "weight": 16,
               "level": 96,
-              "statScale": 1.279,
+              "statScale": 3.474,
               "hpScale": 1
             },
             {
               "enemyId": "vampire",
               "weight": 12,
               "level": 96,
-              "statScale": 1.185,
+              "statScale": 3.808,
               "hpScale": 1
             }
           ]
@@ -4044,35 +4044,35 @@
               "enemyId": "elder_cyclops",
               "weight": 28,
               "level": 97,
-              "statScale": 1.22,
+              "statScale": 2.513,
               "hpScale": 1
             },
             {
               "enemyId": "war_giant",
               "weight": 24,
               "level": 97,
-              "statScale": 1.279,
+              "statScale": 2.422,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 20,
               "level": 97,
-              "statScale": 1.08,
+              "statScale": 3.655,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 16,
               "level": 97,
-              "statScale": 1.279,
+              "statScale": 2.871,
               "hpScale": 1
             },
             {
               "enemyId": "hill_giant",
               "weight": 12,
               "level": 97,
-              "statScale": 1.28,
+              "statScale": 3.19,
               "hpScale": 1
             }
           ]
@@ -4086,35 +4086,35 @@
               "enemyId": "elder_cyclops",
               "weight": 28,
               "level": 98,
-              "statScale": 1.22,
+              "statScale": 2.513,
               "hpScale": 1
             },
             {
               "enemyId": "war_giant",
               "weight": 24,
               "level": 98,
-              "statScale": 1.279,
+              "statScale": 2.422,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 20,
               "level": 98,
-              "statScale": 1.08,
+              "statScale": 3.655,
               "hpScale": 1
             },
             {
               "enemyId": "vampire",
               "weight": 16,
               "level": 98,
-              "statScale": 1.185,
+              "statScale": 3.865,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 12,
               "level": 98,
-              "statScale": 1.279,
+              "statScale": 2.871,
               "hpScale": 1
             }
           ]
@@ -4128,35 +4128,35 @@
               "enemyId": "hill_giant",
               "weight": 28,
               "level": 99,
-              "statScale": 1.28,
+              "statScale": 3.238,
               "hpScale": 1
             },
             {
               "enemyId": "elder_cyclops",
               "weight": 24,
               "level": 99,
-              "statScale": 1.22,
+              "statScale": 2.55,
               "hpScale": 1
             },
             {
               "enemyId": "war_giant",
               "weight": 20,
               "level": 99,
-              "statScale": 1.279,
+              "statScale": 2.458,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 16,
               "level": 99,
-              "statScale": 1.08,
+              "statScale": 3.709,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 12,
               "level": 99,
-              "statScale": 1.279,
+              "statScale": 2.914,
               "hpScale": 1
             }
           ]
@@ -4184,35 +4184,35 @@
               "enemyId": "war_giant",
               "weight": 28,
               "level": 101,
-              "statScale": 1.279,
+              "statScale": 2.494,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 24,
               "level": 101,
-              "statScale": 1.08,
+              "statScale": 3.764,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 20,
               "level": 101,
-              "statScale": 1.279,
+              "statScale": 2.957,
               "hpScale": 1
             },
             {
               "enemyId": "demon_mage",
               "weight": 16,
               "level": 101,
-              "statScale": 1.48,
+              "statScale": 4.5,
               "hpScale": 1
             },
             {
               "enemyId": "greater_demon",
               "weight": 12,
               "level": 101,
-              "statScale": 2.272,
+              "statScale": 2.091,
               "hpScale": 1
             }
           ]
@@ -4226,35 +4226,35 @@
               "enemyId": "war_giant",
               "weight": 28,
               "level": 102,
-              "statScale": 1.279,
+              "statScale": 2.494,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 24,
               "level": 102,
-              "statScale": 1.08,
+              "statScale": 3.764,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 20,
               "level": 102,
-              "statScale": 1.279,
+              "statScale": 2.957,
               "hpScale": 1
             },
             {
               "enemyId": "demon_mage",
               "weight": 16,
               "level": 102,
-              "statScale": 1.48,
+              "statScale": 4.5,
               "hpScale": 1
             },
             {
               "enemyId": "greater_demon",
               "weight": 12,
               "level": 102,
-              "statScale": 2.272,
+              "statScale": 2.091,
               "hpScale": 1
             }
           ]
@@ -4268,35 +4268,35 @@
               "enemyId": "war_giant",
               "weight": 28,
               "level": 103,
-              "statScale": 1.279,
+              "statScale": 2.53,
               "hpScale": 1
             },
             {
               "enemyId": "lesser_demon",
               "weight": 24,
               "level": 103,
-              "statScale": 1.08,
+              "statScale": 3.818,
               "hpScale": 1
             },
             {
               "enemyId": "demon_soldier",
               "weight": 20,
               "level": 103,
-              "statScale": 1.279,
+              "statScale": 3,
               "hpScale": 1
             },
             {
               "enemyId": "demon_mage",
               "weight": 16,
               "level": 103,
-              "statScale": 1.48,
+              "statScale": 4.565,
               "hpScale": 1
             },
             {
               "enemyId": "greater_demon",
               "weight": 12,
               "level": 103,
-              "statScale": 2.294,
+              "statScale": 2.121,
               "hpScale": 1
             }
           ]
@@ -4310,21 +4310,21 @@
               "enemyId": "demon_knight",
               "weight": 40,
               "level": 104,
-              "statScale": 1.252,
+              "statScale": 2.5,
               "hpScale": 1
             },
             {
               "enemyId": "archlich",
               "weight": 34,
               "level": 104,
-              "statScale": 1.497,
+              "statScale": 5.122,
               "hpScale": 1
             },
             {
               "enemyId": "lich_mage",
               "weight": 26,
               "level": 104,
-              "statScale": 1.252,
+              "statScale": 8.077,
               "hpScale": 1
             }
           ]
@@ -4338,35 +4338,35 @@
               "enemyId": "demon_mage",
               "weight": 28,
               "level": 105,
-              "statScale": 1.48,
+              "statScale": 4.63,
               "hpScale": 1
             },
             {
               "enemyId": "greater_demon",
               "weight": 24,
               "level": 105,
-              "statScale": 2.363,
+              "statScale": 2.152,
               "hpScale": 1
             },
             {
               "enemyId": "demon_knight",
               "weight": 20,
               "level": 105,
-              "statScale": 1.252,
+              "statScale": 2.536,
               "hpScale": 1
             },
             {
               "enemyId": "archlich",
               "weight": 16,
               "level": 105,
-              "statScale": 1.497,
+              "statScale": 5.195,
               "hpScale": 1
             },
             {
               "enemyId": "lich_mage",
               "weight": 12,
               "level": 105,
-              "statScale": 1.252,
+              "statScale": 8.192,
               "hpScale": 1
             }
           ]
@@ -4380,35 +4380,35 @@
               "enemyId": "demon_mage",
               "weight": 28,
               "level": 106,
-              "statScale": 1.48,
+              "statScale": 4.63,
               "hpScale": 1
             },
             {
               "enemyId": "greater_demon",
               "weight": 24,
               "level": 106,
-              "statScale": 2.408,
+              "statScale": 2.152,
               "hpScale": 1
             },
             {
               "enemyId": "demon_knight",
               "weight": 20,
               "level": 106,
-              "statScale": 1.252,
+              "statScale": 2.536,
               "hpScale": 1
             },
             {
               "enemyId": "archlich",
               "weight": 16,
               "level": 106,
-              "statScale": 1.497,
+              "statScale": 5.195,
               "hpScale": 1
             },
             {
               "enemyId": "lich_mage",
               "weight": 12,
               "level": 106,
-              "statScale": 1.252,
+              "statScale": 8.192,
               "hpScale": 1
             }
           ]
@@ -4422,21 +4422,21 @@
               "enemyId": "lich_lord",
               "weight": 40,
               "level": 107,
-              "statScale": 1.07,
+              "statScale": 4.696,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 34,
               "level": 107,
-              "statScale": 1.477,
+              "statScale": 3.042,
               "hpScale": 1
             },
             {
               "enemyId": "construct_artillery",
               "weight": 26,
               "level": 107,
-              "statScale": 1.279,
+              "statScale": 3.789,
               "hpScale": 1
             }
           ]
@@ -4450,35 +4450,35 @@
               "enemyId": "demon_knight",
               "weight": 28,
               "level": 108,
-              "statScale": 1.252,
+              "statScale": 2.571,
               "hpScale": 1
             },
             {
               "enemyId": "archlich",
               "weight": 24,
               "level": 108,
-              "statScale": 1.497,
+              "statScale": 5.268,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 20,
               "level": 108,
-              "statScale": 1.08,
+              "statScale": 4.696,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 16,
               "level": 108,
-              "statScale": 1.491,
+              "statScale": 3.042,
               "hpScale": 1
             },
             {
               "enemyId": "lich_mage",
               "weight": 12,
               "level": 108,
-              "statScale": 1.252,
+              "statScale": 8.308,
               "hpScale": 1
             }
           ]
@@ -4492,35 +4492,35 @@
               "enemyId": "construct_artillery",
               "weight": 28,
               "level": 109,
-              "statScale": 1.279,
+              "statScale": 3.842,
               "hpScale": 1
             },
             {
               "enemyId": "demon_knight",
               "weight": 24,
               "level": 109,
-              "statScale": 1.252,
+              "statScale": 2.607,
               "hpScale": 1
             },
             {
               "enemyId": "archlich",
               "weight": 20,
               "level": 109,
-              "statScale": 1.497,
+              "statScale": 5.341,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 16,
               "level": 109,
-              "statScale": 1.183,
+              "statScale": 4.761,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 12,
               "level": 109,
-              "statScale": 1.633,
+              "statScale": 3.085,
               "hpScale": 1
             }
           ]
@@ -4562,35 +4562,35 @@
               "enemyId": "young_dragon",
               "weight": 28,
               "level": 111,
-              "statScale": 1.491,
+              "statScale": 2.643,
               "hpScale": 1
             },
             {
               "enemyId": "dragon_whelp",
               "weight": 24,
               "level": 111,
-              "statScale": 1.27,
+              "statScale": 2.921,
               "hpScale": 1
             },
             {
               "enemyId": "adult_dragon",
               "weight": 20,
               "level": 111,
-              "statScale": 1.218,
+              "statScale": 1.835,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 16,
               "level": 111,
-              "statScale": 1.682,
+              "statScale": 1.947,
               "hpScale": 1
             },
             {
               "enemyId": "ancient_giant",
               "weight": 12,
               "level": 111,
-              "statScale": 2.23,
+              "statScale": 2.176,
               "hpScale": 1
             }
           ]
@@ -4604,35 +4604,35 @@
               "enemyId": "young_dragon",
               "weight": 28,
               "level": 112,
-              "statScale": 1.491,
+              "statScale": 2.643,
               "hpScale": 1
             },
             {
               "enemyId": "dragon_whelp",
               "weight": 24,
               "level": 112,
-              "statScale": 1.27,
+              "statScale": 2.921,
               "hpScale": 1
             },
             {
               "enemyId": "adult_dragon",
               "weight": 20,
               "level": 112,
-              "statScale": 1.242,
+              "statScale": 1.835,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 16,
               "level": 112,
-              "statScale": 1.714,
+              "statScale": 1.947,
               "hpScale": 1
             },
             {
               "enemyId": "construct_artillery",
               "weight": 12,
               "level": 112,
-              "statScale": 1.279,
+              "statScale": 3.895,
               "hpScale": 1
             }
           ]
@@ -4646,35 +4646,35 @@
               "enemyId": "ancient_giant",
               "weight": 28,
               "level": 113,
-              "statScale": 2.23,
+              "statScale": 2.206,
               "hpScale": 1
             },
             {
               "enemyId": "elder_dragon",
               "weight": 24,
               "level": 113,
-              "statScale": 1.07,
+              "statScale": 1.642,
               "hpScale": 1
             },
             {
               "enemyId": "young_dragon",
               "weight": 20,
               "level": 113,
-              "statScale": 1.491,
+              "statScale": 2.679,
               "hpScale": 1
             },
             {
               "enemyId": "dragon_whelp",
               "weight": 16,
               "level": 113,
-              "statScale": 1.27,
+              "statScale": 2.961,
               "hpScale": 1
             },
             {
               "enemyId": "adult_dragon",
               "weight": 12,
               "level": 113,
-              "statScale": 1.254,
+              "statScale": 1.86,
               "hpScale": 1
             }
           ]
@@ -4688,35 +4688,35 @@
               "enemyId": "demon_warlord",
               "weight": 28,
               "level": 114,
-              "statScale": 1.746,
+              "statScale": 1.974,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 24,
               "level": 114,
-              "statScale": 1.265,
+              "statScale": 4.891,
               "hpScale": 1
             },
             {
               "enemyId": "abyss_dragon",
               "weight": 20,
               "level": 114,
-              "statScale": 1,
+              "statScale": 1.415,
               "hpScale": 1
             },
             {
               "enemyId": "elder_dragon",
               "weight": 16,
               "level": 114,
-              "statScale": 1.08,
+              "statScale": 1.642,
               "hpScale": 1
             },
             {
               "enemyId": "ancient_giant",
               "weight": 12,
               "level": 114,
-              "statScale": 2.23,
+              "statScale": 2.206,
               "hpScale": 1
             }
           ]
@@ -4730,35 +4730,35 @@
               "enemyId": "adult_dragon",
               "weight": 28,
               "level": 115,
-              "statScale": 1.265,
+              "statScale": 1.884,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 24,
               "level": 115,
-              "statScale": 1.93,
+              "statScale": 2,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 20,
               "level": 115,
-              "statScale": 1.398,
+              "statScale": 4.957,
               "hpScale": 1
             },
             {
               "enemyId": "abyss_dragon",
               "weight": 16,
               "level": 115,
-              "statScale": 1.02,
+              "statScale": 1.434,
               "hpScale": 1
             },
             {
               "enemyId": "elder_dragon",
               "weight": 12,
               "level": 115,
-              "statScale": 1.193,
+              "statScale": 1.664,
               "hpScale": 1
             }
           ]
@@ -4772,28 +4772,28 @@
               "enemyId": "adult_dragon",
               "weight": 32,
               "level": 116,
-              "statScale": 1.265,
+              "statScale": 1.884,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 26,
               "level": 116,
-              "statScale": 1.967,
+              "statScale": 2,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 22,
               "level": 116,
-              "statScale": 1.425,
+              "statScale": 4.957,
               "hpScale": 1
             },
             {
               "enemyId": "abyss_dragon",
               "weight": 18,
               "level": 116,
-              "statScale": 1.04,
+              "statScale": 1.434,
               "hpScale": 1
             }
           ]
@@ -4807,14 +4807,14 @@
               "enemyId": "elder_dragon",
               "weight": 24,
               "level": 117,
-              "statScale": 1.24,
+              "statScale": 1.686,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 21,
               "level": 117,
-              "statScale": 2.005,
+              "statScale": 3.254,
               "hpScale": 1
             }
           ]
@@ -4828,35 +4828,35 @@
               "enemyId": "abyss_dragon",
               "weight": 28,
               "level": 118,
-              "statScale": 1.191,
+              "statScale": 1.453,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 24,
               "level": 118,
-              "statScale": 2.254,
+              "statScale": 2.026,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 20,
               "level": 118,
-              "statScale": 1.633,
+              "statScale": 5.022,
               "hpScale": 1
             },
             {
               "enemyId": "elder_dragon",
               "weight": 16,
               "level": 118,
-              "statScale": 1.394,
+              "statScale": 1.686,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 12,
               "level": 118,
-              "statScale": 2.254,
+              "statScale": 3.254,
               "hpScale": 1
             }
           ]
@@ -4870,35 +4870,35 @@
               "enemyId": "abyss_dragon",
               "weight": 28,
               "level": 119,
-              "statScale": 1.215,
+              "statScale": 1.465,
               "hpScale": 1
             },
             {
               "enemyId": "demon_warlord",
               "weight": 24,
               "level": 119,
-              "statScale": 2.298,
+              "statScale": 2.044,
               "hpScale": 1
             },
             {
               "enemyId": "lich_lord",
               "weight": 20,
               "level": 119,
-              "statScale": 1.665,
+              "statScale": 5.065,
               "hpScale": 1
             },
             {
               "enemyId": "elder_dragon",
               "weight": 16,
               "level": 119,
-              "statScale": 1.421,
+              "statScale": 1.701,
               "hpScale": 1
             },
             {
               "enemyId": "construct_core",
               "weight": 12,
               "level": 119,
-              "statScale": 2.298,
+              "statScale": 3.282,
               "hpScale": 1
             }
           ]

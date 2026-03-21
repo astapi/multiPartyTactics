@@ -57,13 +57,13 @@ const GROWTH_RATE_BY_CLASS: Record<ClassId, GrowthRate> = {
 };
 
 const BASE_LEVEL_STATS_BY_CLASS: Record<ClassId, StatBlock> = {
-  GUARDIAN: { maxHp: 120, atk: 8, def: 10, spi: 5, spd: 8, maxMp: 20, mpRegen: 2 },
-  SWORDMAN: { maxHp: 100, atk: 11, def: 8, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 },
-  BERSERKER: { maxHp: 110, atk: 14, def: 6, spi: 4, spd: 9, maxMp: 18, mpRegen: 2 },
-  CLERIC: { maxHp: 80, atk: 5, def: 6, spi: 13, spd: 10, maxMp: 35, mpRegen: 2 },
-  WITCH: { maxHp: 75, atk: 6, def: 5, spi: 15, spd: 11, maxMp: 30, mpRegen: 2 },
-  THIEF: { maxHp: 90, atk: 12, def: 5, spi: 6, spd: 12, maxMp: 25, mpRegen: 2 },
-  PORTER: { maxHp: 95, atk: 7, def: 7, spi: 7, spd: 9, maxMp: 18, mpRegen: 2 },
+  GUARDIAN: { maxHp: 60, atk: 8, def: 10, spi: 5, spd: 8, maxMp: 20, mpRegen: 2 },
+  SWORDMAN: { maxHp: 50, atk: 11, def: 8, spi: 6, spd: 10, maxMp: 22, mpRegen: 2 },
+  BERSERKER: { maxHp: 55, atk: 14, def: 6, spi: 4, spd: 9, maxMp: 18, mpRegen: 2 },
+  CLERIC: { maxHp: 40, atk: 5, def: 6, spi: 13, spd: 10, maxMp: 35, mpRegen: 2 },
+  WITCH: { maxHp: 38, atk: 6, def: 5, spi: 15, spd: 11, maxMp: 30, mpRegen: 2 },
+  THIEF: { maxHp: 45, atk: 12, def: 5, spi: 6, spd: 12, maxMp: 25, mpRegen: 2 },
+  PORTER: { maxHp: 48, atk: 7, def: 7, spi: 7, spd: 9, maxMp: 18, mpRegen: 2 },
 };
 
 const TOTAL_EXP_FOR_LEVEL: number[] = (() => {
