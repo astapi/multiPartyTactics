@@ -97,6 +97,54 @@ describe("game/explorationSession", () => {
     expect(state.floorProgressMap[1]?.stairsDiscovered).toBe(true);
   });
 
+  it("クリア済み通常階は周回モードで進行し100%で終了する", () => {
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      floor: 1,
+      seed: 40,
+      config: {
+        explorationPercentGainPerStep: 25,
+      },
+      persistedProgress: [{ floor: 1, explorationPercent: 100, stairsDiscovered: true }],
+    });
+
+    expect(state.mode).toBe("LOOP");
+    expect(state.loopExitPercent).toBe(0);
+
+    while (state.status === "RUNNING") {
+      state = advanceExplorationStep(state);
+    }
+
+    expect(state.floorProgressMap[1]?.explorationPercent).toBe(100);
+    expect(state.floorProgressMap[1]?.stairsDiscovered).toBe(true);
+    expect(state.loopExitPercent).toBe(100);
+    expect(state.status).toBe("FLOOR_CLEARED");
+    expect(state.events.at(-1)?.type).toBe("FLOOR_CLEAR");
+    expect(state.events.some((event) => event.type === "STAIRS_DISCOVERED")).toBe(false);
+  });
+
+  it("クリア済み通常階の周回モードでは探索度を再進行しない", () => {
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      floor: 1,
+      seed: 41,
+      config: {
+        explorationPercentGainPerStep: 20,
+      },
+      persistedProgress: [{ floor: 1, explorationPercent: 100, stairsDiscovered: true }],
+    });
+
+    state = advanceExplorationStep(state);
+    state = advanceExplorationStep(state);
+
+    expect(state.mode).toBe("LOOP");
+    expect(state.floorProgressMap[1]?.explorationPercent).toBe(100);
+    expect(state.loopExitPercent).toBe(40);
+    expect(state.status).toBe("RUNNING");
+  });
+
   it("ボス階は探索度100%到達でボス遭遇を提示する", () => {
     let state = createExplorationSession({
       dungeon,
@@ -167,6 +215,29 @@ describe("game/explorationSession", () => {
     expect(state.status).toBe("FLOOR_CLEARED");
     expect(state.events.at(-2)?.type).toBe("STAIRS_DISCOVERED");
     expect(state.events.at(-1)?.type).toBe("FLOOR_CLEAR");
+  });
+
+  it("クリア済みボス階も周回モードで進行しボス再戦を要求しない", () => {
+    let state = createExplorationSession({
+      dungeon,
+      party,
+      floor: 10,
+      seed: 506,
+      config: {
+        explorationPercentGainPerStep: 50,
+      },
+      persistedProgress: [{ floor: 10, explorationPercent: 100, stairsDiscovered: true }],
+    });
+
+    expect(state.mode).toBe("LOOP");
+
+    state = advanceExplorationStep(state);
+    expect(state.status).toBe("RUNNING");
+    expect(state.events.some((event) => event.type === "BOSS_ENCOUNTER")).toBe(false);
+
+    state = advanceExplorationStep(state);
+    expect(state.loopExitPercent).toBe(100);
+    expect(state.status).toBe("FLOOR_CLEARED");
   });
 
   it("ボス敗北/引分ではFLOOR_CLEAREDにならない", () => {

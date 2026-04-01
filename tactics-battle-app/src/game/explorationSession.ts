@@ -23,6 +23,7 @@ export type ExplorationSessionStatus =
 
 export type BossEncounterDecision = "FIGHT" | "CONTINUE";
 export type BossBattleOutcome = "WIN" | "LOSE" | "DRAW";
+export type ExplorationSessionMode = "PROGRESSION" | "LOOP";
 
 export type ExplorationSessionConfig = {
   explorationPercentGainPerStep: number;
@@ -33,8 +34,10 @@ export type ExplorationSessionState = {
   dungeon: DungeonOption;
   party: Unit[];
   config: ExplorationSessionConfig;
+  mode: ExplorationSessionMode;
   currentFloor: number;
   currentStep: number;
+  loopExitPercent: number;
   status: ExplorationSessionStatus;
   events: ExplorationEvent[];
   encounterTicks: number[];
@@ -128,21 +131,25 @@ export const createExplorationSession = (params: CreateParams): ExplorationSessi
   };
   const floor = Math.max(1, Math.min(params.dungeon.floors, Math.floor(params.floor)));
   const persisted = (params.persistedProgress ?? []).find((row) => row.floor === floor);
+  const initialProgress = makeProgressRecord(floor, persisted);
+  const mode: ExplorationSessionMode = initialProgress.stairsDiscovered ? "LOOP" : "PROGRESSION";
 
   const state: ExplorationSessionState = {
     seed: params.seed,
     dungeon: params.dungeon,
     party: params.party,
     config,
+    mode,
     currentFloor: floor,
     currentStep: 0,
+    loopExitPercent: 0,
     status: "RUNNING",
     events: [],
     encounterTicks: [],
     encounters: [],
     pendingBossEncounter: null,
     floorProgressMap: {
-      [floor]: makeProgressRecord(floor, persisted),
+      [floor]: initialProgress,
     },
     floorStepsThisRunMap: {},
     bossEncounterOfferedThisRunMap: {},
@@ -169,13 +176,19 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
   const nextTick = state.currentStep + 1;
   const floor = state.currentFloor;
   const prevFloorProgress = getFloorProgress(state, floor);
-  let nextFloorProgress = {
-    ...prevFloorProgress,
-    explorationPercent: clampPercent(prevFloorProgress.explorationPercent + state.config.explorationPercentGainPerStep),
-  };
+  const isLoopMode = state.mode === "LOOP";
+  let nextFloorProgress = isLoopMode
+    ? prevFloorProgress
+    : {
+        ...prevFloorProgress,
+        explorationPercent: clampPercent(prevFloorProgress.explorationPercent + state.config.explorationPercentGainPerStep),
+      };
   let nextState: ExplorationSessionState = {
     ...state,
     currentStep: nextTick,
+    loopExitPercent: isLoopMode
+      ? clampPercent(state.loopExitPercent + state.config.explorationPercentGainPerStep)
+      : state.loopExitPercent,
     floorStepsThisRunMap: {
       ...state.floorStepsThisRunMap,
       [floor]: (state.floorStepsThisRunMap[floor] ?? 0) + 1,
@@ -243,6 +256,23 @@ export const advanceExplorationStep = (state: ExplorationSessionState): Explorat
       messageId: "exploration.event.stairs.discovered",
       payload: { explorationPercent: nextFloorProgress.explorationPercent, toFloor },
     });
+    nextState = appendEvent(nextState, {
+      tick: nextTick,
+      type: "FLOOR_CLEAR",
+      floor,
+      messageId: "exploration.event.floor.clear",
+    });
+    return {
+      ...nextState,
+      status: "FLOOR_CLEARED",
+    };
+  }
+
+  const isLoopFloorClear =
+    isLoopMode &&
+    state.loopExitPercent < 100 &&
+    nextState.loopExitPercent >= 100;
+  if (isLoopFloorClear) {
     nextState = appendEvent(nextState, {
       tick: nextTick,
       type: "FLOOR_CLEAR",
