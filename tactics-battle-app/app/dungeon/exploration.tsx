@@ -211,13 +211,17 @@ export default function ExplorationScreen() {
         const equippedByCharacterId = await characterEquipmentRepository.getByCharacterIds(
           partyRecords.map((record) => record.id)
         );
-        const party = toPartyUnits(partyRecords, equippedByCharacterId);
+        const party = toPartyUnits(partyRecords, equippedByCharacterId).map((member) => ({
+          ...member,
+          hp: member.stats.maxHp,
+          mp: member.stats.maxMp,
+        }));
         const nextPartySnapshot = party.map((member) => ({
           id: member.id,
           name: member.name,
           classId: member.classId,
-          hp: member.hp,
-          mp: member.mp,
+          hp: member.stats.maxHp,
+          mp: member.stats.maxMp,
           maxHp: member.stats.maxHp,
           maxMp: member.stats.maxMp,
           level: partyRecords.find((record) => record.id === member.id)?.level ?? null,
@@ -605,6 +609,9 @@ export default function ExplorationScreen() {
   const currentFloorExplorationPercent = currentFloorProgress?.explorationPercent ?? 0;
   const currentFloorExplorationPercentDisplay = Math.floor(currentFloorExplorationPercent);
   const currentFloorStairsDiscovered = currentFloorProgress?.stairsDiscovered ?? false;
+  const currentLoopExitPercent = session?.loopExitPercent ?? 0;
+  const currentLoopExitPercentDisplay = Math.floor(currentLoopExitPercent);
+  const isLoopMode = session?.mode === "LOOP";
   const isAwaitingBossDecision = session?.status === "AWAITING_BOSS_DECISION";
   const isExplorationResultVisible = endReason !== null || session?.status === "FLOOR_CLEARED";
   const isBossDecisionModalVisible = isFocused && !isNavigating && isAwaitingBossDecision && !isExplorationResultVisible;
@@ -651,7 +658,9 @@ export default function ExplorationScreen() {
           : "Exploring...";
   const resultTitle =
     session?.status === "FLOOR_CLEARED"
-      ? "階層探索完了"
+      ? isLoopMode
+        ? "探索周回完了"
+        : "階層探索完了"
       : endReason === "ANY_MEMBER_DOWN"
         ? "戦闘不能で帰還"
         : endReason === "INVENTORY_FULL"
@@ -831,13 +840,20 @@ export default function ExplorationScreen() {
                 </View>
               </View>
               <View style={styles.floorStatusRow}>
-                <Text style={styles.floorStatusText}>{`探索度 ${currentFloorExplorationPercentDisplay}%`}</Text>
+                <Text style={styles.floorStatusText}>
+                  {isLoopMode ? `周回進行 ${currentLoopExitPercentDisplay}%` : `探索度 ${currentFloorExplorationPercentDisplay}%`}
+                </Text>
                 <Text style={[styles.floorStatusText, currentFloorStairsDiscovered ? styles.floorStatusFound : null]}>
-                  {currentFloorStairsDiscovered ? "階段発見済み" : "階段未発見"}
+                  {currentFloorStairsDiscovered ? (isLoopMode ? "周回モード" : "階段発見済み") : "階段未発見"}
                 </Text>
               </View>
               <View style={styles.floorProgressTrack}>
-                <View style={[styles.floorProgressFill, { width: `${currentFloorExplorationPercent}%` }]} />
+                <View
+                  style={[
+                    styles.floorProgressFill,
+                    { width: `${isLoopMode ? currentLoopExitPercent : currentFloorExplorationPercent}%` },
+                  ]}
+                />
               </View>
             </View>
             <View style={styles.heroInventoryBadge}>
